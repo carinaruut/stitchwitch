@@ -1,0 +1,47 @@
+@import "tailwindcss";
+@plugin "daisyui" {
+  themes: light --default, dark --prefersdark;
+}
+
+html,
+body,
+#app {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+}
+
+.pattern-cell {
+  border: 1px solid color-mix(in oklab, currentColor 35%, transparent);
+  padding: 0;
+  touch-action: none;
+  user-select: none;
+}
+
+.pattern-cell:focus-visible {
+  outline: 3px solid currentColor;
+  outline-offset: -3px;
+}
+
+@media print {
+  @page {
+    margin: 12mm;
+    size: landscape;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  .screen-only,
+  .toast {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block !important;
+  }
+}
