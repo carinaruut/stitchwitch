@@ -1,5 +1,5 @@
 export type PatternGrid = string[][]
-export type DrawingTool = 'pencil' | 'eraser' | 'eyedropper'
+export type DrawingTool = 'pencil' | 'eraser' | 'eyedropper' | 'move'
 
 export interface PatternProject {
   format: 'stitch-pattern'

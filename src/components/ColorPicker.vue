@@ -22,7 +22,7 @@ function submitHex() {
       <div class="flex items-center gap-3">
         <input class="h-11 w-14 cursor-pointer rounded border border-base-300 bg-base-100 p-1" type="color" :value="color" aria-label="Choose pattern color" @input="$emit('select', ($event.target as HTMLInputElement).value)" />
         <span class="h-10 w-10 rounded border-2 border-base-content" :style="{ backgroundColor: color }" aria-hidden="true"></span>
-        <button class="btn btn-sm btn-outline" type="button" @click="$emit('eyedropper')">Eyedropper</button>
+        <button class="btn btn-sm btn-outline" type="button" @click="$emit('eyedropper')"><span class="mdi mdi-eyedropper" aria-hidden="true"></span>Eyedropper</button>
       </div>
       <label class="form-control">
         <span class="label-text mb-1">Hex color</span>

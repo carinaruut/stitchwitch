@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import TopNavbar from './components/TopNavbar.vue'
 import SettingsPanel from './components/SettingsPanel.vue'
+import DrawingTools from './components/DrawingTools.vue'
 import PatternGrid from './components/PatternGrid.vue'
 import PatternPreview from './components/PatternPreview.vue'
 import NewProjectModal from './components/NewProjectModal.vue'
@@ -131,11 +132,13 @@ function printPattern() {
                   <span class="badge badge-outline">{{ pattern.rowCount.value }} rows</span>
                 </div>
               </div>
+              <DrawingTools :tool="pattern.tool.value" @select="pattern.tool.value = $event" @clear="requestClear" />
               <PatternGrid
                 :cells="pattern.project.value.cells"
                 :cell-size="pattern.project.value.cellSize"
                 :selected-row="pattern.selectedRow.value"
                 :selected-column="pattern.selectedColumn.value"
+                :tool="pattern.tool.value"
                 @stroke-start="beginStroke"
                 @paint="pattern.paintCell"
                 @stroke-end="endStroke"
@@ -150,20 +153,19 @@ function printPattern() {
           />
 
           <div class="flex justify-end">
-            <button class="btn btn-primary" type="button" @click="printPattern">Print or Save as PDF</button>
+            <button class="btn btn-primary" type="button" @click="printPattern"><span class="mdi mdi-printer-outline text-lg" aria-hidden="true"></span>Print or Save as PDF</button>
           </div>
         </main>
       </div>
 
       <aside class="drawer-side z-40">
         <label for="editor-drawer" class="drawer-overlay" aria-label="Close editing tools"></label>
-        <div class="min-h-full w-80 overflow-y-auto border-r border-base-300 bg-base-200 p-3 lg:w-80">
+        <div class="min-h-full w-72 overflow-y-auto border-r border-base-300 bg-base-200 p-2 lg:w-72">
           <div class="mb-3 flex items-center justify-between lg:hidden">
             <h2 class="font-bold">Tools and settings</h2>
-            <button class="btn btn-sm btn-ghost" type="button" @click="drawerOpen = false">Close</button>
+            <button class="btn btn-sm btn-ghost" type="button" @click="drawerOpen = false"><span class="mdi mdi-close" aria-hidden="true"></span>Close</button>
           </div>
           <SettingsPanel
-            :tool="pattern.tool.value"
             :color="pattern.selectedColor.value"
             :recent-colors="pattern.recentColors.value"
             :cell-size="pattern.project.value.cellSize"
@@ -173,8 +175,6 @@ function printPattern() {
             :row-count="pattern.rowCount.value"
             :selected-column="pattern.selectedColumn.value"
             :column-count="pattern.columnCount.value"
-            @tool="pattern.tool.value = $event"
-            @clear="requestClear"
             @color="pattern.chooseColor($event)"
             @eyedropper="pattern.tool.value = 'eyedropper'"
             @cell-size="pattern.project.value.cellSize = $event"

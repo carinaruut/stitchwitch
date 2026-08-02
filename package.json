@@ -12,6 +12,7 @@
     "typecheck": "vue-tsc -b --pretty false"
   },
   "dependencies": {
+    "@mdi/font": "^7.4.47",
     "vue": "^3.5.0"
   },
   "devDependencies": {

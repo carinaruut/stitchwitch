@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import type { DrawingTool } from '../types/pattern'
-import DrawingTools from './DrawingTools.vue'
 import ColorPicker from './ColorPicker.vue'
 import GridSettings from './GridSettings.vue'
 import RepeatSettings from './RepeatSettings.vue'
@@ -8,7 +6,6 @@ import RowControls from './RowControls.vue'
 import ColumnControls from './ColumnControls.vue'
 
 defineProps<{
-  tool: DrawingTool
   color: string
   recentColors: string[]
   cellSize: number
@@ -21,8 +18,6 @@ defineProps<{
 }>()
 
 defineEmits<{
-  tool: [tool: DrawingTool]
-  clear: []
   color: [color: string]
   eyedropper: []
   cellSize: [value: number]
@@ -43,7 +38,6 @@ defineEmits<{
 
 <template>
   <div class="space-y-3">
-    <DrawingTools :tool="tool" @select="$emit('tool', $event)" @clear="$emit('clear')" />
     <ColorPicker :color="color" :recent-colors="recentColors" @select="$emit('color', $event)" @eyedropper="$emit('eyedropper')" />
     <GridSettings :cell-size="cellSize" @cell-size="$emit('cellSize', $event)" />
     <RepeatSettings :horizontal="horizontal" :vertical="vertical" @horizontal="$emit('horizontal', $event)" @vertical="$emit('vertical', $event)" />
