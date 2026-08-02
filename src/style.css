@@ -34,6 +34,16 @@ body {
   border-bottom: 1.5px solid color-mix(in oklab, currentColor 60%, transparent);
 }
 
+.row-action-selected {
+  border-bottom: 1px dashed color-mix(in oklab, currentColor 70%, transparent);
+  border-top: 1px dashed color-mix(in oklab, currentColor 70%, transparent);
+}
+
+.column-action-selected {
+  border-left: 1px dashed color-mix(in oklab, currentColor 70%, transparent);
+  border-right: 1px dashed color-mix(in oklab, currentColor 70%, transparent);
+}
+
 @media print {
   @page {
     margin: 12mm;

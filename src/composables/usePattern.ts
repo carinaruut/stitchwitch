@@ -102,6 +102,30 @@ export function usePattern() {
     selectedRow.value = Math.min(index, project.value.cells.length - 1)
   }
 
+  function insertMultipleRows(index: number, count: number) {
+    const total = Math.min(50, Math.max(1, Math.floor(count)))
+    beginGridChange()
+    let cells = cloneGrid(project.value.cells)
+    for (let offset = 0; offset < total; offset += 1) {
+      cells = addRow(cells, index + offset, project.value.backgroundColor)
+    }
+    project.value.cells = cells
+    selectedRow.value = Math.min(index, cells.length - 1)
+  }
+
+  function fillRow(index: number, color: string) {
+    beginGridChange()
+    project.value.cells[index] = Array<string>(project.value.cells[index].length).fill(color)
+    selectedRow.value = index
+    chooseColor(color, true)
+  }
+
+  function eraseRow(index: number) {
+    beginGridChange()
+    project.value.cells[index] = Array<string>(project.value.cells[index].length).fill(project.value.backgroundColor)
+    selectedRow.value = index
+  }
+
   function deleteSelectedRow() {
     if (project.value.cells.length <= 1) return
     mutateGrid(removeRow(project.value.cells, selectedRow.value))
@@ -111,6 +135,30 @@ export function usePattern() {
   function insertColumn(index: number) {
     mutateGrid(addColumn(project.value.cells, index, project.value.backgroundColor))
     selectedColumn.value = Math.min(index, project.value.cells[0].length - 1)
+  }
+
+  function insertMultipleColumns(index: number, count: number) {
+    const total = Math.min(50, Math.max(1, Math.floor(count)))
+    beginGridChange()
+    let cells = cloneGrid(project.value.cells)
+    for (let offset = 0; offset < total; offset += 1) {
+      cells = addColumn(cells, index + offset, project.value.backgroundColor)
+    }
+    project.value.cells = cells
+    selectedColumn.value = Math.min(index, cells[0].length - 1)
+  }
+
+  function fillColumn(index: number, color: string) {
+    beginGridChange()
+    for (const row of project.value.cells) row[index] = color
+    selectedColumn.value = index
+    chooseColor(color, true)
+  }
+
+  function eraseColumn(index: number) {
+    beginGridChange()
+    for (const row of project.value.cells) row[index] = project.value.backgroundColor
+    selectedColumn.value = index
   }
 
   function deleteSelectedColumn() {
@@ -155,8 +203,14 @@ export function usePattern() {
     paintCell,
     commitColor,
     insertRow,
+    insertMultipleRows,
+    fillRow,
+    eraseRow,
     deleteSelectedRow,
     insertColumn,
+    insertMultipleColumns,
+    fillColumn,
+    eraseColumn,
     deleteSelectedColumn,
     clearGrid,
     undo,

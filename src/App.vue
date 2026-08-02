@@ -94,6 +94,26 @@ function endStroke() {
   pattern.commitColor()
 }
 
+function handleRowAction(action: 'above' | 'below' | 'multiple' | 'delete' | 'fill' | 'erase', row: number, count = 1) {
+  pattern.selectedRow.value = row
+  if (action === 'above') pattern.insertRow(row)
+  if (action === 'below') pattern.insertRow(row + 1)
+  if (action === 'multiple') pattern.insertMultipleRows(row + 1, count)
+  if (action === 'delete') pattern.deleteSelectedRow()
+  if (action === 'fill') pattern.fillRow(row, pattern.selectedColor.value)
+  if (action === 'erase') pattern.eraseRow(row)
+}
+
+function handleColumnAction(action: 'before' | 'after' | 'multiple' | 'delete' | 'fill' | 'erase', column: number, count = 1) {
+  pattern.selectedColumn.value = column
+  if (action === 'before') pattern.insertColumn(column)
+  if (action === 'after') pattern.insertColumn(column + 1)
+  if (action === 'multiple') pattern.insertMultipleColumns(column + 1, count)
+  if (action === 'delete') pattern.deleteSelectedColumn()
+  if (action === 'fill') pattern.fillColumn(column, pattern.selectedColor.value)
+  if (action === 'erase') pattern.eraseColumn(column)
+}
+
 function printPattern() {
   window.print()
 }
@@ -142,6 +162,10 @@ function printPattern() {
                 @stroke-start="beginStroke"
                 @paint="pattern.paintCell"
                 @stroke-end="endStroke"
+                @select-row="pattern.selectedRow.value = $event"
+                @row-action="handleRowAction"
+                @select-column="pattern.selectedColumn.value = $event"
+                @column-action="handleColumnAction"
               />
             </div>
           </section>
