@@ -143,7 +143,7 @@ onBeforeUnmount(() => {
 <template>
   <div
     ref="viewport"
-    class="max-h-[62vh] overflow-auto border border-base-300 bg-base-200/50 p-3"
+    class="h-[calc(100dvh-16rem)] min-h-80 w-full min-w-0 overflow-auto border border-base-300/70 bg-base-100 p-3"
     :class="tool === 'move' ? (panning ? 'cursor-grabbing touch-none' : 'cursor-grab touch-none') : ''"
     aria-label="Editable pattern grid"
     @pointerdown.self="tool === 'move' && startPan($event)"
@@ -152,19 +152,19 @@ onBeforeUnmount(() => {
     @pointercancel="stop"
   >
     <div
-      class="grid w-max border border-base-300 bg-base-100"
+      class="grid w-max border border-base-300/70 bg-base-100"
       :style="{ gridTemplateColumns: `28px repeat(${cells[0].length}, ${cellSize}px)`, gridTemplateRows: `28px repeat(${cells.length}, ${cellSize}px)` }"
       role="grid"
       :aria-rowcount="cells.length"
       :aria-colcount="cells[0].length"
       @dragstart.prevent
     >
-      <span class="sticky left-0 top-0 z-20 border-b border-r border-base-300 bg-base-200" aria-hidden="true"></span>
+      <span class="sticky left-0 top-0 z-20 border-b border-r border-base-300/70 bg-base-100" aria-hidden="true"></span>
       <span
         v-for="column in cells[0].length"
         :key="`column-${column}`"
-        class="sticky top-0 z-10 flex items-center justify-center border-b border-base-300 bg-base-200 text-[10px] font-medium"
-        :class="{ 'section-column-end': column % 5 === 0 && column < cells[0].length, 'text-primary': selectedColumn === column - 1 }"
+        class="sticky top-0 z-10 flex items-center justify-center border-b border-base-300/70 bg-base-100 font-mono text-[10px] font-medium tabular-nums text-base-content/55 hover:bg-base-200"
+        :class="{ 'section-column-end': column % 5 === 0 && column < cells[0].length, 'bg-primary/10! font-bold text-primary!': selectedColumn === column - 1 }"
         role="columnheader"
         tabindex="0"
         :aria-label="`Column ${column}. Open column actions.`"
@@ -176,8 +176,8 @@ onBeforeUnmount(() => {
       >{{ column }}</span>
       <template v-for="(row, rowIndex) in cells" :key="rowIndex">
         <span
-          class="sticky left-0 z-10 flex items-center justify-center border-r border-base-300 bg-base-200 text-[10px] font-medium"
-          :class="{ 'section-row-end': (rowIndex + 1) % 5 === 0 && rowIndex < cells.length - 1, 'text-primary': selectedRow === rowIndex }"
+          class="sticky left-0 z-10 flex items-center justify-center border-r border-base-300/70 bg-base-100 font-mono text-[10px] font-medium tabular-nums text-base-content/55 hover:bg-base-200"
+          :class="{ 'section-row-end': (rowIndex + 1) % 5 === 0 && rowIndex < cells.length - 1, 'bg-primary/10! font-bold text-primary!': selectedRow === rowIndex }"
           role="rowheader"
           tabindex="0"
           :aria-label="`Row ${rowIndex + 1}. Open row actions.`"

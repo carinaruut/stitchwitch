@@ -20,8 +20,10 @@ function submitHex() {
     <div class="card-body gap-3 p-4">
       <h2 class="card-title text-base">Color</h2>
       <div class="flex items-center gap-3">
-        <input class="h-11 w-14 cursor-pointer rounded border border-base-300 bg-base-100 p-1" type="color" :value="color" aria-label="Choose pattern color" @input="$emit('select', ($event.target as HTMLInputElement).value)" />
-        <span class="h-10 w-10 rounded border-2 border-base-content" :style="{ backgroundColor: color }" aria-hidden="true"></span>
+        <label class="relative h-11 w-11 shrink-0 cursor-pointer rounded border-2 border-base-content" :style="{ backgroundColor: color }">
+          <span class="sr-only">Choose pattern color</span>
+          <input class="absolute inset-0 h-full w-full cursor-pointer opacity-0" type="color" :value="color" aria-label="Choose pattern color" @input="$emit('select', ($event.target as HTMLInputElement).value)" />
+        </label>
         <button class="btn btn-sm btn-outline" type="button" @click="$emit('eyedropper')"><span class="mdi mdi-eyedropper" aria-hidden="true"></span>Eyedropper</button>
       </div>
       <label class="form-control">

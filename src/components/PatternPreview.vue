@@ -18,8 +18,8 @@ const columns = computed(() => props.cells[0].length * props.horizontal)
           <span class="badge badge-secondary">{{ preview.length }} rows</span>
         </div>
       </div>
-      <div class="max-h-80 overflow-auto rounded-xl bg-base-200/50 p-3">
-        <div class="grid w-max overflow-hidden rounded-lg" :style="{ gridTemplateColumns: `repeat(${columns}, 12px)`, gridAutoRows: '12px' }" aria-label="Repeated pattern preview">
+      <div class="max-h-96 overflow-auto rounded-xl bg-base-200/30 p-4">
+        <div class="grid w-max overflow-hidden rounded-lg" :style="{ gridTemplateColumns: `repeat(${columns}, 16px)`, gridAutoRows: '16px' }" aria-label="Repeated pattern preview">
           <template v-for="(row, rowIndex) in preview" :key="rowIndex">
             <span v-for="(color, columnIndex) in row" :key="columnIndex" :style="{ backgroundColor: color }" aria-hidden="true"></span>
           </template>
