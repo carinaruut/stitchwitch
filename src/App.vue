@@ -271,6 +271,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleSelectionShort
                 @select-column="pattern.selectedColumn.value = $event"
                 @column-action="handleColumnAction"
                 @select-area="pattern.setSelection"
+                @clear-selection="pattern.clearSelection"
                 @place-selection="placeSelection"
                 @move-selection="moveSelectionDirectly"
               />

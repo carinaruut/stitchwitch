@@ -32,6 +32,7 @@ const emit = defineEmits<{
   selectColumn: [column: number]
   columnAction: [action: 'before' | 'after' | 'multiple' | 'delete' | 'fill' | 'erase', column: number, count?: number]
   selectArea: [top: number, left: number, bottom: number, right: number]
+  clearSelection: []
   placeSelection: [row: number, column: number]
   moveSelection: [row: number, column: number]
 }>()
@@ -114,6 +115,10 @@ function start(row: number, column: number, displayRow: number, displayColumn: n
       dragRowOffset = actualRow - props.selection!.top
       dragColumnOffset = actualColumn - props.selection!.left
       dragPreview.value = { ...props.selection! }
+      return
+    }
+    if (props.selection) {
+      emit('clearSelection')
       return
     }
     selecting.value = true
