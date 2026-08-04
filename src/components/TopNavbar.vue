@@ -3,7 +3,7 @@ import ThemeToggle from './ThemeToggle.vue'
 import type { Theme } from '../composables/useTheme'
 
 defineProps<{ canUndo: boolean; canRedo: boolean; theme: Theme }>()
-defineEmits<{ new: []; open: []; save: []; print: []; undo: []; redo: []; theme: []; menu: [] }>()
+defineEmits<{ new: []; open: []; save: []; print: []; undo: []; redo: []; theme: []; menu: []; guide: [] }>()
 </script>
 
 <template>
@@ -21,6 +21,7 @@ defineEmits<{ new: []; open: []; save: []; print: []; undo: []; redo: []; theme:
     <div class="navbar-end gap-1">
       <button class="btn btn-ghost btn-square btn-sm" type="button" :disabled="!canUndo" aria-label="Undo" @click="$emit('undo')"><span class="mdi mdi-undo text-lg" aria-hidden="true"></span></button>
       <button class="btn btn-ghost btn-square btn-sm" type="button" :disabled="!canRedo" aria-label="Redo" @click="$emit('redo')"><span class="mdi mdi-redo text-lg" aria-hidden="true"></span></button>
+      <button class="btn btn-ghost btn-square btn-sm" type="button" aria-label="Open user guide" title="User guide" @click="$emit('guide')"><span class="mdi mdi-help-circle-outline text-lg" aria-hidden="true"></span></button>
       <div class="dropdown dropdown-end lg:hidden">
         <button tabindex="0" class="btn btn-ghost btn-square btn-sm" type="button" aria-label="More project actions"><span class="mdi mdi-dots-vertical text-lg" aria-hidden="true"></span></button>
         <ul tabindex="0" class="menu dropdown-content z-50 mt-2 w-44 rounded-box border border-base-300 bg-base-100 p-2">

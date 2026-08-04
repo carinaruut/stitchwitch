@@ -9,6 +9,7 @@ import NewProjectModal from './components/NewProjectModal.vue'
 import ConfirmModal from './components/ConfirmModal.vue'
 import NotificationToast from './components/NotificationToast.vue'
 import PrintView from './components/PrintView.vue'
+import UserGuideModal from './components/UserGuideModal.vue'
 import { usePattern } from './composables/usePattern'
 import { useTheme } from './composables/useTheme'
 import { useNotifications } from './composables/useNotifications'
@@ -23,6 +24,7 @@ const drawerOpen = ref(false)
 const newModalOpen = ref(false)
 const clearModalOpen = ref(false)
 const importModalOpen = ref(false)
+const guideOpen = ref(false)
 const fileInput = ref<HTMLInputElement | null>(null)
 const pendingImport = ref<PatternProject | null>(null)
 const placingSelection = ref(false)
@@ -229,6 +231,7 @@ onBeforeUnmount(() => {
       @redo="pattern.redo"
       @theme="toggleTheme"
       @menu="drawerOpen = true"
+      @guide="guideOpen = true"
     />
     <input ref="fileInput" class="hidden" type="file" accept=".stitch-pattern,application/json" @change="selectFile" />
 
@@ -357,6 +360,7 @@ onBeforeUnmount(() => {
   </div>
 
   <NewProjectModal :open="newModalOpen" @create="createProject" @cancel="newModalOpen = false" />
+  <UserGuideModal :open="guideOpen" @close="guideOpen = false" />
   <ConfirmModal
     :open="clearModalOpen"
     title="Clear the grid?"
