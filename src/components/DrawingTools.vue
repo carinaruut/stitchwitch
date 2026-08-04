@@ -1,8 +1,26 @@
 <script setup lang="ts">
 import type { DrawingTool } from '../types/pattern'
 
-defineProps<{ tool: DrawingTool; canCopy: boolean; canPaste: boolean; placingSelection: boolean }>()
-defineEmits<{ select: [tool: DrawingTool]; clear: []; copy: []; paste: []; moveSelection: []; cancelPlacement: [] }>()
+defineProps<{
+  tool: DrawingTool
+  canCopy: boolean
+  canPaste: boolean
+  placingSelection: boolean
+  mirrorHorizontal: boolean
+  mirrorVertical: boolean
+}>()
+defineEmits<{
+  select: [tool: DrawingTool]
+  clear: []
+  copy: []
+  paste: []
+  moveSelection: []
+  mirrorHorizontal: []
+  mirrorVertical: []
+  toggleMirrorHorizontal: []
+  toggleMirrorVertical: []
+  cancelPlacement: []
+}>()
 
 const tools: Array<{ value: DrawingTool; icon: string; label: string }> = [
   { value: 'pencil', icon: 'mdi-pencil', label: 'Pencil' },
@@ -33,6 +51,14 @@ const tools: Array<{ value: DrawingTool; icon: string; label: string }> = [
           <button class="btn btn-sm btn-ghost join-item" type="button" aria-label="Clear grid" @click="$emit('clear')"><span class="mdi mdi-delete-sweep-outline text-lg" aria-hidden="true"></span></button>
         </div>
       </div>
+      <div class="join" aria-label="Live canvas mirror lines">
+        <div class="tooltip" data-tip="Vertical mirror line: draw left and right">
+          <button class="btn btn-sm join-item" :class="mirrorVertical ? 'btn-secondary' : 'btn-ghost'" type="button" aria-label="Toggle vertical mirror line" :aria-pressed="mirrorVertical" @click="$emit('toggleMirrorVertical')"><span class="mdi mdi-flip-horizontal text-lg" aria-hidden="true"></span><span class="hidden xl:inline">Vertical</span></button>
+        </div>
+        <div class="tooltip" data-tip="Horizontal mirror line: draw top and bottom">
+          <button class="btn btn-sm join-item" :class="mirrorHorizontal ? 'btn-secondary' : 'btn-ghost'" type="button" aria-label="Toggle horizontal mirror line" :aria-pressed="mirrorHorizontal" @click="$emit('toggleMirrorHorizontal')"><span class="mdi mdi-flip-vertical text-lg" aria-hidden="true"></span><span class="hidden xl:inline">Horizontal</span></button>
+        </div>
+      </div>
       <div v-if="tool === 'select'" class="flex items-center gap-1 border-l border-base-300 pl-3">
         <template v-if="placingSelection">
           <span class="text-xs font-medium text-primary">Choose destination</span>
@@ -42,6 +68,12 @@ const tools: Array<{ value: DrawingTool; icon: string; label: string }> = [
           <button class="btn btn-ghost btn-xs" type="button" :disabled="!canCopy" @click="$emit('moveSelection')"><span class="mdi mdi-cursor-move" aria-hidden="true"></span>Move</button>
           <button class="btn btn-ghost btn-xs" type="button" :disabled="!canCopy" @click="$emit('copy')"><span class="mdi mdi-content-copy" aria-hidden="true"></span>Copy</button>
           <button class="btn btn-ghost btn-xs" type="button" :disabled="!canPaste" @click="$emit('paste')"><span class="mdi mdi-content-paste" aria-hidden="true"></span>Paste</button>
+          <div class="tooltip" data-tip="Flip horizontally">
+            <button class="btn btn-ghost btn-xs btn-square" type="button" :disabled="!canCopy" aria-label="Flip selection horizontally" @click="$emit('mirrorHorizontal')"><span class="mdi mdi-flip-horizontal" aria-hidden="true"></span></button>
+          </div>
+          <div class="tooltip" data-tip="Flip vertically">
+            <button class="btn btn-ghost btn-xs btn-square" type="button" :disabled="!canCopy" aria-label="Flip selection vertically" @click="$emit('mirrorVertical')"><span class="mdi mdi-flip-vertical" aria-hidden="true"></span></button>
+          </div>
         </template>
       </div>
       <span class="badge badge-sm badge-outline capitalize">{{ tool === 'move' ? 'pan' : tool }}</span>

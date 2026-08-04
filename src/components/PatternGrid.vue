@@ -20,6 +20,8 @@ const props = defineProps<{
   tool: DrawingTool
   selection: GridSelection | null
   placingSelection: boolean
+  mirrorHorizontal: boolean
+  mirrorVertical: boolean
 }>()
 const emit = defineEmits<{
   strokeStart: []
@@ -60,6 +62,26 @@ function containsSelection(row: number, column: number) {
     && row <= props.selection.bottom
     && column >= props.selection.left
     && column <= props.selection.right
+}
+
+function verticalMirrorLeft(column: number) {
+  return props.mirrorVertical && props.sourceColumns % 2 === 1 && column === Math.floor(props.sourceColumns / 2)
+}
+
+function verticalMirrorRight(column: number) {
+  if (!props.mirrorVertical) return false
+  const center = Math.floor(props.sourceColumns / 2)
+  return column === (props.sourceColumns % 2 === 0 ? center - 1 : center)
+}
+
+function horizontalMirrorTop(row: number) {
+  return props.mirrorHorizontal && props.sourceRows % 2 === 1 && row === Math.floor(props.sourceRows / 2)
+}
+
+function horizontalMirrorBottom(row: number) {
+  if (!props.mirrorHorizontal) return false
+  const center = Math.floor(props.sourceRows / 2)
+  return row === (props.sourceRows % 2 === 0 ? center - 1 : center)
 }
 
 function startPan(event: PointerEvent) {
@@ -284,6 +306,10 @@ onBeforeUnmount(() => {
             'selection-border-left': visibleSelection && columnHeaders[columnIndex] === visibleSelection.left && rowHeaders[rowIndex] >= visibleSelection.top && rowHeaders[rowIndex] <= visibleSelection.bottom,
             'selection-border-right': visibleSelection && columnHeaders[columnIndex] === visibleSelection.right && rowHeaders[rowIndex] >= visibleSelection.top && rowHeaders[rowIndex] <= visibleSelection.bottom,
             'cursor-move': tool === 'select' && !placingSelection && containsSelection(rowHeaders[rowIndex], columnHeaders[columnIndex]),
+            'mirror-axis-left': verticalMirrorLeft(columnHeaders[columnIndex]),
+            'mirror-axis-right': verticalMirrorRight(columnHeaders[columnIndex]),
+            'mirror-axis-top': horizontalMirrorTop(rowHeaders[rowIndex]),
+            'mirror-axis-bottom': horizontalMirrorBottom(rowHeaders[rowIndex]),
             'section-column-end': (columnHeaders[columnIndex] + 1) % 5 === 0 && columnIndex < row.length - 1,
             'section-row-end': (rowHeaders[rowIndex] + 1) % 5 === 0 && rowIndex < cells.length - 1,
             'row-action-selected': rowMenu?.row === rowHeaders[rowIndex],

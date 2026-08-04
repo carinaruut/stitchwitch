@@ -25,6 +25,8 @@ export function usePattern() {
   const selectedColumn = ref(0)
   const selection = ref<GridSelection | null>(null)
   const clipboard = ref<PatternGrid | null>(null)
+  const mirrorHorizontal = ref(false)
+  const mirrorVertical = ref(false)
   const savedColor = normalizeColor(localStorage.getItem('stitch-selected-color') ?? '')
   const selectedColor = ref(savedColor ?? '#7c3aed')
   const savedRecent = localStorage.getItem('stitch-recent-colors')
@@ -149,6 +151,17 @@ export function usePattern() {
     return true
   }
 
+  function mirrorSelection(direction: 'horizontal' | 'vertical'): boolean {
+    if (!selection.value) return false
+    const source = selection.value
+    const rendered = renderGrid(project.value.cells, 1, 1, project.value.repeatBoxes).cells
+    let data = rendered.slice(source.top, source.bottom + 1).map((cells) => cells.slice(source.left, source.right + 1))
+    data = direction === 'horizontal' ? data.map((row) => [...row].reverse()) : [...data].reverse()
+    beginGridChange()
+    project.value.cells = writeClipboard(project.value.cells, data, source.top, source.left)
+    return true
+  }
+
   function adjustBoxesForInsert(axis: 'row' | 'column', index: number, count: number, excludedIds: string[] = []) {
     for (const box of project.value.repeatBoxes) {
       if (excludedIds.includes(box.id)) continue
@@ -235,7 +248,16 @@ export function usePattern() {
       return
     }
     const color = tool.value === 'eraser' ? project.value.backgroundColor : selectedColor.value
-    if (project.value.cells[row][column] !== color) project.value.cells[row][column] = color
+    const rows = project.value.cells.length
+    const columns = project.value.cells[0].length
+    const targets: Array<[number, number]> = [[row, column]]
+    if (mirrorVertical.value) targets.push([row, columns - 1 - column])
+    if (mirrorHorizontal.value) targets.push([rows - 1 - row, column])
+    if (mirrorVertical.value && mirrorHorizontal.value) targets.push([rows - 1 - row, columns - 1 - column])
+    for (const [targetRow, targetColumn] of targets) {
+      const [sourceRow, sourceColumn] = sourceCellFor(project.value.repeatBoxes, targetRow, targetColumn)
+      if (project.value.cells[sourceRow][sourceColumn] !== color) project.value.cells[sourceRow][sourceColumn] = color
+    }
   }
 
   function commitColor() {
@@ -442,6 +464,8 @@ export function usePattern() {
     selectedRow,
     selectedColumn,
     selection,
+    mirrorHorizontal,
+    mirrorVertical,
     selectedColor,
     recentColors,
     rowCount: computed(() => project.value.cells.length),
@@ -470,6 +494,7 @@ export function usePattern() {
     copySelection,
     pasteSelection,
     moveSelectionTo,
+    mirrorSelection,
     hasSelection: computed(() => selection.value !== null),
     hasClipboard: computed(() => clipboard.value !== null),
     saveRepeatBox,

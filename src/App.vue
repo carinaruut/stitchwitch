@@ -150,6 +150,15 @@ function startMoveSelection() {
   if (pattern.hasSelection.value) placingSelection.value = true
 }
 
+function mirrorSelection(direction: 'horizontal' | 'vertical') {
+  if (pattern.mirrorSelection(direction)) notify(`Selection flipped ${direction === 'horizontal' ? 'horizontally' : 'vertically'}.`, 'success')
+}
+
+function toggleMirror(direction: 'horizontal' | 'vertical') {
+  if (direction === 'horizontal') pattern.mirrorHorizontal.value = !pattern.mirrorHorizontal.value
+  else pattern.mirrorVertical.value = !pattern.mirrorVertical.value
+}
+
 function placeSelection(row: number, column: number) {
   if (!placingSelection.value) return
   if (pattern.moveSelectionTo(row, column)) notify('Selection moved.', 'success')
@@ -222,10 +231,16 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleSelectionShort
                 :can-copy="pattern.hasSelection.value"
                 :can-paste="pattern.hasClipboard.value && pattern.hasSelection.value"
                 :placing-selection="placingSelection"
+                :mirror-horizontal="pattern.mirrorHorizontal.value"
+                :mirror-vertical="pattern.mirrorVertical.value"
                 @select="selectTool"
                 @copy="copySelection"
                 @paste="pasteSelection"
                 @move-selection="startMoveSelection"
+                @mirror-horizontal="mirrorSelection('horizontal')"
+                @mirror-vertical="mirrorSelection('vertical')"
+                @toggle-mirror-horizontal="toggleMirror('horizontal')"
+                @toggle-mirror-vertical="toggleMirror('vertical')"
                 @cancel-placement="placingSelection = false"
                 @clear="requestClear"
               />
@@ -246,6 +261,8 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleSelectionShort
                 :tool="pattern.tool.value"
                 :selection="pattern.selection.value"
                 :placing-selection="placingSelection"
+                :mirror-horizontal="pattern.mirrorHorizontal.value"
+                :mirror-vertical="pattern.mirrorVertical.value"
                 @stroke-start="beginStroke"
                 @paint="pattern.paintCell"
                 @stroke-end="endStroke"

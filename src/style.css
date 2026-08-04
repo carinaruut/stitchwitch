@@ -70,6 +70,22 @@ body {
   border-bottom: 2px solid color-mix(in oklab, var(--color-primary) 70%, transparent);
 }
 
+.mirror-axis-left {
+  border-left: 3px solid var(--color-secondary) !important;
+}
+
+.mirror-axis-right {
+  border-right: 3px solid var(--color-secondary) !important;
+}
+
+.mirror-axis-top {
+  border-top: 3px solid var(--color-secondary) !important;
+}
+
+.mirror-axis-bottom {
+  border-bottom: 3px solid var(--color-secondary) !important;
+}
+
 .row-action-selected {
   border-bottom: 1px dashed color-mix(in oklab, currentColor 70%, transparent);
   border-top: 1px dashed color-mix(in oklab, currentColor 70%, transparent);
