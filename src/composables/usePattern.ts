@@ -2,7 +2,10 @@ import { computed, ref, watch } from 'vue'
 import type { DrawingTool, GridSelection, PatternGrid, PatternProject, RepeatBox, RepeatBoxInput } from '../types/pattern'
 import { addColumn, addRow, boxesOverlap, cloneGrid, createGrid, ensureGridSize, removeColumn, removeRow, renderGrid, sourceCellFor, synchronizeRepeatBox } from '../utils/grid'
 import { normalizeColor } from '../utils/colors'
+import { asPatternProject } from '../utils/validation'
 import { useHistory } from './useHistory'
+
+const AUTOSAVE_KEY = 'stitch-project-autosave'
 
 const DEFAULT_PROJECT: PatternProject = {
   format: 'stitch-pattern',
@@ -19,7 +22,27 @@ const DEFAULT_PROJECT: PatternProject = {
 }
 
 export function usePattern() {
-  const project = ref<PatternProject>({ ...DEFAULT_PROJECT, repeatBoxes: [], cells: cloneGrid(DEFAULT_PROJECT.cells) })
+  let initialProject = DEFAULT_PROJECT
+  let recovered = false
+  try {
+    const savedProject = localStorage.getItem(AUTOSAVE_KEY)
+    if (savedProject) {
+      initialProject = asPatternProject(JSON.parse(savedProject))
+      recovered = true
+    }
+  } catch {
+    try {
+      localStorage.removeItem(AUTOSAVE_KEY)
+    } catch {
+      // Storage can be unavailable in restricted browser contexts.
+    }
+  }
+
+  const project = ref<PatternProject>({
+    ...initialProject,
+    repeatBoxes: initialProject.repeatBoxes.map((box) => ({ ...box })),
+    cells: cloneGrid(initialProject.cells),
+  })
   const tool = ref<DrawingTool>('pencil')
   const selectedRow = ref(0)
   const selectedColumn = ref(0)
@@ -42,6 +65,10 @@ export function usePattern() {
       : [],
   )
   const history = useHistory()
+  const restoredAutosave = ref(recovered)
+  const autosaveStatus = ref<'saving' | 'saved' | 'error'>('saving')
+  const lastSavedAt = ref<number | null>(recovered ? Date.now() : null)
+  let autosaveTimer: ReturnType<typeof setTimeout> | null = null
 
   watch(
     () => project.value.cells,
@@ -51,6 +78,32 @@ export function usePattern() {
     },
     { immediate: true },
   )
+
+  function flushAutosave() {
+    if (autosaveTimer) clearTimeout(autosaveTimer)
+    autosaveTimer = null
+    try {
+      const snapshot = {
+        ...project.value,
+        rows: project.value.cells.length,
+        columns: project.value.cells[0].length,
+      }
+      localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(snapshot))
+      autosaveStatus.value = 'saved'
+      lastSavedAt.value = Date.now()
+    } catch {
+      autosaveStatus.value = 'error'
+    }
+  }
+
+  function scheduleAutosave() {
+    autosaveStatus.value = 'saving'
+    if (autosaveTimer) clearTimeout(autosaveTimer)
+    autosaveTimer = setTimeout(flushAutosave, 300)
+  }
+
+  watch(project, scheduleAutosave, { deep: true })
+  scheduleAutosave()
 
   function persistColors() {
     localStorage.setItem('stitch-selected-color', selectedColor.value)
@@ -507,6 +560,9 @@ export function usePattern() {
     mirrorVertical,
     selectedColor,
     recentColors,
+    restoredAutosave,
+    autosaveStatus,
+    lastSavedAt,
     rowCount: computed(() => project.value.cells.length),
     columnCount: computed(() => project.value.cells[0].length),
     hasColoredCells: computed(() => project.value.cells.some((row) => row.some((color) => color !== project.value.backgroundColor))),
@@ -528,6 +584,7 @@ export function usePattern() {
     eraseColumn,
     deleteSelectedColumn,
     clearGrid,
+    flushAutosave,
     setSelection,
     clearSelection: () => { selection.value = null },
     copySelection,

@@ -81,7 +81,7 @@ defineEmits<{
       <input type="checkbox" />
       <div class="collapse-title text-sm font-medium">About local storage</div>
       <div class="collapse-content text-sm text-base-content/70">
-        <p>Your theme and recent colors stay in this browser. Browser data can be deleted, so download project files for reliable saving.</p>
+        <p>Your current pattern, theme, and recent colors are saved in this browser. Browser data can still be deleted, so download project files for a durable backup.</p>
       </div>
     </div>
   </div>

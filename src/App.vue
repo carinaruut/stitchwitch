@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import TopNavbar from './components/TopNavbar.vue'
 import SettingsPanel from './components/SettingsPanel.vue'
 import DrawingTools from './components/DrawingTools.vue'
@@ -189,8 +189,30 @@ function handleSelectionShortcuts(event: KeyboardEvent) {
   }
 }
 
-onMounted(() => window.addEventListener('keydown', handleSelectionShortcuts))
-onBeforeUnmount(() => window.removeEventListener('keydown', handleSelectionShortcuts))
+function flushHiddenProject() {
+  if (document.visibilityState === 'hidden') pattern.flushAutosave()
+}
+
+let autosaveErrorNotified = false
+watch(pattern.autosaveStatus, (status) => {
+  if (status === 'error' && !autosaveErrorNotified) {
+    autosaveErrorNotified = true
+    notify('Local backup failed. Download the project to avoid losing changes.', 'error', 7000)
+  }
+})
+
+onMounted(() => {
+  window.addEventListener('keydown', handleSelectionShortcuts)
+  window.addEventListener('pagehide', pattern.flushAutosave)
+  document.addEventListener('visibilitychange', flushHiddenProject)
+  if (pattern.restoredAutosave.value) notify('Recovered your locally saved pattern.', 'success')
+})
+onBeforeUnmount(() => {
+  pattern.flushAutosave()
+  window.removeEventListener('keydown', handleSelectionShortcuts)
+  window.removeEventListener('pagehide', pattern.flushAutosave)
+  document.removeEventListener('visibilitychange', flushHiddenProject)
+})
 </script>
 
 <template>
@@ -221,7 +243,11 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleSelectionShort
                   <h1 class="text-xl font-bold">{{ pattern.project.value.name }}</h1>
                   <p class="text-sm text-base-content/65">Edit the complete pattern. Repeated copies update their source cells.</p>
                 </div>
-                <div class="flex gap-2">
+                <div class="flex flex-wrap items-center justify-end gap-2">
+                  <span class="badge badge-sm" :class="pattern.autosaveStatus.value === 'error' ? 'badge-error' : pattern.autosaveStatus.value === 'saving' ? 'badge-ghost' : 'badge-success badge-outline'">
+                    <span class="mdi" :class="pattern.autosaveStatus.value === 'error' ? 'mdi-alert-circle-outline' : pattern.autosaveStatus.value === 'saving' ? 'mdi-loading mdi-spin' : 'mdi-content-save-check-outline'" aria-hidden="true"></span>
+                    {{ pattern.autosaveStatus.value === 'error' ? 'Backup failed' : pattern.autosaveStatus.value === 'saving' ? 'Saving locally' : 'Saved locally' }}
+                  </span>
                   <span class="badge badge-outline">{{ renderedPattern.cells[0].length }} columns shown</span>
                   <span class="badge badge-outline">{{ renderedPattern.cells.length }} rows shown</span>
                 </div>
