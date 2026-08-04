@@ -1,29 +1,38 @@
 import { computed, ref } from 'vue'
-import type { PatternGrid } from '../types/pattern'
+import type { PatternGrid, RepeatBox } from '../types/pattern'
 import { cloneGrid } from '../utils/grid'
 
-export function useHistory() {
-  const undoStack = ref<PatternGrid[]>([])
-  const redoStack = ref<PatternGrid[]>([])
+export interface PatternSnapshot {
+  cells: PatternGrid
+  repeatBoxes: RepeatBox[]
+}
 
-  function record(grid: PatternGrid) {
-    undoStack.value.push(cloneGrid(grid))
+function cloneSnapshot(snapshot: PatternSnapshot): PatternSnapshot {
+  return { cells: cloneGrid(snapshot.cells), repeatBoxes: snapshot.repeatBoxes.map((box) => ({ ...box })) }
+}
+
+export function useHistory() {
+  const undoStack = ref<PatternSnapshot[]>([])
+  const redoStack = ref<PatternSnapshot[]>([])
+
+  function record(snapshot: PatternSnapshot) {
+    undoStack.value.push(cloneSnapshot(snapshot))
     if (undoStack.value.length > 100) undoStack.value.shift()
     redoStack.value = []
   }
 
-  function undo(current: PatternGrid): PatternGrid | null {
+  function undo(current: PatternSnapshot): PatternSnapshot | null {
     const previous = undoStack.value.pop()
     if (!previous) return null
-    redoStack.value.push(cloneGrid(current))
-    return cloneGrid(previous)
+    redoStack.value.push(cloneSnapshot(current))
+    return cloneSnapshot(previous)
   }
 
-  function redo(current: PatternGrid): PatternGrid | null {
+  function redo(current: PatternSnapshot): PatternSnapshot | null {
     const next = redoStack.value.pop()
     if (!next) return null
-    undoStack.value.push(cloneGrid(current))
-    return cloneGrid(next)
+    undoStack.value.push(cloneSnapshot(current))
+    return cloneSnapshot(next)
   }
 
   function reset() {

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import TopNavbar from './components/TopNavbar.vue'
 import SettingsPanel from './components/SettingsPanel.vue'
 import DrawingTools from './components/DrawingTools.vue'
@@ -13,7 +13,8 @@ import { usePattern } from './composables/usePattern'
 import { useTheme } from './composables/useTheme'
 import { useNotifications } from './composables/useNotifications'
 import { downloadProject, readProjectFile } from './composables/useProjectFiles'
-import type { PatternProject } from './types/pattern'
+import type { PatternProject, RepeatBoxInput } from './types/pattern'
+import { renderGrid } from './utils/grid'
 
 const pattern = usePattern()
 const { theme, toggleTheme } = useTheme()
@@ -24,8 +25,14 @@ const clearModalOpen = ref(false)
 const importModalOpen = ref(false)
 const fileInput = ref<HTMLInputElement | null>(null)
 const pendingImport = ref<PatternProject | null>(null)
+const renderedPattern = computed(() => renderGrid(
+  pattern.project.value.cells,
+  pattern.project.value.horizontalRepeats,
+  pattern.project.value.verticalRepeats,
+  pattern.project.value.repeatBoxes,
+))
 
-function createProject(project: Omit<PatternProject, 'format' | 'version' | 'cells'>) {
+function createProject(project: Omit<PatternProject, 'format' | 'version' | 'cells' | 'repeatBoxes'>) {
   pattern.createProject(project)
   newModalOpen.value = false
   drawerOpen.value = false
@@ -117,6 +124,12 @@ function handleColumnAction(action: 'before' | 'after' | 'multiple' | 'delete' |
 function printPattern() {
   window.print()
 }
+
+function saveRepeatBox(input: RepeatBoxInput, id: string | null) {
+  const error = pattern.saveRepeatBox(input, id)
+  if (error) notify(error, 'error')
+  else notify(id ? 'Repeat box updated.' : 'Repeat box added.', 'success')
+}
 </script>
 
 <template>
@@ -145,16 +158,25 @@ function printPattern() {
               <div class="flex flex-wrap items-center justify-between gap-2">
                 <div>
                   <h1 class="text-xl font-bold">{{ pattern.project.value.name }}</h1>
-                  <p class="text-sm text-base-content/65">Edit one repeat section. Select a cell to choose its row and column.</p>
+                  <p class="text-sm text-base-content/65">Edit the complete pattern. Repeated copies update their source cells.</p>
                 </div>
                 <div class="flex gap-2">
-                  <span class="badge badge-outline">{{ pattern.columnCount.value }} columns</span>
-                  <span class="badge badge-outline">{{ pattern.rowCount.value }} rows</span>
+                  <span class="badge badge-outline">{{ renderedPattern.cells[0].length }} columns shown</span>
+                  <span class="badge badge-outline">{{ renderedPattern.cells.length }} rows shown</span>
                 </div>
               </div>
               <DrawingTools :tool="pattern.tool.value" @select="pattern.tool.value = $event" @clear="requestClear" />
               <PatternGrid
-                :cells="pattern.project.value.cells"
+                :cells="renderedPattern.cells"
+                :cell-source-rows="renderedPattern.sourceRows"
+                :cell-source-columns="renderedPattern.sourceColumns"
+                :row-headers="renderedPattern.rowHeaders"
+                :column-headers="renderedPattern.columnHeaders"
+                :row-copies="renderedPattern.rowCopies"
+                :column-copies="renderedPattern.columnCopies"
+                :repeat-flags="renderedPattern.repeatFlags"
+                :source-rows="pattern.rowCount.value"
+                :source-columns="pattern.columnCount.value"
                 :cell-size="pattern.project.value.cellSize"
                 :selected-row="pattern.selectedRow.value"
                 :selected-column="pattern.selectedColumn.value"
@@ -171,9 +193,7 @@ function printPattern() {
           </section>
 
           <PatternPreview
-            :cells="pattern.project.value.cells"
-            :horizontal="pattern.project.value.horizontalRepeats"
-            :vertical="pattern.project.value.verticalRepeats"
+            :cells="renderedPattern.cells"
           />
 
           <div class="flex justify-end">
@@ -195,6 +215,7 @@ function printPattern() {
             :cell-size="pattern.project.value.cellSize"
             :horizontal="pattern.project.value.horizontalRepeats"
             :vertical="pattern.project.value.verticalRepeats"
+            :repeat-boxes="pattern.project.value.repeatBoxes"
             :selected-row="pattern.selectedRow.value"
             :row-count="pattern.rowCount.value"
             :selected-column="pattern.selectedColumn.value"
@@ -204,6 +225,9 @@ function printPattern() {
             @cell-size="pattern.project.value.cellSize = $event"
             @horizontal="pattern.project.value.horizontalRepeats = $event"
             @vertical="pattern.project.value.verticalRepeats = $event"
+            @repeat-save="saveRepeatBox"
+            @repeat-toggle="pattern.toggleRepeatBox"
+            @repeat-remove="pattern.removeRepeatBox"
             @row-before="pattern.insertRow(pattern.selectedRow.value)"
             @row-after="pattern.insertRow(pattern.selectedRow.value + 1)"
             @row-beginning="pattern.insertRow(0)"

@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { PatternProject } from '../types/pattern'
-import { findUsedColors, repeatGrid } from '../utils/grid'
+import { findUsedColors, renderGrid } from '../utils/grid'
 
 const props = defineProps<{ project: PatternProject }>()
-const repeated = computed(() => repeatGrid(props.project.cells, props.project.horizontalRepeats, props.project.verticalRepeats))
-const columns = computed(() => props.project.columns * props.project.horizontalRepeats)
-const usedColors = computed(() => findUsedColors(props.project.cells))
+const repeated = computed(() => renderGrid(props.project.cells, props.project.horizontalRepeats, props.project.verticalRepeats, props.project.repeatBoxes).cells)
+const columns = computed(() => repeated.value[0].length)
+const usedColors = computed(() => findUsedColors(repeated.value))
 </script>
 
 <template>

@@ -4,6 +4,7 @@ import GridSettings from './GridSettings.vue'
 import RepeatSettings from './RepeatSettings.vue'
 import RowControls from './RowControls.vue'
 import ColumnControls from './ColumnControls.vue'
+import type { RepeatBox, RepeatBoxInput } from '../types/pattern'
 
 defineProps<{
   color: string
@@ -11,6 +12,7 @@ defineProps<{
   cellSize: number
   horizontal: number
   vertical: number
+  repeatBoxes: RepeatBox[]
   selectedRow: number
   rowCount: number
   selectedColumn: number
@@ -23,6 +25,9 @@ defineEmits<{
   cellSize: [value: number]
   horizontal: [value: number]
   vertical: [value: number]
+  repeatSave: [input: RepeatBoxInput, id: string | null]
+  repeatToggle: [id: string, enabled: boolean]
+  repeatRemove: [id: string]
   rowBefore: []
   rowAfter: []
   rowBeginning: []
@@ -40,7 +45,20 @@ defineEmits<{
   <div class="space-y-3">
     <ColorPicker :color="color" :recent-colors="recentColors" @select="$emit('color', $event)" @eyedropper="$emit('eyedropper')" />
     <GridSettings :cell-size="cellSize" @cell-size="$emit('cellSize', $event)" />
-    <RepeatSettings :horizontal="horizontal" :vertical="vertical" @horizontal="$emit('horizontal', $event)" @vertical="$emit('vertical', $event)" />
+    <RepeatSettings
+      :horizontal="horizontal"
+      :vertical="vertical"
+      :boxes="repeatBoxes"
+      :selected-row="selectedRow"
+      :row-count="rowCount"
+      :selected-column="selectedColumn"
+      :column-count="columnCount"
+      @horizontal="$emit('horizontal', $event)"
+      @vertical="$emit('vertical', $event)"
+      @save="(input, id) => $emit('repeatSave', input, id)"
+      @toggle="(id, enabled) => $emit('repeatToggle', id, enabled)"
+      @remove="$emit('repeatRemove', $event)"
+    />
     <RowControls
       :selected="selectedRow"
       :count="rowCount"

@@ -1,8 +1,24 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 import type { DrawingTool, PatternGrid } from '../types/pattern'
+import { REPEAT_BOTTOM, REPEAT_COPY, REPEAT_LEFT, REPEAT_RIGHT, REPEAT_TOP } from '../utils/grid'
 
-const props = defineProps<{ cells: PatternGrid; cellSize: number; selectedRow: number; selectedColumn: number; tool: DrawingTool }>()
+const props = defineProps<{
+  cells: PatternGrid
+  cellSourceRows: number[][]
+  cellSourceColumns: number[][]
+  rowHeaders: number[]
+  columnHeaders: number[]
+  rowCopies: number[]
+  columnCopies: number[]
+  repeatFlags: number[][]
+  sourceRows: number
+  sourceColumns: number
+  cellSize: number
+  selectedRow: number
+  selectedColumn: number
+  tool: DrawingTool
+}>()
 const emit = defineEmits<{
   strokeStart: []
   paint: [row: number, column: number]
@@ -164,48 +180,53 @@ onBeforeUnmount(() => {
         v-for="column in cells[0].length"
         :key="`column-${column}`"
         class="sticky top-0 z-10 flex items-center justify-center border-b border-base-300/70 bg-base-100 font-mono text-[10px] font-medium tabular-nums text-base-content/55 hover:bg-base-200"
-        :class="{ 'section-column-end': column % 5 === 0 && column < cells[0].length, 'bg-primary/10! font-bold text-primary!': selectedColumn === column - 1 }"
+        :class="{ 'section-column-end': (columnHeaders[column - 1] + 1) % 5 === 0 && column < cells[0].length, 'bg-primary/10! font-bold text-primary!': selectedColumn === columnHeaders[column - 1], 'bg-secondary/10!': columnCopies[column - 1] > 0 }"
         role="columnheader"
         tabindex="0"
-        :aria-label="`Column ${column}. Open column actions.`"
+        :aria-label="`Column ${columnHeaders[column - 1] + 1}${columnCopies[column - 1] > 0 ? ', repeated copy' : ''}. Open column actions.`"
         @pointerdown="tool === 'move' && startPan($event)"
-        @click="openColumnMenu(column - 1, $event)"
-        @contextmenu="openColumnMenu(column - 1, $event)"
-        @keydown.enter.prevent="openColumnMenu(column - 1, $event)"
-        @keydown.space.prevent="openColumnMenu(column - 1, $event)"
-      >{{ column }}</span>
+        @click="openColumnMenu(columnHeaders[column - 1], $event)"
+        @contextmenu="openColumnMenu(columnHeaders[column - 1], $event)"
+        @keydown.enter.prevent="openColumnMenu(columnHeaders[column - 1], $event)"
+        @keydown.space.prevent="openColumnMenu(columnHeaders[column - 1], $event)"
+      >{{ columnHeaders[column - 1] + 1 }}</span>
       <template v-for="(row, rowIndex) in cells" :key="rowIndex">
         <span
           class="sticky left-0 z-10 flex items-center justify-center border-r border-base-300/70 bg-base-100 font-mono text-[10px] font-medium tabular-nums text-base-content/55 hover:bg-base-200"
-          :class="{ 'section-row-end': (rowIndex + 1) % 5 === 0 && rowIndex < cells.length - 1, 'bg-primary/10! font-bold text-primary!': selectedRow === rowIndex }"
+          :class="{ 'section-row-end': (rowHeaders[rowIndex] + 1) % 5 === 0 && rowIndex < cells.length - 1, 'bg-primary/10! font-bold text-primary!': selectedRow === rowHeaders[rowIndex], 'bg-secondary/10!': rowCopies[rowIndex] > 0 }"
           role="rowheader"
           tabindex="0"
-          :aria-label="`Row ${rowIndex + 1}. Open row actions.`"
+          :aria-label="`Row ${rowHeaders[rowIndex] + 1}${rowCopies[rowIndex] > 0 ? ', repeated copy' : ''}. Open row actions.`"
           @pointerdown="tool === 'move' && startPan($event)"
-          @click="openRowMenu(rowIndex, $event)"
-          @contextmenu="openRowMenu(rowIndex, $event)"
-          @keydown.enter.prevent="openRowMenu(rowIndex, $event)"
-          @keydown.space.prevent="openRowMenu(rowIndex, $event)"
-        >{{ rowIndex + 1 }}</span>
+          @click="openRowMenu(rowHeaders[rowIndex], $event)"
+          @contextmenu="openRowMenu(rowHeaders[rowIndex], $event)"
+          @keydown.enter.prevent="openRowMenu(rowHeaders[rowIndex], $event)"
+          @keydown.space.prevent="openRowMenu(rowHeaders[rowIndex], $event)"
+        >{{ rowHeaders[rowIndex] + 1 }}</span>
         <div
           v-for="(color, columnIndex) in row"
           :key="columnIndex"
           class="pattern-cell"
           :class="{
-            'outline-2 outline-offset-[-2px] outline-neutral': selectedRow === rowIndex && selectedColumn === columnIndex,
-            'section-column-end': (columnIndex + 1) % 5 === 0 && columnIndex < row.length - 1,
-            'section-row-end': (rowIndex + 1) % 5 === 0 && rowIndex < cells.length - 1,
-            'row-action-selected': rowMenu?.row === rowIndex,
-            'column-action-selected': columnMenu?.column === columnIndex,
+            'outline-2 outline-offset-[-2px] outline-neutral': selectedRow === cellSourceRows[rowIndex][columnIndex] && selectedColumn === cellSourceColumns[rowIndex][columnIndex],
+            'section-column-end': (columnHeaders[columnIndex] + 1) % 5 === 0 && columnIndex < row.length - 1,
+            'section-row-end': (rowHeaders[rowIndex] + 1) % 5 === 0 && rowIndex < cells.length - 1,
+            'row-action-selected': rowMenu?.row === rowHeaders[rowIndex],
+            'column-action-selected': columnMenu?.column === columnHeaders[columnIndex],
+            'repeat-copy-cell': (repeatFlags[rowIndex][columnIndex] & REPEAT_COPY) !== 0,
+            'repeat-border-left': (repeatFlags[rowIndex][columnIndex] & REPEAT_LEFT) !== 0,
+            'repeat-border-right': (repeatFlags[rowIndex][columnIndex] & REPEAT_RIGHT) !== 0,
+            'repeat-border-top': (repeatFlags[rowIndex][columnIndex] & REPEAT_TOP) !== 0,
+            'repeat-border-bottom': (repeatFlags[rowIndex][columnIndex] & REPEAT_BOTTOM) !== 0,
           }"
           :style="{ backgroundColor: color }"
           role="gridcell"
           tabindex="0"
-          :aria-label="`Row ${rowIndex + 1}, column ${columnIndex + 1}, color ${color}`"
-          @pointerdown="start(rowIndex, columnIndex, $event)"
-          @pointerenter="enter(rowIndex, columnIndex, $event)"
-          @keydown.enter.prevent="keyboardPaint(rowIndex, columnIndex)"
-          @keydown.space.prevent="keyboardPaint(rowIndex, columnIndex)"
+          :aria-label="`Row ${rowHeaders[rowIndex] + 1}, column ${columnHeaders[columnIndex] + 1}, color ${color}${(repeatFlags[rowIndex][columnIndex] & REPEAT_COPY) !== 0 || rowCopies[rowIndex] > 0 || columnCopies[columnIndex] > 0 ? ', repeated copy' : ''}`"
+          @pointerdown="start(cellSourceRows[rowIndex][columnIndex], cellSourceColumns[rowIndex][columnIndex], $event)"
+          @pointerenter="enter(cellSourceRows[rowIndex][columnIndex], cellSourceColumns[rowIndex][columnIndex], $event)"
+          @keydown.enter.prevent="keyboardPaint(cellSourceRows[rowIndex][columnIndex], cellSourceColumns[rowIndex][columnIndex])"
+          @keydown.space.prevent="keyboardPaint(cellSourceRows[rowIndex][columnIndex], cellSourceColumns[rowIndex][columnIndex])"
         ></div>
       </template>
     </div>
@@ -232,7 +253,7 @@ onBeforeUnmount(() => {
     <ul class="menu menu-sm w-full p-0">
       <li><button type="button" role="menuitem" @click="runRowAction('fill')"><span class="mdi mdi-format-color-fill" aria-hidden="true"></span>Fill with selected color</button></li>
       <li><button type="button" role="menuitem" @click="runRowAction('erase')"><span class="mdi mdi-eraser" aria-hidden="true"></span>Erase row</button></li>
-      <li><button class="text-error" type="button" role="menuitem" :disabled="cells.length <= 1" @click="runRowAction('delete')"><span class="mdi mdi-delete-outline" aria-hidden="true"></span>Delete row</button></li>
+      <li><button class="text-error" type="button" role="menuitem" :disabled="sourceRows <= 1" @click="runRowAction('delete')"><span class="mdi mdi-delete-outline" aria-hidden="true"></span>Delete row</button></li>
     </ul>
   </div>
 
@@ -257,7 +278,7 @@ onBeforeUnmount(() => {
     <ul class="menu menu-sm w-full p-0">
       <li><button type="button" role="menuitem" @click="runColumnAction('fill')"><span class="mdi mdi-format-color-fill" aria-hidden="true"></span>Fill with selected color</button></li>
       <li><button type="button" role="menuitem" @click="runColumnAction('erase')"><span class="mdi mdi-eraser" aria-hidden="true"></span>Erase column</button></li>
-      <li><button class="text-error" type="button" role="menuitem" :disabled="cells[0].length <= 1" @click="runColumnAction('delete')"><span class="mdi mdi-delete-outline" aria-hidden="true"></span>Delete column</button></li>
+      <li><button class="text-error" type="button" role="menuitem" :disabled="sourceColumns <= 1" @click="runColumnAction('delete')"><span class="mdi mdi-delete-outline" aria-hidden="true"></span>Delete column</button></li>
     </ul>
   </div>
 </template>

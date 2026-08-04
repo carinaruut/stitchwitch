@@ -1,11 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { PatternGrid } from '../types/pattern'
-import { repeatGrid } from '../utils/grid'
 
-const props = defineProps<{ cells: PatternGrid; horizontal: number; vertical: number }>()
-const preview = computed(() => repeatGrid(props.cells, props.horizontal, props.vertical))
-const columns = computed(() => props.cells[0].length * props.horizontal)
+const props = defineProps<{ cells: PatternGrid }>()
+const columns = computed(() => props.cells[0].length)
 </script>
 
 <template>
@@ -15,12 +13,12 @@ const columns = computed(() => props.cells[0].length * props.horizontal)
         <h2 class="card-title text-base">Complete pattern preview</h2>
         <div class="flex gap-2">
           <span class="badge badge-primary">{{ columns }} columns</span>
-          <span class="badge badge-secondary">{{ preview.length }} rows</span>
+          <span class="badge badge-secondary">{{ cells.length }} rows</span>
         </div>
       </div>
       <div class="max-h-96 overflow-auto rounded-xl bg-base-200/30 p-4">
         <div class="grid w-max overflow-hidden rounded-lg" :style="{ gridTemplateColumns: `repeat(${columns}, 16px)`, gridAutoRows: '16px' }" aria-label="Repeated pattern preview">
-          <template v-for="(row, rowIndex) in preview" :key="rowIndex">
+          <template v-for="(row, rowIndex) in cells" :key="rowIndex">
             <span v-for="(color, columnIndex) in row" :key="columnIndex" :style="{ backgroundColor: color }" aria-hidden="true"></span>
           </template>
         </div>

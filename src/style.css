@@ -34,6 +34,26 @@ body {
   border-bottom: 1.5px solid color-mix(in oklab, currentColor 40%, transparent);
 }
 
+.repeat-copy-cell {
+  background-image: linear-gradient(color-mix(in oklab, currentColor 3%, transparent), color-mix(in oklab, currentColor 3%, transparent));
+}
+
+.repeat-border-left {
+  border-left: 2px solid color-mix(in oklab, var(--color-primary) 70%, transparent);
+}
+
+.repeat-border-right {
+  border-right: 2px solid color-mix(in oklab, var(--color-primary) 70%, transparent);
+}
+
+.repeat-border-top {
+  border-top: 2px solid color-mix(in oklab, var(--color-primary) 70%, transparent);
+}
+
+.repeat-border-bottom {
+  border-bottom: 2px solid color-mix(in oklab, var(--color-primary) 70%, transparent);
+}
+
 .row-action-selected {
   border-bottom: 1px dashed color-mix(in oklab, currentColor 70%, transparent);
   border-top: 1px dashed color-mix(in oklab, currentColor 70%, transparent);
