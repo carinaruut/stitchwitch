@@ -247,6 +247,19 @@ export function usePattern() {
       tool.value = 'pencil'
       return
     }
+    if (tool.value === 'fill') {
+      const rows = project.value.cells.length
+      const columns = project.value.cells[0].length
+      const targets: Array<[number, number]> = [[row, column]]
+      if (mirrorVertical.value) targets.push([row, columns - 1 - column])
+      if (mirrorHorizontal.value) targets.push([rows - 1 - row, column])
+      if (mirrorVertical.value && mirrorHorizontal.value) targets.push([rows - 1 - row, columns - 1 - column])
+      for (const [targetRow, targetColumn] of targets) {
+        const [sourceRow, sourceColumn] = sourceCellFor(project.value.repeatBoxes, targetRow, targetColumn)
+        floodFill(sourceRow, sourceColumn, selectedColor.value)
+      }
+      return
+    }
     const color = tool.value === 'eraser' ? project.value.backgroundColor : selectedColor.value
     const rows = project.value.cells.length
     const columns = project.value.cells[0].length
@@ -261,7 +274,33 @@ export function usePattern() {
   }
 
   function commitColor() {
-    if (tool.value === 'pencil') chooseColor(selectedColor.value, true)
+    if (tool.value === 'pencil' || tool.value === 'fill') chooseColor(selectedColor.value, true)
+  }
+
+  function floodFill(startRow: number, startColumn: number, replacement: string) {
+    const withinSelection = (row: number, column: number) => selection.value !== null
+      && row >= selection.value.top
+      && row <= selection.value.bottom
+      && column >= selection.value.left
+      && column <= selection.value.right
+    const startInsideSelection = withinSelection(startRow, startColumn)
+    const allowed = (row: number, column: number) => !selection.value || withinSelection(row, column) === startInsideSelection
+    const target = project.value.cells[startRow][startColumn]
+    if (target === replacement) return
+    const pending: Array<[number, number]> = [[startRow, startColumn]]
+    project.value.cells[startRow][startColumn] = replacement
+
+    while (pending.length > 0) {
+      const [row, column] = pending.pop()!
+      const neighbors: Array<[number, number]> = [[row - 1, column], [row + 1, column], [row, column - 1], [row, column + 1]]
+      for (const [nextRow, nextColumn] of neighbors) {
+        if (nextRow < 0 || nextRow >= project.value.cells.length || nextColumn < 0 || nextColumn >= project.value.cells[0].length) continue
+        if (!allowed(nextRow, nextColumn)) continue
+        if (project.value.cells[nextRow][nextColumn] !== target) continue
+        project.value.cells[nextRow][nextColumn] = replacement
+        pending.push([nextRow, nextColumn])
+      }
+    }
   }
 
   function mutateGrid(next: string[][]) {

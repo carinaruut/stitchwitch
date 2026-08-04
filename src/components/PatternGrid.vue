@@ -122,6 +122,13 @@ function start(row: number, column: number, displayRow: number, displayColumn: n
     emit('selectArea', actualRow, actualColumn, actualRow, actualColumn)
     return
   }
+  if (props.tool === 'fill') {
+    event.preventDefault()
+    emit('strokeStart')
+    emit('paint', row, column)
+    emit('strokeEnd')
+    return
+  }
   event.preventDefault()
   drawing.value = true
   emit('strokeStart')

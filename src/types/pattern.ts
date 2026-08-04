@@ -1,5 +1,5 @@
 export type PatternGrid = string[][]
-export type DrawingTool = 'pencil' | 'eraser' | 'eyedropper' | 'select' | 'move'
+export type DrawingTool = 'pencil' | 'eraser' | 'fill' | 'eyedropper' | 'select' | 'move'
 
 export interface GridSelection {
   top: number

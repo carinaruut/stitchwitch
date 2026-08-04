@@ -25,6 +25,7 @@ defineEmits<{
 const tools: Array<{ value: DrawingTool; icon: string; label: string }> = [
   { value: 'pencil', icon: 'mdi-pencil', label: 'Pencil' },
   { value: 'eraser', icon: 'mdi-eraser', label: 'Eraser' },
+  { value: 'fill', icon: 'mdi-format-color-fill', label: 'Fill' },
   { value: 'eyedropper', icon: 'mdi-eyedropper', label: 'Eyedropper' },
   { value: 'select', icon: 'mdi-select-drag', label: 'Select area' },
   { value: 'move', icon: 'mdi-hand-back-right-outline', label: 'Pan canvas' },
