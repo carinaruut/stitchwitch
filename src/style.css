@@ -13,6 +13,10 @@ body {
   margin: 0;
 }
 
+.print-only {
+  display: none;
+}
+
 .pattern-cell {
   border: 0;
   box-shadow: inset 0 0 0 0.5px color-mix(in oklab, currentColor 16%, transparent);
@@ -107,6 +111,17 @@ body {
     color: black !important;
   }
 
+  html,
+  body,
+  #app,
+  .print-only,
+  .print-preview-cell,
+  .print-chart-cell,
+  .print-swatch {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
   .screen-only,
   .toast {
     display: none !important;
@@ -114,5 +129,111 @@ body {
 
   .print-only {
     display: block !important;
+    background: white !important;
+    color: black !important;
+    font-family: Arial, sans-serif;
+  }
+
+  .print-header h1 {
+    font-size: 20pt;
+    font-weight: 700;
+    line-height: 1.2;
+    margin: 0;
+  }
+
+  .print-header p {
+    font-size: 10pt;
+    margin: 1mm 0 5mm;
+  }
+
+  .print-preview-page,
+  .print-chart-page {
+    break-inside: avoid;
+  }
+
+  .print-preview-page h2,
+  .print-chart-page h2,
+  .print-colors h2 {
+    font-size: 14pt;
+    font-weight: 700;
+    margin: 0 0 3mm;
+  }
+
+  .print-preview-grid,
+  .print-chart {
+    display: grid;
+    width: max-content;
+    max-width: 100%;
+  }
+
+  .print-chart {
+    border-left: 0.15mm solid black;
+    border-top: 0.15mm solid black;
+  }
+
+  .print-preview-grid {
+    border: 0.3mm solid #777;
+  }
+
+  .print-preview-cell,
+  .print-chart-cell,
+  .print-swatch {
+    forced-color-adjust: none;
+  }
+
+  .print-colors {
+    margin-top: 6mm;
+  }
+
+  .print-colors ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3mm 6mm;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .print-colors li {
+    align-items: center;
+    display: flex;
+    font-size: 9pt;
+    gap: 2mm;
+  }
+
+  .print-swatch {
+    border: 0.3mm solid black;
+    display: inline-block;
+    height: 5mm;
+    width: 5mm;
+  }
+
+  .print-chart-page {
+    break-before: page;
+  }
+
+  .print-chart-cell {
+    border-bottom: 0.15mm solid black;
+    border-right: 0.15mm solid black;
+    box-sizing: border-box;
+  }
+
+  .print-chart-corner,
+  .print-column-number,
+  .print-row-number {
+    align-items: center;
+    display: flex;
+    font-size: 6pt;
+    justify-content: center;
+    line-height: 1;
+    overflow: hidden;
+  }
+
+  .print-column-number {
+    border-bottom: 0.3mm solid black;
+  }
+
+  .print-row-number {
+    border-right: 0.3mm solid black;
   }
 }
