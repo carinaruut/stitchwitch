@@ -129,15 +129,22 @@ const input = computed<RepeatBoxInput | null>(() => {
   }
 })
 
-function summary(box: RepeatBoxInput) {
+function summaryRange(box: RepeatBoxInput) {
+  return `Rows ${box.top + 1}-${box.bottom} · Columns ${box.left + 1}-${box.right}`
+}
+
+function summarySections(box: RepeatBoxInput) {
   const sectionLength = box.direction === 'across'
     ? (box.right - box.left) / box.sections
     : (box.bottom - box.top) / box.sections
   const unit = box.direction === 'across' ? 'columns' : 'rows'
-  return `Rows ${box.top + 1}-${box.bottom}, Columns ${box.left + 1}-${box.right}, ${box.sections} sections, ${sectionLength} ${unit} each.`
+  const sectionUnit = sectionLength === 1 ? unit.slice(0, -1) : unit
+  return `${box.sections} sections · ${sectionLength} ${sectionUnit} each`
 }
 
-const liveSummary = computed(() => input.value ? summary(input.value) : '')
+function summary(box: RepeatBoxInput) {
+  return `${summaryRange(box)}. ${summarySections(box)}.`
+}
 
 function sourceSize(box: RepeatBox) {
   const rows = box.direction === 'down' ? (box.bottom - box.top) / box.sections : box.bottom - box.top
@@ -189,15 +196,15 @@ function updateFallback(event: Event, eventName: 'horizontal' | 'vertical') {
 
 <template>
   <section class="card border border-base-300 bg-base-100">
-    <div class="card-body gap-4 p-4">
+    <div class="card-body gap-3 p-3">
       <div>
         <h2 class="card-title text-base">Repeat boxes</h2>
-        <p class="mt-1 text-xs leading-relaxed text-base-content/65">
-          The first section is the source; edits to any section keep every section synchronized.
+        <p class="mt-1 text-xs leading-relaxed text-base-content/60">
+          The first section is the source. Editing any copy updates them all.
         </p>
       </div>
 
-      <form class="space-y-3" novalidate @submit.prevent="submit">
+      <form class="space-y-2.5" novalidate @submit.prevent="submit">
         <fieldset class="grid grid-cols-2 gap-1 rounded-box bg-base-200 p-1">
           <legend class="sr-only">Repeat direction</legend>
           <label v-for="option in (['across', 'down'] as RepeatDirection[])" :key="option" class="cursor-pointer">
@@ -207,38 +214,38 @@ function updateFallback(event: Event, eventName: 'horizontal' | 'vertical') {
         </fieldset>
 
         <fieldset>
-          <legend class="mb-1 text-xs font-semibold text-base-content/70">Sizing mode</legend>
-          <div class="flex flex-wrap gap-x-3 gap-y-1">
-            <label class="label cursor-pointer gap-1.5 p-0 text-xs">
-              <input v-model="sizingMode" class="radio radio-primary radio-xs" type="radio" name="sizing-mode" value="boundary" />
-              End boundary
+          <legend class="mb-1.5 text-xs font-semibold text-base-content/65">Size by</legend>
+          <div class="grid grid-cols-2 gap-1 rounded-box bg-base-200 p-1">
+            <label class="cursor-pointer">
+              <input v-model="sizingMode" class="peer sr-only" type="radio" name="sizing-mode" value="boundary" />
+              <span class="btn btn-xs h-8 w-full border-0 peer-checked:btn-primary">End boundary</span>
             </label>
-            <label class="label cursor-pointer gap-1.5 p-0 text-xs">
-              <input v-model="sizingMode" class="radio radio-primary radio-xs" type="radio" name="sizing-mode" value="size" />
-              Section size
+            <label class="cursor-pointer">
+              <input v-model="sizingMode" class="peer sr-only" type="radio" name="sizing-mode" value="size" />
+              <span class="btn btn-xs h-8 w-full border-0 peer-checked:btn-primary">Section size</span>
             </label>
           </div>
         </fieldset>
 
         <div class="grid grid-cols-2 gap-2">
-          <label class="form-control">
-            <span class="label-text mb-1 text-xs">{{ direction === 'across' ? 'Top row' : 'Left column' }}</span>
+          <label class="grid gap-1">
+            <span class="text-xs font-medium">{{ direction === 'across' ? 'Top row' : 'Left column' }}</span>
             <input v-model.number="firstCross" class="input input-bordered input-sm min-w-0 w-full" type="number" min="1" max="500" />
           </label>
-          <label class="form-control">
-            <span class="label-text mb-1 text-xs">{{ direction === 'across' ? 'Bottom row (inclusive)' : 'Right column (inclusive)' }}</span>
+          <label class="grid gap-1">
+            <span class="text-xs font-medium">{{ direction === 'across' ? 'Bottom row' : 'Right column' }}</span>
             <input v-model.number="lastCross" class="input input-bordered input-sm min-w-0 w-full" type="number" min="1" max="500" />
           </label>
-          <label class="form-control">
-            <span class="label-text mb-1 text-xs">{{ direction === 'across' ? 'Start column' : 'Start row' }}</span>
+          <label class="grid gap-1">
+            <span class="text-xs font-medium">{{ direction === 'across' ? 'Start column' : 'Start row' }}</span>
             <input v-model.number="start" class="input input-bordered input-sm min-w-0 w-full" type="number" min="1" max="500" />
           </label>
-          <label class="form-control">
-            <span class="label-text mb-1 text-xs">Sections (including source)</span>
+          <label class="grid gap-1">
+            <span class="text-xs font-medium">Sections</span>
             <input v-model.number="sections" class="input input-bordered input-sm min-w-0 w-full" type="number" min="2" max="20" />
           </label>
-          <label class="form-control col-span-2">
-            <span class="label-text mb-1 text-xs">
+          <label class="col-span-2 grid gap-1">
+            <span class="text-xs font-medium">
               <template v-if="sizingMode === 'boundary'">End before {{ direction === 'across' ? 'column' : 'row' }}</template>
               <template v-else>Section {{ direction === 'across' ? 'width' : 'height' }}</template>
             </span>
@@ -246,13 +253,17 @@ function updateFallback(event: Event, eventName: 'horizontal' | 'vertical') {
             <input v-else v-model.number="sectionSize" class="input input-bordered input-sm w-full" type="number" min="1" />
           </label>
         </div>
+        <p class="text-[11px] text-base-content/50">Bottom/right is included. Sections includes the source.</p>
 
         <p v-if="validationMessage" class="text-xs text-error" role="alert">{{ validationMessage }}</p>
-        <p v-else class="rounded-box bg-base-200 px-3 py-2 text-xs leading-relaxed" aria-live="polite">{{ liveSummary }}</p>
+        <div v-else class="rounded-box bg-base-200/70 px-3 py-2 text-xs" aria-live="polite">
+          <p class="font-medium">{{ summaryRange(input!) }}</p>
+          <p class="mt-0.5 text-base-content/60">{{ summarySections(input!) }}</p>
+        </div>
 
         <div class="flex gap-2">
           <button class="btn btn-primary btn-sm min-w-0 flex-1" type="submit" :disabled="!!validationMessage">
-            <span class="mdi mdi-content-save-outline" aria-hidden="true"></span>
+            <span class="mdi mdi-repeat" aria-hidden="true"></span>
             {{ editingId ? 'Save changes' : 'Add repeat box' }}
           </button>
           <button v-if="editingId" class="btn btn-ghost btn-sm" type="button" @click="cancelEdit">Cancel</button>
@@ -263,11 +274,12 @@ function updateFallback(event: Event, eventName: 'horizontal' | 'vertical') {
         <article v-for="box in boxes" :key="box.id" class="rounded-box border border-base-300 p-3" :class="box.enabled ? 'bg-primary/5' : 'opacity-60'">
           <div class="flex items-start justify-between gap-2">
             <div class="min-w-0">
-              <p class="text-xs font-medium leading-relaxed">{{ summary(box) }}</p>
-              <p class="mt-1 text-[11px] text-base-content/60">Source: {{ sourceSize(box) }}</p>
+               <p class="text-xs font-medium leading-relaxed">{{ summaryRange(box) }}</p>
+               <p class="mt-0.5 text-[11px] text-base-content/60">{{ summarySections(box) }}</p>
+               <p class="mt-1 text-[11px] text-base-content/60">Source: {{ sourceSize(box) }}</p>
             </div>
             <label class="flex shrink-0 cursor-pointer items-center">
-              <span class="sr-only">Enable {{ summary(box) }}</span>
+               <span class="sr-only">Enable {{ summary(box) }}</span>
               <input class="toggle toggle-primary toggle-sm" type="checkbox" :checked="box.enabled" @change="$emit('toggle', box.id, ($event.target as HTMLInputElement).checked)" />
             </label>
           </div>
