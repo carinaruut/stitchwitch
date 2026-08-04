@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from 'vue'
-import type { DrawingTool, PatternGrid } from '../types/pattern'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import type { DrawingTool, GridSelection, PatternGrid } from '../types/pattern'
 import { REPEAT_BOTTOM, REPEAT_COPY, REPEAT_LEFT, REPEAT_RIGHT, REPEAT_TOP } from '../utils/grid'
 
 const props = defineProps<{
@@ -18,6 +18,8 @@ const props = defineProps<{
   selectedRow: number
   selectedColumn: number
   tool: DrawingTool
+  selection: GridSelection | null
+  placingSelection: boolean
 }>()
 const emit = defineEmits<{
   strokeStart: []
@@ -27,10 +29,16 @@ const emit = defineEmits<{
   rowAction: [action: 'above' | 'below' | 'multiple' | 'delete' | 'fill' | 'erase', row: number, count?: number]
   selectColumn: [column: number]
   columnAction: [action: 'before' | 'after' | 'multiple' | 'delete' | 'fill' | 'erase', column: number, count?: number]
+  selectArea: [top: number, left: number, bottom: number, right: number]
+  placeSelection: [row: number, column: number]
+  moveSelection: [row: number, column: number]
 }>()
 const viewport = ref<HTMLElement | null>(null)
 const drawing = ref(false)
 const panning = ref(false)
+const selecting = ref(false)
+const draggingSelection = ref(false)
+const dragPreview = ref<GridSelection | null>(null)
 const rowMenu = ref<{ row: number; x: number; y: number } | null>(null)
 const columnMenu = ref<{ column: number; x: number; y: number } | null>(null)
 const multipleCount = ref(5)
@@ -39,6 +47,20 @@ let panStartX = 0
 let panStartY = 0
 let scrollStartX = 0
 let scrollStartY = 0
+let selectionStartRow = 0
+let selectionStartColumn = 0
+let dragRowOffset = 0
+let dragColumnOffset = 0
+
+const visibleSelection = computed(() => dragPreview.value ?? props.selection)
+
+function containsSelection(row: number, column: number) {
+  return props.selection !== null
+    && row >= props.selection.top
+    && row <= props.selection.bottom
+    && column >= props.selection.left
+    && column <= props.selection.right
+}
 
 function startPan(event: PointerEvent) {
   if (event.button !== 0 || !viewport.value) return
@@ -51,10 +73,31 @@ function startPan(event: PointerEvent) {
   viewport.value.setPointerCapture(event.pointerId)
 }
 
-function start(row: number, column: number, event: PointerEvent) {
+function start(row: number, column: number, displayRow: number, displayColumn: number, event: PointerEvent) {
   if (event.button !== 0) return
   if (props.tool === 'move') {
     startPan(event)
+    return
+  }
+  if (props.tool === 'select') {
+    event.preventDefault()
+    const actualRow = props.rowHeaders[displayRow]
+    const actualColumn = props.columnHeaders[displayColumn]
+    if (props.placingSelection) {
+      emit('placeSelection', actualRow, actualColumn)
+      return
+    }
+    if (containsSelection(actualRow, actualColumn)) {
+      draggingSelection.value = true
+      dragRowOffset = actualRow - props.selection!.top
+      dragColumnOffset = actualColumn - props.selection!.left
+      dragPreview.value = { ...props.selection! }
+      return
+    }
+    selecting.value = true
+    selectionStartRow = actualRow
+    selectionStartColumn = actualColumn
+    emit('selectArea', actualRow, actualColumn, actualRow, actualColumn)
     return
   }
   event.preventDefault()
@@ -63,7 +106,19 @@ function start(row: number, column: number, event: PointerEvent) {
   emit('paint', row, column)
 }
 
-function enter(row: number, column: number, event: PointerEvent) {
+function enter(row: number, column: number, displayRow: number, displayColumn: number, event: PointerEvent) {
+  if (draggingSelection.value && event.buttons === 1 && props.selection) {
+    const height = props.selection.bottom - props.selection.top
+    const width = props.selection.right - props.selection.left
+    const top = Math.max(0, props.rowHeaders[displayRow] - dragRowOffset)
+    const left = Math.max(0, props.columnHeaders[displayColumn] - dragColumnOffset)
+    dragPreview.value = { top, left, bottom: top + height, right: left + width }
+    return
+  }
+  if (selecting.value && event.buttons === 1) {
+    emit('selectArea', selectionStartRow, selectionStartColumn, props.rowHeaders[displayRow], props.columnHeaders[displayColumn])
+    return
+  }
   if (drawing.value && event.buttons === 1) emit('paint', row, column)
 }
 
@@ -82,6 +137,14 @@ function stop(event?: PointerEvent) {
     drawing.value = false
     emit('strokeEnd')
   }
+  if (draggingSelection.value && dragPreview.value) {
+    if (!props.selection || dragPreview.value.top !== props.selection.top || dragPreview.value.left !== props.selection.left) {
+      emit('moveSelection', dragPreview.value.top, dragPreview.value.left)
+    }
+  }
+  draggingSelection.value = false
+  dragPreview.value = null
+  selecting.value = false
 }
 
 function openRowMenu(row: number, event: MouseEvent | KeyboardEvent) {
@@ -144,6 +207,13 @@ function keyboardPaint(row: number, column: number) {
   emit('strokeEnd')
 }
 
+function keyboardSelect(displayRow: number, displayColumn: number) {
+  const row = props.rowHeaders[displayRow]
+  const column = props.columnHeaders[displayColumn]
+  if (props.placingSelection) emit('placeSelection', row, column)
+  else emit('selectArea', row, column, row, column)
+}
+
 onMounted(() => {
   window.addEventListener('pointerup', stop)
   window.addEventListener('click', closeRowMenu)
@@ -160,7 +230,7 @@ onBeforeUnmount(() => {
   <div
     ref="viewport"
     class="h-[calc(100dvh-16rem)] min-h-80 w-full min-w-0 overflow-auto border border-base-300/70 bg-base-100 p-3"
-    :class="tool === 'move' ? (panning ? 'cursor-grabbing touch-none' : 'cursor-grab touch-none') : ''"
+    :class="tool === 'move' ? (panning ? 'cursor-grabbing touch-none' : 'cursor-grab touch-none') : tool === 'select' ? (placingSelection ? 'cursor-copy' : 'cursor-crosshair') : ''"
     aria-label="Editable pattern grid"
     @pointerdown.self="tool === 'move' && startPan($event)"
     @pointermove="pan"
@@ -208,7 +278,12 @@ onBeforeUnmount(() => {
           :key="columnIndex"
           class="pattern-cell"
           :class="{
-            'outline-2 outline-offset-[-2px] outline-neutral': selectedRow === cellSourceRows[rowIndex][columnIndex] && selectedColumn === cellSourceColumns[rowIndex][columnIndex],
+            'outline-2 outline-offset-[-2px] outline-neutral': tool !== 'select' && selectedRow === cellSourceRows[rowIndex][columnIndex] && selectedColumn === cellSourceColumns[rowIndex][columnIndex],
+            'selection-border-top': visibleSelection && rowHeaders[rowIndex] === visibleSelection.top && columnHeaders[columnIndex] >= visibleSelection.left && columnHeaders[columnIndex] <= visibleSelection.right,
+            'selection-border-bottom': visibleSelection && rowHeaders[rowIndex] === visibleSelection.bottom && columnHeaders[columnIndex] >= visibleSelection.left && columnHeaders[columnIndex] <= visibleSelection.right,
+            'selection-border-left': visibleSelection && columnHeaders[columnIndex] === visibleSelection.left && rowHeaders[rowIndex] >= visibleSelection.top && rowHeaders[rowIndex] <= visibleSelection.bottom,
+            'selection-border-right': visibleSelection && columnHeaders[columnIndex] === visibleSelection.right && rowHeaders[rowIndex] >= visibleSelection.top && rowHeaders[rowIndex] <= visibleSelection.bottom,
+            'cursor-move': tool === 'select' && !placingSelection && containsSelection(rowHeaders[rowIndex], columnHeaders[columnIndex]),
             'section-column-end': (columnHeaders[columnIndex] + 1) % 5 === 0 && columnIndex < row.length - 1,
             'section-row-end': (rowHeaders[rowIndex] + 1) % 5 === 0 && rowIndex < cells.length - 1,
             'row-action-selected': rowMenu?.row === rowHeaders[rowIndex],
@@ -223,10 +298,10 @@ onBeforeUnmount(() => {
           role="gridcell"
           tabindex="0"
           :aria-label="`Row ${rowHeaders[rowIndex] + 1}, column ${columnHeaders[columnIndex] + 1}, color ${color}${(repeatFlags[rowIndex][columnIndex] & REPEAT_COPY) !== 0 || rowCopies[rowIndex] > 0 || columnCopies[columnIndex] > 0 ? ', repeated copy' : ''}`"
-          @pointerdown="start(cellSourceRows[rowIndex][columnIndex], cellSourceColumns[rowIndex][columnIndex], $event)"
-          @pointerenter="enter(cellSourceRows[rowIndex][columnIndex], cellSourceColumns[rowIndex][columnIndex], $event)"
-          @keydown.enter.prevent="keyboardPaint(cellSourceRows[rowIndex][columnIndex], cellSourceColumns[rowIndex][columnIndex])"
-          @keydown.space.prevent="keyboardPaint(cellSourceRows[rowIndex][columnIndex], cellSourceColumns[rowIndex][columnIndex])"
+          @pointerdown="start(cellSourceRows[rowIndex][columnIndex], cellSourceColumns[rowIndex][columnIndex], rowIndex, columnIndex, $event)"
+          @pointerenter="enter(cellSourceRows[rowIndex][columnIndex], cellSourceColumns[rowIndex][columnIndex], rowIndex, columnIndex, $event)"
+          @keydown.enter.prevent="tool === 'select' ? keyboardSelect(rowIndex, columnIndex) : keyboardPaint(cellSourceRows[rowIndex][columnIndex], cellSourceColumns[rowIndex][columnIndex])"
+          @keydown.space.prevent="tool === 'select' ? keyboardSelect(rowIndex, columnIndex) : keyboardPaint(cellSourceRows[rowIndex][columnIndex], cellSourceColumns[rowIndex][columnIndex])"
         ></div>
       </template>
     </div>

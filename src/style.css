@@ -26,6 +26,22 @@ body {
   outline-offset: -3px;
 }
 
+.selection-border-top {
+  border-top: 2px solid var(--color-primary) !important;
+}
+
+.selection-border-bottom {
+  border-bottom: 2px solid var(--color-primary) !important;
+}
+
+.selection-border-left {
+  border-left: 2px solid var(--color-primary) !important;
+}
+
+.selection-border-right {
+  border-right: 2px solid var(--color-primary) !important;
+}
+
 .section-column-end {
   border-right: 1.5px solid color-mix(in oklab, currentColor 40%, transparent);
 }

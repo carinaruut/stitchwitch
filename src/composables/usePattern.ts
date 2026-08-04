@@ -1,6 +1,6 @@
 import { computed, ref, watch } from 'vue'
-import type { DrawingTool, PatternProject, RepeatBox, RepeatBoxInput } from '../types/pattern'
-import { addColumn, addRow, boxesOverlap, cloneGrid, createGrid, ensureGridSize, removeColumn, removeRow, synchronizeRepeatBox } from '../utils/grid'
+import type { DrawingTool, GridSelection, PatternGrid, PatternProject, RepeatBox, RepeatBoxInput } from '../types/pattern'
+import { addColumn, addRow, boxesOverlap, cloneGrid, createGrid, ensureGridSize, removeColumn, removeRow, renderGrid, sourceCellFor, synchronizeRepeatBox } from '../utils/grid'
 import { normalizeColor } from '../utils/colors'
 import { useHistory } from './useHistory'
 
@@ -23,6 +23,8 @@ export function usePattern() {
   const tool = ref<DrawingTool>('pencil')
   const selectedRow = ref(0)
   const selectedColumn = ref(0)
+  const selection = ref<GridSelection | null>(null)
+  const clipboard = ref<PatternGrid | null>(null)
   const savedColor = normalizeColor(localStorage.getItem('stitch-selected-color') ?? '')
   const selectedColor = ref(savedColor ?? '#7c3aed')
   const savedRecent = localStorage.getItem('stitch-recent-colors')
@@ -66,6 +68,8 @@ export function usePattern() {
     project.value = { ...next, repeatBoxes: next.repeatBoxes.map((box) => ({ ...box })), cells: cloneGrid(next.cells) }
     selectedRow.value = 0
     selectedColumn.value = 0
+    selection.value = null
+    clipboard.value = null
     history.reset()
   }
 
@@ -75,6 +79,74 @@ export function usePattern() {
 
   function beginGridChange() {
     history.record({ cells: project.value.cells, repeatBoxes: project.value.repeatBoxes })
+  }
+
+  function setSelection(top: number, left: number, bottom: number, right: number) {
+    selection.value = {
+      top: Math.max(0, Math.min(top, bottom)),
+      left: Math.max(0, Math.min(left, right)),
+      bottom: Math.min(project.value.cells.length - 1, Math.max(top, bottom)),
+      right: Math.min(project.value.cells[0].length - 1, Math.max(left, right)),
+    }
+    selectedRow.value = selection.value.top
+    selectedColumn.value = selection.value.left
+  }
+
+  function copySelection(): boolean {
+    if (!selection.value) return false
+    const rendered = renderGrid(project.value.cells, 1, 1, project.value.repeatBoxes).cells
+    clipboard.value = rendered
+      .slice(selection.value.top, selection.value.bottom + 1)
+      .map((row) => row.slice(selection.value!.left, selection.value!.right + 1))
+    return true
+  }
+
+  function synchronizeEnabledBoxes(cells: PatternGrid): PatternGrid {
+    let next = cells
+    for (const box of project.value.repeatBoxes) if (box.enabled) next = synchronizeRepeatBox(next, box)
+    return next
+  }
+
+  function writeClipboard(cells: PatternGrid, data: PatternGrid, row: number, column: number): PatternGrid {
+    let next = ensureGridSize(cells, row + data.length, column + data[0].length, project.value.backgroundColor)
+    next = cloneGrid(next)
+    for (let rowOffset = 0; rowOffset < data.length; rowOffset += 1) {
+      for (let columnOffset = 0; columnOffset < data[rowOffset].length; columnOffset += 1) {
+        const [sourceRow, sourceColumn] = sourceCellFor(project.value.repeatBoxes, row + rowOffset, column + columnOffset)
+        next[sourceRow][sourceColumn] = data[rowOffset][columnOffset]
+      }
+    }
+    return synchronizeEnabledBoxes(next)
+  }
+
+  function pasteSelection(): boolean {
+    if (!selection.value || !clipboard.value) return false
+    const row = selection.value.top
+    const column = selection.value.left
+    if (row + clipboard.value.length > 500 || column + clipboard.value[0].length > 500) return false
+    beginGridChange()
+    project.value.cells = writeClipboard(project.value.cells, clipboard.value, row, column)
+    setSelection(row, column, row + clipboard.value.length - 1, column + clipboard.value[0].length - 1)
+    return true
+  }
+
+  function moveSelectionTo(row: number, column: number): boolean {
+    if (!selection.value) return false
+    const source = { ...selection.value }
+    const rendered = renderGrid(project.value.cells, 1, 1, project.value.repeatBoxes).cells
+    const data = rendered.slice(source.top, source.bottom + 1).map((cells) => cells.slice(source.left, source.right + 1))
+    if (row + data.length > 500 || column + data[0].length > 500) return false
+    beginGridChange()
+    let next = cloneGrid(project.value.cells)
+    for (let sourceRow = source.top; sourceRow <= source.bottom; sourceRow += 1) {
+      for (let sourceColumn = source.left; sourceColumn <= source.right; sourceColumn += 1) {
+        const [mappedRow, mappedColumn] = sourceCellFor(project.value.repeatBoxes, sourceRow, sourceColumn)
+        next[mappedRow][mappedColumn] = project.value.backgroundColor
+      }
+    }
+    project.value.cells = writeClipboard(next, data, row, column)
+    setSelection(row, column, row + data.length - 1, column + data[0].length - 1)
+    return true
   }
 
   function adjustBoxesForInsert(axis: 'row' | 'column', index: number, count: number, excludedIds: string[] = []) {
@@ -180,6 +252,7 @@ export function usePattern() {
   }
 
   function insertMultipleRows(index: number, count: number) {
+    selection.value = null
     const total = Math.min(50, Math.max(1, Math.floor(count)))
     const target = project.value.repeatBoxes.find((box) => box.direction === 'down' && index > box.top && index < box.bottom)
     beginGridChange()
@@ -228,6 +301,7 @@ export function usePattern() {
   function deleteSelectedRow() {
     if (project.value.cells.length <= 1) return
     const index = selectedRow.value
+    selection.value = null
     const target = project.value.repeatBoxes.find((box) => box.direction === 'down' && index >= box.top && index < box.bottom)
     beginGridChange()
 
@@ -260,6 +334,7 @@ export function usePattern() {
   }
 
   function insertMultipleColumns(index: number, count: number) {
+    selection.value = null
     const total = Math.min(50, Math.max(1, Math.floor(count)))
     const target = project.value.repeatBoxes.find((box) => box.direction === 'across' && index > box.left && index < box.right)
     beginGridChange()
@@ -308,6 +383,7 @@ export function usePattern() {
   function deleteSelectedColumn() {
     if (project.value.cells[0].length <= 1) return
     const index = selectedColumn.value
+    selection.value = null
     const target = project.value.repeatBoxes.find((box) => box.direction === 'across' && index >= box.left && index < box.right)
     beginGridChange()
 
@@ -336,6 +412,7 @@ export function usePattern() {
   }
 
   function clearGrid() {
+    selection.value = null
     mutateGrid(createGrid(project.value.cells.length, project.value.cells[0].length, project.value.backgroundColor))
   }
 
@@ -364,6 +441,7 @@ export function usePattern() {
     tool,
     selectedRow,
     selectedColumn,
+    selection,
     selectedColor,
     recentColors,
     rowCount: computed(() => project.value.cells.length),
@@ -387,6 +465,13 @@ export function usePattern() {
     eraseColumn,
     deleteSelectedColumn,
     clearGrid,
+    setSelection,
+    clearSelection: () => { selection.value = null },
+    copySelection,
+    pasteSelection,
+    moveSelectionTo,
+    hasSelection: computed(() => selection.value !== null),
+    hasClipboard: computed(() => clipboard.value !== null),
     saveRepeatBox,
     toggleRepeatBox,
     removeRepeatBox,

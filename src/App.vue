@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import TopNavbar from './components/TopNavbar.vue'
 import SettingsPanel from './components/SettingsPanel.vue'
 import DrawingTools from './components/DrawingTools.vue'
@@ -25,6 +25,7 @@ const clearModalOpen = ref(false)
 const importModalOpen = ref(false)
 const fileInput = ref<HTMLInputElement | null>(null)
 const pendingImport = ref<PatternProject | null>(null)
+const placingSelection = ref(false)
 const renderedPattern = computed(() => renderGrid(
   pattern.project.value.cells,
   pattern.project.value.horizontalRepeats,
@@ -130,6 +131,57 @@ function saveRepeatBox(input: RepeatBoxInput, id: string | null) {
   if (error) notify(error, 'error')
   else notify(id ? 'Repeat box updated.' : 'Repeat box added.', 'success')
 }
+
+function selectTool(tool: typeof pattern.tool.value) {
+  pattern.tool.value = tool
+  if (tool !== 'select') placingSelection.value = false
+}
+
+function copySelection() {
+  if (pattern.copySelection()) notify('Selection copied.', 'success')
+}
+
+function pasteSelection() {
+  if (pattern.pasteSelection()) notify('Selection pasted.', 'success')
+  else notify('The selection cannot extend beyond 500 rows or columns.', 'error')
+}
+
+function startMoveSelection() {
+  if (pattern.hasSelection.value) placingSelection.value = true
+}
+
+function placeSelection(row: number, column: number) {
+  if (!placingSelection.value) return
+  if (pattern.moveSelectionTo(row, column)) notify('Selection moved.', 'success')
+  else notify('The selection cannot extend beyond 500 rows or columns.', 'error')
+  placingSelection.value = false
+}
+
+function moveSelectionDirectly(row: number, column: number) {
+  if (pattern.moveSelectionTo(row, column)) notify('Selection moved.', 'success')
+  else notify('The selection cannot extend beyond 500 rows or columns.', 'error')
+}
+
+function handleSelectionShortcuts(event: KeyboardEvent) {
+  const target = event.target as HTMLElement | null
+  if (target?.matches('input, textarea, select, [contenteditable="true"]')) return
+  if (event.key === 'Escape' && placingSelection.value) {
+    placingSelection.value = false
+    return
+  }
+  if (!(event.metaKey || event.ctrlKey) || pattern.tool.value !== 'select') return
+  if (event.key.toLowerCase() === 'c' && pattern.hasSelection.value) {
+    event.preventDefault()
+    copySelection()
+  }
+  if (event.key.toLowerCase() === 'v' && pattern.hasClipboard.value && pattern.hasSelection.value) {
+    event.preventDefault()
+    pasteSelection()
+  }
+}
+
+onMounted(() => window.addEventListener('keydown', handleSelectionShortcuts))
+onBeforeUnmount(() => window.removeEventListener('keydown', handleSelectionShortcuts))
 </script>
 
 <template>
@@ -165,7 +217,18 @@ function saveRepeatBox(input: RepeatBoxInput, id: string | null) {
                   <span class="badge badge-outline">{{ renderedPattern.cells.length }} rows shown</span>
                 </div>
               </div>
-              <DrawingTools :tool="pattern.tool.value" @select="pattern.tool.value = $event" @clear="requestClear" />
+              <DrawingTools
+                :tool="pattern.tool.value"
+                :can-copy="pattern.hasSelection.value"
+                :can-paste="pattern.hasClipboard.value && pattern.hasSelection.value"
+                :placing-selection="placingSelection"
+                @select="selectTool"
+                @copy="copySelection"
+                @paste="pasteSelection"
+                @move-selection="startMoveSelection"
+                @cancel-placement="placingSelection = false"
+                @clear="requestClear"
+              />
               <PatternGrid
                 :cells="renderedPattern.cells"
                 :cell-source-rows="renderedPattern.sourceRows"
@@ -181,6 +244,8 @@ function saveRepeatBox(input: RepeatBoxInput, id: string | null) {
                 :selected-row="pattern.selectedRow.value"
                 :selected-column="pattern.selectedColumn.value"
                 :tool="pattern.tool.value"
+                :selection="pattern.selection.value"
+                :placing-selection="placingSelection"
                 @stroke-start="beginStroke"
                 @paint="pattern.paintCell"
                 @stroke-end="endStroke"
@@ -188,6 +253,9 @@ function saveRepeatBox(input: RepeatBoxInput, id: string | null) {
                 @row-action="handleRowAction"
                 @select-column="pattern.selectedColumn.value = $event"
                 @column-action="handleColumnAction"
+                @select-area="pattern.setSelection"
+                @place-selection="placeSelection"
+                @move-selection="moveSelectionDirectly"
               />
             </div>
           </section>

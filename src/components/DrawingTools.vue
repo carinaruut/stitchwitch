@@ -1,14 +1,15 @@
 <script setup lang="ts">
 import type { DrawingTool } from '../types/pattern'
 
-defineProps<{ tool: DrawingTool }>()
-defineEmits<{ select: [tool: DrawingTool]; clear: [] }>()
+defineProps<{ tool: DrawingTool; canCopy: boolean; canPaste: boolean; placingSelection: boolean }>()
+defineEmits<{ select: [tool: DrawingTool]; clear: []; copy: []; paste: []; moveSelection: []; cancelPlacement: [] }>()
 
 const tools: Array<{ value: DrawingTool; icon: string; label: string }> = [
   { value: 'pencil', icon: 'mdi-pencil', label: 'Pencil' },
   { value: 'eraser', icon: 'mdi-eraser', label: 'Eraser' },
   { value: 'eyedropper', icon: 'mdi-eyedropper', label: 'Eyedropper' },
-  { value: 'move', icon: 'mdi-cursor-move', label: 'Move canvas' },
+  { value: 'select', icon: 'mdi-select-drag', label: 'Select area' },
+  { value: 'move', icon: 'mdi-hand-back-right-outline', label: 'Pan canvas' },
 ]
 </script>
 
@@ -32,6 +33,17 @@ const tools: Array<{ value: DrawingTool; icon: string; label: string }> = [
           <button class="btn btn-sm btn-ghost join-item" type="button" aria-label="Clear grid" @click="$emit('clear')"><span class="mdi mdi-delete-sweep-outline text-lg" aria-hidden="true"></span></button>
         </div>
       </div>
-      <span class="badge badge-sm badge-outline capitalize">{{ tool }}</span>
+      <div v-if="tool === 'select'" class="flex items-center gap-1 border-l border-base-300 pl-3">
+        <template v-if="placingSelection">
+          <span class="text-xs font-medium text-primary">Choose destination</span>
+          <button class="btn btn-ghost btn-xs" type="button" @click="$emit('cancelPlacement')">Cancel</button>
+        </template>
+        <template v-else>
+          <button class="btn btn-ghost btn-xs" type="button" :disabled="!canCopy" @click="$emit('moveSelection')"><span class="mdi mdi-cursor-move" aria-hidden="true"></span>Move</button>
+          <button class="btn btn-ghost btn-xs" type="button" :disabled="!canCopy" @click="$emit('copy')"><span class="mdi mdi-content-copy" aria-hidden="true"></span>Copy</button>
+          <button class="btn btn-ghost btn-xs" type="button" :disabled="!canPaste" @click="$emit('paste')"><span class="mdi mdi-content-paste" aria-hidden="true"></span>Paste</button>
+        </template>
+      </div>
+      <span class="badge badge-sm badge-outline capitalize">{{ tool === 'move' ? 'pan' : tool }}</span>
   </section>
 </template>
