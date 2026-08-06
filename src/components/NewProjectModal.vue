@@ -3,7 +3,7 @@ import { reactive, ref, watch } from 'vue'
 import type { PatternProject } from '../types/pattern'
 
 const props = defineProps<{ open: boolean }>()
-const emit = defineEmits<{ create: [project: Omit<PatternProject, 'format' | 'version' | 'cells' | 'repeatBoxes'>]; cancel: [] }>()
+const emit = defineEmits<{ create: [project: Omit<PatternProject, 'format' | 'version' | 'cells' | 'recentColors' | 'repeatBoxes'>]; cancel: [] }>()
 const error = ref('')
 const form = reactive({
   name: 'My pattern',

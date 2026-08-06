@@ -17,6 +17,7 @@ const DEFAULT_PROJECT: PatternProject = {
   backgroundColor: '#ffffff',
   horizontalRepeats: 1,
   verticalRepeats: 1,
+  recentColors: [],
   repeatBoxes: [],
   cells: createGrid(20, 20, '#ffffff'),
 }
@@ -40,6 +41,7 @@ export function usePattern() {
 
   const project = ref<PatternProject>({
     ...initialProject,
+    recentColors: [...initialProject.recentColors],
     repeatBoxes: initialProject.repeatBoxes.map((box) => ({ ...box })),
     cells: cloneGrid(initialProject.cells),
   })
@@ -59,11 +61,11 @@ export function usePattern() {
   } catch {
     parsedRecent = []
   }
-  const recentColors = ref<string[]>(
-    Array.isArray(parsedRecent)
+  const browserRecentColors = Array.isArray(parsedRecent)
       ? parsedRecent.map((color) => normalizeColor(String(color))).filter((color): color is string => color !== null).slice(0, 20)
-      : [],
-  )
+      : []
+  const recentColors = ref<string[]>(initialProject.recentColors.length > 0 ? [...initialProject.recentColors] : browserRecentColors)
+  project.value.recentColors = [...recentColors.value]
   const history = useHistory()
   const restoredAutosave = ref(recovered)
   const autosaveStatus = ref<'saving' | 'saved' | 'error'>('saving')
@@ -106,6 +108,7 @@ export function usePattern() {
   scheduleAutosave()
 
   function persistColors() {
+    project.value.recentColors = [...recentColors.value]
     localStorage.setItem('stitch-selected-color', selectedColor.value)
     localStorage.setItem('stitch-recent-colors', JSON.stringify(recentColors.value))
   }
@@ -120,7 +123,9 @@ export function usePattern() {
   }
 
   function replaceProject(next: PatternProject) {
-    project.value = { ...next, repeatBoxes: next.repeatBoxes.map((box) => ({ ...box })), cells: cloneGrid(next.cells) }
+    project.value = { ...next, recentColors: [...next.recentColors], repeatBoxes: next.repeatBoxes.map((box) => ({ ...box })), cells: cloneGrid(next.cells) }
+    recentColors.value = [...next.recentColors]
+    persistColors()
     selectedRow.value = 0
     selectedColumn.value = 0
     selection.value = null
@@ -128,8 +133,8 @@ export function usePattern() {
     history.reset()
   }
 
-  function createProject(input: Omit<PatternProject, 'format' | 'version' | 'cells' | 'repeatBoxes'>) {
-    replaceProject({ ...input, format: 'stitch-pattern', version: 1, repeatBoxes: [], cells: createGrid(input.rows, input.columns, input.backgroundColor) })
+  function createProject(input: Omit<PatternProject, 'format' | 'version' | 'cells' | 'recentColors' | 'repeatBoxes'>) {
+    replaceProject({ ...input, format: 'stitch-pattern', version: 1, recentColors: [...recentColors.value], repeatBoxes: [], cells: createGrid(input.rows, input.columns, input.backgroundColor) })
   }
 
   function beginGridChange() {

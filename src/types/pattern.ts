@@ -33,6 +33,7 @@ export interface PatternProject {
   backgroundColor: string
   horizontalRepeats: number
   verticalRepeats: number
+  recentColors: string[]
   repeatBoxes: RepeatBox[]
   cells: PatternGrid
 }

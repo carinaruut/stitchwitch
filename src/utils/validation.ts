@@ -52,6 +52,9 @@ export function validateProject(value: unknown): ValidationResult {
   if (!project.cells.every((row) => Array.isArray(row) && row.length === columns && row.every(isHexColor))) {
     return { valid: false, error: 'The cell colors or columns are invalid.' }
   }
+  if (project.recentColors !== undefined && (!Array.isArray(project.recentColors) || project.recentColors.length > 20 || !project.recentColors.every(isHexColor))) {
+    return { valid: false, error: 'The recent colors are invalid.' }
+  }
 
   if (project.repeatBoxes !== undefined) {
     if (!Array.isArray(project.repeatBoxes) || project.repeatBoxes.length > 100) return { valid: false, error: 'The repeat boxes are invalid.' }
@@ -117,6 +120,7 @@ export function asPatternProject(value: unknown): PatternProject {
     columns: cells[0].length,
     horizontalRepeats: source.repeatBoxes === undefined && Array.isArray(source.repeatRanges) && source.repeatRanges.length > 0 ? 1 : source.horizontalRepeats as number,
     verticalRepeats: source.repeatBoxes === undefined && Array.isArray(source.repeatRanges) && source.repeatRanges.length > 0 ? 1 : source.verticalRepeats as number,
+    recentColors: Array.isArray(source.recentColors) ? [...source.recentColors] as string[] : [],
     repeatBoxes: Array.isArray(source.repeatBoxes) ? (source.repeatBoxes as RepeatBox[]).map((box) => ({ ...box })) : [],
     cells,
   }

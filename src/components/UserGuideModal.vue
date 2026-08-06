@@ -158,7 +158,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleEscape))
           </div>
           <div class="grid gap-3 md:grid-cols-3">
             <article class="rounded-box border border-base-300 p-4"><h3 class="font-bold">Local autosave</h3><p class="mt-1 text-sm text-base-content/70">Changes are saved in this browser and flushed when the tab is hidden or closed. The status badge reports Saving locally, Saved locally, or Backup failed. A valid local copy is restored after reopening.</p></article>
-            <article class="rounded-box border border-base-300 p-4"><h3 class="font-bold">Save</h3><p class="mt-1 text-sm text-base-content/70">Downloads a <code>.stitch-pattern</code> project file containing cells, dimensions, colors, repeat settings, and project details. Keep downloads as durable backups because browser data can be cleared.</p></article>
+            <article class="rounded-box border border-base-300 p-4"><h3 class="font-bold">Save</h3><p class="mt-1 text-sm text-base-content/70">Downloads a <code>.stitch-pattern</code> project file containing cells, dimensions, recent colors, repeat boxes, fallback repeats, and project details. Keep downloads as durable backups because browser data can be cleared.</p></article>
             <article class="rounded-box border border-base-300 p-4"><h3 class="font-bold">Open</h3><p class="mt-1 text-sm text-base-content/70">Validates a downloaded project, asks before replacing current work, and then resets undo history for the imported design.</p></article>
           </div>
         </section>

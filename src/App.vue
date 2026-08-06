@@ -36,7 +36,7 @@ const renderedPattern = computed(() => renderGrid(
   pattern.project.value.repeatBoxes,
 ))
 
-function createProject(project: Omit<PatternProject, 'format' | 'version' | 'cells' | 'repeatBoxes'>) {
+function createProject(project: Omit<PatternProject, 'format' | 'version' | 'cells' | 'recentColors' | 'repeatBoxes'>) {
   pattern.createProject(project)
   newModalOpen.value = false
   drawerOpen.value = false
