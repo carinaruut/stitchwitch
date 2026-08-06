@@ -4,7 +4,8 @@ import type { PatternProject } from '../types/pattern'
 import { findUsedColors, renderGrid } from '../utils/grid'
 
 const props = defineProps<{ project: PatternProject }>()
-const pattern = computed(() => renderGrid(props.project.cells, props.project.horizontalRepeats, props.project.verticalRepeats, props.project.repeatBoxes).cells)
+const renderedPattern = computed(() => renderGrid(props.project.cells, props.project.horizontalRepeats, props.project.verticalRepeats, props.project.repeatBoxes))
+const pattern = computed(() => renderedPattern.value.cells)
 const columns = computed(() => pattern.value[0].length)
 const rows = computed(() => pattern.value.length)
 const usedColors = computed(() => findUsedColors(pattern.value))
@@ -15,8 +16,8 @@ const previewStyle = computed(() => ({
   gridAutoRows: `${previewCellSize.value}mm`,
 }))
 const chartStyle = computed(() => ({
-  gridTemplateColumns: `7mm repeat(${columns.value}, ${chartCellSize.value}mm)`,
-  gridTemplateRows: `7mm repeat(${rows.value}, ${chartCellSize.value}mm)`,
+  gridTemplateColumns: `repeat(${columns.value + 1}, ${chartCellSize.value}mm)`,
+  gridTemplateRows: `repeat(${rows.value + 1}, ${chartCellSize.value}mm)`,
 }))
 </script>
 
@@ -49,10 +50,27 @@ const chartStyle = computed(() => ({
       <h2>Stitch chart</h2>
       <div class="print-chart" :style="chartStyle" aria-label="Numbered stitch chart">
         <span class="print-chart-corner"></span>
-        <span v-for="column in columns" :key="`column-${column}`" class="print-column-number">{{ column }}</span>
+        <span
+          v-for="(column, columnIndex) in renderedPattern.columnHeaders"
+          :key="`column-${columnIndex}`"
+          class="print-column-number"
+          :class="{ 'print-section-column-end': (column + 1) % 5 === 0 && columnIndex < columns - 1 }"
+        >{{ column + 1 }}</span>
         <template v-for="(row, rowIndex) in pattern" :key="rowIndex">
-          <span class="print-row-number">{{ rowIndex + 1 }}</span>
-          <span v-for="(color, columnIndex) in row" :key="columnIndex" class="print-chart-cell" :style="{ backgroundColor: color }"></span>
+          <span
+            class="print-row-number"
+            :class="{ 'print-section-row-end': (renderedPattern.rowHeaders[rowIndex] + 1) % 5 === 0 && rowIndex < rows - 1 }"
+          >{{ renderedPattern.rowHeaders[rowIndex] + 1 }}</span>
+          <span
+            v-for="(color, columnIndex) in row"
+            :key="columnIndex"
+            class="print-chart-cell"
+            :class="{
+              'print-section-column-end': (renderedPattern.columnHeaders[columnIndex] + 1) % 5 === 0 && columnIndex < columns - 1,
+              'print-section-row-end': (renderedPattern.rowHeaders[rowIndex] + 1) % 5 === 0 && rowIndex < rows - 1,
+            }"
+            :style="{ backgroundColor: color }"
+          ></span>
         </template>
       </div>
     </section>

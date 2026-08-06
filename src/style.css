@@ -167,8 +167,8 @@ body {
   }
 
   .print-chart {
-    border-left: 0.15mm solid black;
-    border-top: 0.15mm solid black;
+    border-left: 0.18mm solid #e5e7eb;
+    border-top: 0.18mm solid #e5e7eb;
   }
 
   .print-preview-grid {
@@ -213,8 +213,8 @@ body {
   }
 
   .print-chart-cell {
-    border-bottom: 0.15mm solid black;
-    border-right: 0.15mm solid black;
+    border-bottom: 0.18mm solid #d9d9d9;
+    border-right: 0.18mm solid #d9d9d9;
     box-sizing: border-box;
   }
 
@@ -227,13 +227,32 @@ body {
     justify-content: center;
     line-height: 1;
     overflow: hidden;
+    background: white;
+    color: #6b7280;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-weight: 500;
+  }
+
+  .print-chart-corner {
+    border-bottom: 0.18mm solid #e5e7eb;
+    border-right: 0.18mm solid #e5e7eb;
   }
 
   .print-column-number {
-    border-bottom: 0.3mm solid black;
+    border-bottom: 0.18mm solid #e5e7eb;
+    border-right: 0.18mm solid #f3f4f6;
   }
 
   .print-row-number {
-    border-right: 0.3mm solid black;
+    border-bottom: 0.18mm solid #f3f4f6;
+    border-right: 0.18mm solid #e5e7eb;
+  }
+
+  .print-section-column-end {
+    border-right: 0.45mm solid #a3a3a3;
+  }
+
+  .print-section-row-end {
+    border-bottom: 0.45mm solid #a3a3a3;
   }
 }
