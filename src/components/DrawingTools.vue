@@ -33,7 +33,7 @@ const tools: Array<{ value: DrawingTool; icon: string; label: string }> = [
 </script>
 
 <template>
-  <section class="flex flex-wrap items-center gap-3 border-y border-base-300 py-2" aria-label="Drawing tools">
+  <section class="flex flex-wrap items-center gap-2 rounded-box border border-base-300 bg-base-200/70 p-1.5" aria-label="Editor tools">
       <span class="text-sm font-semibold">Tools</span>
       <div class="join" aria-label="Drawing tool selection">
         <div v-for="item in tools" :key="item.value" class="tooltip" :data-tip="item.label">
@@ -78,5 +78,8 @@ const tools: Array<{ value: DrawingTool; icon: string; label: string }> = [
         </template>
       </div>
       <span class="badge badge-sm badge-outline capitalize">{{ tool === 'move' ? 'pan' : tool }}</span>
+      <div v-if="$slots.settings" class="grid w-[calc(100vw-3rem)] max-w-full grid-cols-5 items-center justify-items-center gap-1 border-t border-base-300 pt-1 sm:ml-auto sm:flex sm:w-auto sm:border-l sm:border-t-0 sm:pl-2 sm:pt-0" aria-label="Pattern settings">
+        <slot name="settings"></slot>
+      </div>
   </section>
 </template>

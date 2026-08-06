@@ -3,13 +3,12 @@ import ThemeToggle from './ThemeToggle.vue'
 import type { Theme } from '../composables/useTheme'
 
 defineProps<{ canUndo: boolean; canRedo: boolean; theme: Theme }>()
-defineEmits<{ new: []; open: []; save: []; print: []; undo: []; redo: []; theme: []; menu: []; guide: [] }>()
+defineEmits<{ new: []; open: []; save: []; print: []; undo: []; redo: []; theme: []; guide: [] }>()
 </script>
 
 <template>
   <header class="navbar min-h-14 border-b border-base-300 bg-base-100 px-2 sm:px-4">
     <div class="navbar-start gap-1">
-      <button class="btn btn-ghost btn-square btn-sm lg:hidden" type="button" aria-label="Open editing tools" @click="$emit('menu')"><span class="mdi mdi-menu text-lg" aria-hidden="true"></span></button>
       <span class="text-lg font-semibold tracking-tight">Stitch Witch</span>
     </div>
     <nav class="navbar-center hidden gap-1 lg:flex" aria-label="Project actions">

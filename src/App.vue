@@ -1,8 +1,12 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import TopNavbar from './components/TopNavbar.vue'
-import SettingsPanel from './components/SettingsPanel.vue'
 import DrawingTools from './components/DrawingTools.vue'
+import ColorMenu from './components/ColorMenu.vue'
+import GridMenu from './components/GridMenu.vue'
+import RepeatMenu from './components/RepeatMenu.vue'
+import RowMenu from './components/RowMenu.vue'
+import ColumnMenu from './components/ColumnMenu.vue'
 import PatternGrid from './components/PatternGrid.vue'
 import PatternPreview from './components/PatternPreview.vue'
 import NewProjectModal from './components/NewProjectModal.vue'
@@ -20,7 +24,6 @@ import { renderGrid } from './utils/grid'
 const pattern = usePattern()
 const { theme, toggleTheme } = useTheme()
 const { notifications, notify, dismiss } = useNotifications()
-const drawerOpen = ref(false)
 const newModalOpen = ref(false)
 const clearModalOpen = ref(false)
 const importModalOpen = ref(false)
@@ -39,7 +42,6 @@ const renderedPattern = computed(() => renderGrid(
 function createProject(project: Omit<PatternProject, 'format' | 'version' | 'cells' | 'recentColors' | 'repeatBoxes'>) {
   pattern.createProject(project)
   newModalOpen.value = false
-  drawerOpen.value = false
   notify('New pattern created.', 'success')
 }
 
@@ -91,7 +93,6 @@ function confirmImport() {
   void nextTick(() => { downloadBackupNeeded.value = false })
   pendingImport.value = null
   importModalOpen.value = false
-  drawerOpen.value = false
   notify('Project imported successfully.', 'success')
 }
 
@@ -247,17 +248,14 @@ onBeforeUnmount(() => {
       @undo="pattern.undo"
       @redo="pattern.redo"
       @theme="toggleTheme"
-      @menu="drawerOpen = true"
       @guide="guideOpen = true"
     />
     <input ref="fileInput" class="hidden" type="file" accept=".stitch-pattern,application/json" @change="selectFile" />
 
-    <div class="drawer lg:drawer-open">
-      <input id="editor-drawer" v-model="drawerOpen" type="checkbox" class="drawer-toggle" />
-      <div class="drawer-content min-w-0 p-3 sm:p-5">
-        <main class="mx-auto max-w-6xl space-y-4">
-          <section class="card border border-base-300 bg-base-100">
-            <div class="card-body gap-3 p-3 sm:p-5">
+    <div class="min-w-0 p-3 sm:p-5">
+      <main class="mx-auto max-w-[90rem] space-y-4">
+        <section class="card border border-base-300 bg-base-100">
+          <div class="card-body gap-3 p-3 sm:p-5">
               <div class="flex flex-wrap items-center justify-between gap-2">
                 <div>
                   <h1 class="text-xl font-bold">{{ pattern.project.value.name }}</h1>
@@ -289,7 +287,44 @@ onBeforeUnmount(() => {
                 @toggle-mirror-vertical="toggleMirror('vertical')"
                 @cancel-placement="placingSelection = false"
                 @clear="requestClear"
-              />
+              >
+                <template #settings>
+                  <ColorMenu :color="pattern.selectedColor.value" :recent-colors="pattern.recentColors.value" @select="pattern.chooseColor($event)" @eyedropper="pattern.tool.value = 'eyedropper'" />
+                  <GridMenu :cell-size="pattern.project.value.cellSize" @cell-size="pattern.project.value.cellSize = $event" />
+                  <RepeatMenu
+                    :horizontal="pattern.project.value.horizontalRepeats"
+                    :vertical="pattern.project.value.verticalRepeats"
+                    :boxes="pattern.project.value.repeatBoxes"
+                    :selected-row="pattern.selectedRow.value"
+                    :row-count="pattern.rowCount.value"
+                    :selected-column="pattern.selectedColumn.value"
+                    :column-count="pattern.columnCount.value"
+                    @horizontal="pattern.project.value.horizontalRepeats = $event"
+                    @vertical="pattern.project.value.verticalRepeats = $event"
+                    @save="saveRepeatBox"
+                    @toggle="pattern.toggleRepeatBox"
+                    @remove="pattern.removeRepeatBox"
+                  />
+                  <RowMenu
+                    :selected="pattern.selectedRow.value"
+                    :count="pattern.rowCount.value"
+                    @before="pattern.insertRow(pattern.selectedRow.value)"
+                    @after="pattern.insertRow(pattern.selectedRow.value + 1)"
+                    @beginning="pattern.insertRow(0)"
+                    @end="pattern.insertRow(pattern.rowCount.value)"
+                    @remove="pattern.deleteSelectedRow"
+                  />
+                  <ColumnMenu
+                    :selected="pattern.selectedColumn.value"
+                    :count="pattern.columnCount.value"
+                    @before="pattern.insertColumn(pattern.selectedColumn.value)"
+                    @after="pattern.insertColumn(pattern.selectedColumn.value + 1)"
+                    @beginning="pattern.insertColumn(0)"
+                    @end="pattern.insertColumn(pattern.columnCount.value)"
+                    @remove="pattern.deleteSelectedColumn"
+                  />
+                </template>
+              </DrawingTools>
               <PatternGrid
                 :cells="renderedPattern.cells"
                 :cell-source-rows="renderedPattern.sourceRows"
@@ -321,58 +356,17 @@ onBeforeUnmount(() => {
                 @place-selection="placeSelection"
                 @move-selection="moveSelectionDirectly"
               />
-            </div>
-          </section>
-
-          <PatternPreview
-            :cells="renderedPattern.cells"
-          />
-
-          <div class="flex justify-end">
-            <button class="btn btn-primary" type="button" @click="printPattern"><span class="mdi mdi-printer-outline text-lg" aria-hidden="true"></span>Print or Save as PDF</button>
           </div>
-        </main>
-      </div>
+        </section>
 
-      <aside class="drawer-side z-40">
-        <label for="editor-drawer" class="drawer-overlay" aria-label="Close editing tools"></label>
-        <div class="min-h-full w-72 overflow-y-auto border-r border-base-300 bg-base-200 p-2 lg:w-72">
-          <div class="mb-3 flex items-center justify-between lg:hidden">
-            <h2 class="font-bold">Tools and settings</h2>
-            <button class="btn btn-sm btn-ghost" type="button" @click="drawerOpen = false"><span class="mdi mdi-close" aria-hidden="true"></span>Close</button>
-          </div>
-          <SettingsPanel
-            :color="pattern.selectedColor.value"
-            :recent-colors="pattern.recentColors.value"
-            :cell-size="pattern.project.value.cellSize"
-            :horizontal="pattern.project.value.horizontalRepeats"
-            :vertical="pattern.project.value.verticalRepeats"
-            :repeat-boxes="pattern.project.value.repeatBoxes"
-            :selected-row="pattern.selectedRow.value"
-            :row-count="pattern.rowCount.value"
-            :selected-column="pattern.selectedColumn.value"
-            :column-count="pattern.columnCount.value"
-            @color="pattern.chooseColor($event)"
-            @eyedropper="pattern.tool.value = 'eyedropper'"
-            @cell-size="pattern.project.value.cellSize = $event"
-            @horizontal="pattern.project.value.horizontalRepeats = $event"
-            @vertical="pattern.project.value.verticalRepeats = $event"
-            @repeat-save="saveRepeatBox"
-            @repeat-toggle="pattern.toggleRepeatBox"
-            @repeat-remove="pattern.removeRepeatBox"
-            @row-before="pattern.insertRow(pattern.selectedRow.value)"
-            @row-after="pattern.insertRow(pattern.selectedRow.value + 1)"
-            @row-beginning="pattern.insertRow(0)"
-            @row-end="pattern.insertRow(pattern.rowCount.value)"
-            @row-remove="pattern.deleteSelectedRow"
-            @column-before="pattern.insertColumn(pattern.selectedColumn.value)"
-            @column-after="pattern.insertColumn(pattern.selectedColumn.value + 1)"
-            @column-beginning="pattern.insertColumn(0)"
-            @column-end="pattern.insertColumn(pattern.columnCount.value)"
-            @column-remove="pattern.deleteSelectedColumn"
-          />
+        <PatternPreview
+          :cells="renderedPattern.cells"
+        />
+
+        <div class="flex justify-end">
+          <button class="btn btn-primary" type="button" @click="printPattern"><span class="mdi mdi-printer-outline text-lg" aria-hidden="true"></span>Print or Save as PDF</button>
         </div>
-      </aside>
+      </main>
     </div>
   </div>
 
