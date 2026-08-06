@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import TopNavbar from './components/TopNavbar.vue'
 import SettingsPanel from './components/SettingsPanel.vue'
 import DrawingTools from './components/DrawingTools.vue'
@@ -28,6 +28,7 @@ const guideOpen = ref(false)
 const fileInput = ref<HTMLInputElement | null>(null)
 const pendingImport = ref<PatternProject | null>(null)
 const placingSelection = ref(false)
+const downloadBackupNeeded = ref(pattern.restoredAutosave.value)
 const renderedPattern = computed(() => renderGrid(
   pattern.project.value.cells,
   pattern.project.value.horizontalRepeats,
@@ -59,6 +60,8 @@ function confirmClear() {
 function saveProject() {
   try {
     downloadProject(pattern.project.value)
+    downloadBackupNeeded.value = false
+    void nextTick(() => { downloadBackupNeeded.value = false })
     notify('Project saved to your downloads.', 'success')
   } catch (error) {
     notify(error instanceof Error ? error.message : 'The project could not be saved.', 'error')
@@ -84,6 +87,8 @@ async function selectFile(event: Event) {
 function confirmImport() {
   if (!pendingImport.value) return
   pattern.replaceProject(pendingImport.value)
+  downloadBackupNeeded.value = false
+  void nextTick(() => { downloadBackupNeeded.value = false })
   pendingImport.value = null
   importModalOpen.value = false
   drawerOpen.value = false
@@ -195,6 +200,13 @@ function flushHiddenProject() {
   if (document.visibilityState === 'hidden') pattern.flushAutosave()
 }
 
+function warnBeforeUnload(event: BeforeUnloadEvent) {
+  pattern.flushAutosave()
+  if (!downloadBackupNeeded.value) return
+  event.preventDefault()
+  event.returnValue = 'Download a project backup with Save before leaving.'
+}
+
 let autosaveErrorNotified = false
 watch(pattern.autosaveStatus, (status) => {
   if (status === 'error' && !autosaveErrorNotified) {
@@ -202,9 +214,13 @@ watch(pattern.autosaveStatus, (status) => {
     notify('Local backup failed. Download the project to avoid losing changes.', 'error', 7000)
   }
 })
+watch(pattern.project, () => {
+  downloadBackupNeeded.value = true
+}, { deep: true })
 
 onMounted(() => {
   window.addEventListener('keydown', handleSelectionShortcuts)
+  window.addEventListener('beforeunload', warnBeforeUnload)
   window.addEventListener('pagehide', pattern.flushAutosave)
   document.addEventListener('visibilitychange', flushHiddenProject)
   if (pattern.restoredAutosave.value) notify('Recovered your locally saved pattern.', 'success')
@@ -212,6 +228,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
   pattern.flushAutosave()
   window.removeEventListener('keydown', handleSelectionShortcuts)
+  window.removeEventListener('beforeunload', warnBeforeUnload)
   window.removeEventListener('pagehide', pattern.flushAutosave)
   document.removeEventListener('visibilitychange', flushHiddenProject)
 })
