@@ -170,7 +170,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleEscape))
             <h2 class="text-xl font-bold">Preview, printing, and PDF</h2>
           </div>
           <div class="rounded-box border border-base-300 p-4">
-            <p class="text-sm text-base-content/70">Complete pattern preview shows the fully rendered chart without grid lines, including whole-pattern repeats or active repeat boxes. Print or Save as PDF produces a complete numbered overview, readable overlapping detail pages when the chart is too large for A4, and source-section charts for enabled repeat boxes. Repeat charts share pages when space allows.</p>
+            <p class="text-sm text-base-content/70">Complete pattern preview shows the fully rendered chart without grid lines, including whole-pattern repeats or active repeat boxes. Before printing, choose Colored or Black &amp; white symbols beside the print button. Symbol PDFs include a key mapping every printed symbol to its color. Print or Save as PDF produces a complete numbered overview, readable overlapping detail pages when the chart is too large for A4, and source-section charts for enabled repeat boxes. Repeat charts share pages when space allows.</p>
             <p class="mt-3 text-sm text-base-content/70">The light/dark theme button changes the editor only; printed output always uses a white page with exact pattern colors.</p>
           </div>
         </section>

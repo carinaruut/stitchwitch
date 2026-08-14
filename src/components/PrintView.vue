@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, type CSSProperties } from 'vue'
-import type { PatternGrid, PatternProject } from '../types/pattern'
-import { renderGrid } from '../utils/grid'
+import type { PatternGrid, PatternProject, PrintMode } from '../types/pattern'
+import { findUsedColors, renderGrid } from '../utils/grid'
 import PrintChart from './PrintChart.vue'
 
 const CHART_WIDTH_MM = 238
@@ -13,6 +13,14 @@ const MAX_CELL_MM = 5
 const TILE_COLUMNS = 55
 const TILE_ROWS = 35
 const REPEAT_GAP_MM = 6
+const SYMBOLS_PER_KEY_PAGE = 48
+const PRINT_SYMBOLS = [
+  '●', '○', '■', '□', '▲', '△', '◆', '◇', '✕', '＋', '−', '│', '╱', '╲', '✦', '✚',
+  '✖', '★', '☆', '♠', '♣', '♥', '♦', '☀', '☾', '☁', '☂', '⌁', '≈', '≡', '⊙', '⊗',
+  ...'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+  ...'abcdefghijklmnopqrstuvwxyz',
+  ...'0123456789',
+]
 
 interface PrintableChart {
   id: string
@@ -38,7 +46,7 @@ interface RepeatPage {
   height: number
 }
 
-const props = defineProps<{ project: PatternProject }>()
+const props = defineProps<{ project: PatternProject; mode: PrintMode }>()
 const renderedPattern = computed(() => renderGrid(props.project.cells, props.project.horizontalRepeats, props.project.verticalRepeats, props.project.repeatBoxes))
 const pattern = computed(() => renderedPattern.value.cells)
 const columns = computed(() => pattern.value[0].length)
@@ -48,6 +56,20 @@ const chartStyle = computed(() => ({
   gridTemplateColumns: `repeat(${columns.value + 1}, ${chartCellSize.value}mm)`,
   gridTemplateRows: `repeat(${rows.value + 1}, ${chartCellSize.value}mm)`,
 }))
+const symbolEntries = computed(() => findUsedColors(pattern.value).filter((color) => color.toLowerCase() !== '#ffffff').map((color, index) => ({
+  color,
+  symbol: PRINT_SYMBOLS[index] ?? String(index + 1),
+})))
+const symbolMap = computed(() => props.mode === 'symbols'
+  ? Object.fromEntries(symbolEntries.value.map(({ color, symbol }) => [color, symbol]))
+  : undefined)
+const symbolKeyPages = computed(() => {
+  if (props.mode !== 'symbols') return []
+  return Array.from(
+    { length: Math.ceil(symbolEntries.value.length / SYMBOLS_PER_KEY_PAGE) },
+    (_, index) => symbolEntries.value.slice(index * SYMBOLS_PER_KEY_PAGE, (index + 1) * SYMBOLS_PER_KEY_PAGE),
+  )
+})
 
 function makeChart(
   id: string,
@@ -186,8 +208,20 @@ const repeatPages = computed(() => {
         :row-headers="renderedPattern.rowHeaders"
         :column-headers="renderedPattern.columnHeaders"
         :chart-style="chartStyle"
-        label="Numbered full stitch chart overview"
+        :label="mode === 'symbols' ? 'Numbered black and white symbol chart overview' : 'Numbered full stitch chart overview'"
+        :symbols="symbolMap"
       />
+    </section>
+
+    <section v-for="(entries, pageIndex) in symbolKeyPages" :key="pageIndex" class="print-symbol-key-page">
+      <h2>Symbol key · Page {{ pageIndex + 1 }} of {{ symbolKeyPages.length }}</h2>
+      <p>Each symbol represents the same color on every chart page.</p>
+      <div class="print-symbol-key">
+        <div v-for="entry in entries" :key="entry.color" class="print-symbol-key-entry">
+          <span class="print-symbol-key-mark">{{ entry.symbol }}</span>
+          <span>{{ entry.color.toUpperCase() }}</span>
+        </div>
+      </div>
     </section>
 
     <section v-for="detail in detailCharts" :key="detail.id" class="print-detail-page">
@@ -199,6 +233,7 @@ const repeatPages = computed(() => {
         :column-headers="detail.columnHeaders"
         :chart-style="detail.style"
         :label="detail.title"
+        :symbols="symbolMap"
       />
     </section>
 
@@ -214,6 +249,7 @@ const repeatPages = computed(() => {
             :column-headers="repeat.columnHeaders"
             :chart-style="repeat.style"
             :label="repeat.title"
+            :symbols="symbolMap"
           />
         </article>
       </div>

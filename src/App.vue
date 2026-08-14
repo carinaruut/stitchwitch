@@ -18,7 +18,7 @@ import { usePattern } from './composables/usePattern'
 import { useTheme } from './composables/useTheme'
 import { useNotifications } from './composables/useNotifications'
 import { downloadProject, readProjectFile } from './composables/useProjectFiles'
-import type { DrawingTool, NewPatternProject, PatternProject, RepeatBoxInput } from './types/pattern'
+import type { DrawingTool, NewPatternProject, PatternProject, PrintMode, RepeatBoxInput } from './types/pattern'
 import { renderGrid } from './utils/grid'
 
 const pattern = usePattern()
@@ -31,6 +31,7 @@ const guideOpen = ref(false)
 const fileInput = ref<HTMLInputElement | null>(null)
 const pendingImport = ref<PatternProject | null>(null)
 const placingSelection = ref(false)
+const printMode = ref<PrintMode>('color')
 const downloadBackupNeeded = ref(pattern.restoredAutosave.value)
 const toolShortcuts: Record<string, DrawingTool> = {
   p: 'pencil',
@@ -285,6 +286,15 @@ onBeforeUnmount(() => {
                   </span>
                   <span class="badge badge-outline">{{ renderedPattern.cells[0].length }} columns shown</span>
                   <span class="badge badge-outline">{{ renderedPattern.cells.length }} rows shown</span>
+                  <label class="sr-only" for="print-mode">PDF and print style</label>
+                  <select id="print-mode" v-model="printMode" class="select select-bordered select-sm w-auto" aria-label="PDF and print style">
+                    <option value="color">Colored</option>
+                    <option value="symbols">Black &amp; white symbols</option>
+                  </select>
+                  <button class="btn btn-primary btn-sm" type="button" @click="printPattern">
+                    <span class="mdi mdi-printer-outline text-base" aria-hidden="true"></span>
+                    Print or Save as PDF
+                  </button>
                 </div>
               </div>
               <DrawingTools
@@ -381,9 +391,6 @@ onBeforeUnmount(() => {
           :cells="renderedPattern.cells"
         />
 
-        <div class="flex justify-end">
-          <button class="btn btn-primary" type="button" @click="printPattern"><span class="mdi mdi-printer-outline text-lg" aria-hidden="true"></span>Print or Save as PDF</button>
-        </div>
       </main>
     </div>
   </div>
@@ -408,5 +415,5 @@ onBeforeUnmount(() => {
     @cancel="cancelImport"
   />
   <NotificationToast :notifications="notifications" @dismiss="dismiss" />
-  <PrintView :project="pattern.project.value" />
+  <PrintView :project="pattern.project.value" :mode="printMode" />
 </template>

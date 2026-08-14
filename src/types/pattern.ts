@@ -1,6 +1,7 @@
 export type PatternGrid = string[][]
 export type DrawingTool = 'pencil' | 'eraser' | 'fill' | 'eyedropper' | 'select' | 'move'
 export type PreviewStitch = 'knit' | 'cross-stitch'
+export type PrintMode = 'color' | 'symbols'
 
 export interface GridSelection {
   top: number

@@ -8,6 +8,7 @@ defineProps<{
   columnHeaders: number[]
   chartStyle: CSSProperties
   label: string
+  symbols?: Record<string, string>
 }>()
 </script>
 
@@ -30,11 +31,12 @@ defineProps<{
         :key="columnIndex"
         class="print-chart-cell"
         :class="{
+          'print-symbol-cell': symbols,
           'print-section-column-end': (columnHeaders[columnIndex] + 1) % 5 === 0 && columnIndex < columnHeaders.length - 1,
           'print-section-row-end': (rowHeaders[rowIndex] + 1) % 5 === 0 && rowIndex < cells.length - 1,
         }"
-        :style="{ backgroundColor: color }"
-      ></span>
+        :style="symbols ? undefined : { backgroundColor: color }"
+      >{{ symbols?.[color] }}</span>
     </template>
   </div>
 </template>

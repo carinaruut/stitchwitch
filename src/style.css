@@ -146,12 +146,14 @@ body {
 
   .print-chart-page,
   .print-detail-page,
+  .print-symbol-key-page,
   .print-repeat-page {
     break-inside: avoid;
   }
 
   .print-chart-page h2,
   .print-detail-page h2,
+  .print-symbol-key-page h2,
   .print-repeat-page h2 {
     font-size: 14pt;
     font-weight: 700;
@@ -159,11 +161,13 @@ body {
   }
 
   .print-detail-page,
+  .print-symbol-key-page,
   .print-repeat-page {
     break-before: page;
   }
 
   .print-detail-page p,
+  .print-symbol-key-page p,
   .print-repeat-chart p {
     font-size: 9pt;
     margin: -1mm 0 3mm;
@@ -211,6 +215,48 @@ body {
     border-bottom: 0.18mm solid #d9d9d9;
     border-right: 0.18mm solid #d9d9d9;
     box-sizing: border-box;
+  }
+
+  .print-symbol-cell {
+    align-items: center;
+    background: white !important;
+    color: black;
+    display: flex;
+    font-family: Arial, "Apple Symbols", sans-serif;
+    font-size: 7pt;
+    font-weight: 700;
+    justify-content: center;
+    line-height: 1;
+    overflow: hidden;
+  }
+
+  .print-symbol-key {
+    display: grid;
+    gap: 3mm 5mm;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .print-symbol-key-entry {
+    align-items: center;
+    border: 0.25mm solid #d4d4d4;
+    display: flex;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 9pt;
+    gap: 3mm;
+    min-height: 9mm;
+    padding: 1.5mm 2mm;
+  }
+
+  .print-symbol-key-mark {
+    align-items: center;
+    border: 0.25mm solid #737373;
+    display: flex;
+    flex: 0 0 7mm;
+    font-family: Arial, "Apple Symbols", sans-serif;
+    font-size: 10pt;
+    font-weight: 700;
+    height: 7mm;
+    justify-content: center;
   }
 
   .print-chart-corner,
