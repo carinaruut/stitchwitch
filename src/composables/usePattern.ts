@@ -248,17 +248,7 @@ export function usePattern() {
   }
 
   function repeatBoxesConflict(candidate: RepeatBox): boolean {
-    return project.value.repeatBoxes.some((box) => {
-      if (box.id === candidate.id) return false
-      if (boxesOverlap(box, candidate)) return true
-      if (box.direction === 'across' && candidate.direction === 'across' && box.left < candidate.right && candidate.left < box.right) {
-        return box.left !== candidate.left || box.right !== candidate.right || box.sections !== candidate.sections
-      }
-      if (box.direction === 'down' && candidate.direction === 'down' && box.top < candidate.bottom && candidate.top < box.bottom) {
-        return box.top !== candidate.top || box.bottom !== candidate.bottom || box.sections !== candidate.sections
-      }
-      return false
-    })
+    return project.value.repeatBoxes.some((box) => box.id !== candidate.id && boxesOverlap(box, candidate))
   }
 
   function saveRepeatBox(input: RepeatBoxInput, id: string | null): string | null {
@@ -270,7 +260,7 @@ export function usePattern() {
     if (candidate.bottom > 500 || candidate.right > 500) return 'Repeat boxes cannot extend beyond 500 rows or columns.'
     const length = candidate.direction === 'across' ? candidate.right - candidate.left : candidate.bottom - candidate.top
     if (length % candidate.sections !== 0) return 'The repeat length must divide evenly into its sections.'
-    if (repeatBoxesConflict(candidate)) return 'Repeat boxes cannot overlap or use incompatible section boundaries.'
+    if (repeatBoxesConflict(candidate)) return 'Repeat boxes cannot overlap.'
 
     beginGridChange()
     const existingIndex = project.value.repeatBoxes.findIndex((box) => box.id === candidate.id)

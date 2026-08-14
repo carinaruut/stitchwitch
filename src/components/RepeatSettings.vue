@@ -15,7 +15,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   horizontal: [value: number]
   vertical: [value: number]
-  save: [input: RepeatBoxInput, id: string | null]
+  save: [input: RepeatBoxInput, id: string | null, complete: (error: string | null) => void]
   toggle: [id: string, enabled: boolean]
   remove: [id: string]
 }>()
@@ -32,6 +32,7 @@ const sectionSize = ref(1)
 const sections = ref(2)
 const editingId = ref<string | null>(null)
 const editingEnabled = ref(true)
+const saveError = ref('')
 
 function selectedDefaults() {
   if (direction.value === 'across') {
@@ -101,6 +102,11 @@ const validationMessage = computed(() => {
   }
   return ''
 })
+const displayedError = computed(() => validationMessage.value || saveError.value)
+
+watch([direction, sizingMode, firstCross, lastCross, start, ending, sectionSize, sections], () => {
+  saveError.value = ''
+})
 
 const input = computed<RepeatBoxInput | null>(() => {
   if (validationMessage.value) return null
@@ -154,8 +160,11 @@ function sourceSize(box: RepeatBox) {
 
 function submit() {
   if (!input.value) return
-  emit('save', input.value, editingId.value)
-  cancelEdit()
+  saveError.value = ''
+  emit('save', input.value, editingId.value, (error) => {
+    if (error) saveError.value = error
+    else cancelEdit()
+  })
 }
 
 function edit(box: RepeatBox) {
@@ -255,7 +264,7 @@ function updateFallback(event: Event, eventName: 'horizontal' | 'vertical') {
         </div>
         <p class="text-[11px] text-base-content/50">Bottom/right is included. Sections includes the source.</p>
 
-        <p v-if="validationMessage" class="text-xs text-error" role="alert">{{ validationMessage }}</p>
+        <p v-if="displayedError" class="text-xs text-error" role="alert">{{ displayedError }}</p>
         <div v-else class="rounded-box bg-base-200/70 px-3 py-2 text-xs" aria-live="polite">
           <p class="font-medium">{{ summaryRange(input!) }}</p>
           <p class="mt-0.5 text-base-content/60">{{ summarySections(input!) }}</p>

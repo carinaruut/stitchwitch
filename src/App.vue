@@ -142,10 +142,10 @@ function printPattern() {
   window.print()
 }
 
-function saveRepeatBox(input: RepeatBoxInput, id: string | null) {
+function saveRepeatBox(input: RepeatBoxInput, id: string | null, complete: (error: string | null) => void) {
   const error = pattern.saveRepeatBox(input, id)
-  if (error) notify(error, 'error')
-  else notify(id ? 'Repeat box updated.' : 'Repeat box added.', 'success')
+  complete(error)
+  if (!error) notify(id ? 'Repeat box updated.' : 'Repeat box added.', 'success')
 }
 
 function selectTool(tool: typeof pattern.tool.value) {

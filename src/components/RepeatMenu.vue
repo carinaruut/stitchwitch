@@ -16,7 +16,7 @@ defineProps<{
 defineEmits<{
   horizontal: [value: number]
   vertical: [value: number]
-  save: [input: RepeatBoxInput, id: string | null]
+  save: [input: RepeatBoxInput, id: string | null, complete: (error: string | null) => void]
   toggle: [id: string, enabled: boolean]
   remove: [id: string]
 }>()
@@ -41,7 +41,7 @@ defineEmits<{
       :column-count="columnCount"
       @horizontal="$emit('horizontal', $event)"
       @vertical="$emit('vertical', $event)"
-      @save="(input, id) => $emit('save', input, id)"
+      @save="(input, id, complete) => $emit('save', input, id, complete)"
       @toggle="(id, enabled) => $emit('toggle', id, enabled)"
       @remove="$emit('remove', $event)"
     />

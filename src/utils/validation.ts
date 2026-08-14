@@ -17,14 +17,7 @@ interface LegacyRepeatRange {
 }
 
 function repeatBoxesConflict(first: RepeatBox, second: RepeatBox): boolean {
-  if (boxesOverlap(first, second)) return true
-  if (first.direction === 'across' && second.direction === 'across' && first.left < second.right && second.left < first.right) {
-    return first.left !== second.left || first.right !== second.right || first.sections !== second.sections
-  }
-  if (first.direction === 'down' && second.direction === 'down' && first.top < second.bottom && second.top < first.bottom) {
-    return first.top !== second.top || first.bottom !== second.bottom || first.sections !== second.sections
-  }
-  return false
+  return boxesOverlap(first, second)
 }
 
 export function validateProject(value: unknown): ValidationResult {
@@ -78,7 +71,7 @@ export function validateProject(value: unknown): ValidationResult {
     }
     for (let index = 0; index < boxes.length; index += 1) {
       if (boxes.slice(index + 1).some((box) => repeatBoxesConflict(boxes[index], box))) {
-        return { valid: false, error: 'Repeat boxes overlap or use incompatible section boundaries.' }
+        return { valid: false, error: 'Repeat boxes overlap.' }
       }
     }
   }
