@@ -143,7 +143,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleEscape))
           <div class="grid gap-3 md:grid-cols-2">
             <article class="rounded-box border border-base-300 p-4">
               <h3 class="font-bold">Rows and columns</h3>
-              <p class="mt-1 text-sm text-base-content/70">The Rows and Columns tools fill, erase, insert around, or delete the current item. Their deletion sections also accept multiple items such as <strong>1;2;3</strong> or <strong>1-3;6</strong>. Numbered headers select one item, and Shift-click selects a contiguous range for canvas actions. Structural changes preserve repeat boxes outside the edited area.</p>
+              <p class="mt-1 text-sm text-base-content/70">The Rows and Columns tools fill, erase, insert around, or delete the current item. Their deletion sections also accept multiple items such as <strong>1;2;3</strong> or <strong>1-3;6</strong>. Click a numbered header to select it and click it again to deselect it; selecting a row clears the column selection and vice versa. Shift-click extends the selection to a contiguous range. A dashed line marks only the outside of each selected range. Structural changes preserve repeat boxes outside the edited area.</p>
             </article>
             <article class="rounded-box border border-base-300 p-4">
               <h3 class="font-bold">Display and history</h3>
