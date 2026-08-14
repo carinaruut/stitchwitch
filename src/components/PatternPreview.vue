@@ -8,8 +8,8 @@ const columns = computed(() => props.cells[0].length)
 </script>
 
 <template>
-  <section class="card border border-base-300 bg-base-100">
-    <div class="card-body gap-3 p-4">
+  <section class="card min-w-0 border border-base-300 bg-base-100">
+    <div class="card-body min-w-0 gap-3 p-4">
       <div class="flex flex-wrap items-center justify-between gap-2">
         <h2 class="card-title text-base">Complete pattern preview</h2>
         <div class="flex flex-wrap items-center justify-end gap-2">
@@ -24,7 +24,7 @@ const columns = computed(() => props.cells[0].length)
           <span class="badge badge-secondary">{{ cells.length }} rows</span>
         </div>
       </div>
-      <div class="max-h-96 overflow-auto rounded-xl bg-base-200/30 p-4">
+      <div class="w-full min-w-0 overflow-x-auto overflow-y-hidden rounded-xl bg-base-200/30 p-4">
         <div
           class="stitch-grid grid w-max"
           :class="`stitch-grid-${stitch}`"

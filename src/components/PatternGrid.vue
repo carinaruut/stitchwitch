@@ -137,6 +137,11 @@ function startPan(event: PointerEvent) {
   viewport.value.setPointerCapture(event.pointerId)
 }
 
+function startViewportAction(event: PointerEvent) {
+  if (props.tool === 'move') startPan(event)
+  else if (props.tool === 'select' && props.selection) emit('clearSelection')
+}
+
 function start(row: number, column: number, displayRow: number, displayColumn: number, event: PointerEvent) {
   if (event.button !== 0) return
   if (props.tool === 'move') {
@@ -316,7 +321,7 @@ onBeforeUnmount(() => {
     class="h-[calc(100dvh-16rem)] min-h-80 w-full min-w-0 overflow-auto border border-base-300/70 bg-base-100 p-3"
     :class="tool === 'move' ? (panning ? 'cursor-grabbing touch-none' : 'cursor-grab touch-none') : tool === 'select' ? (placingSelection ? 'cursor-copy' : 'cursor-crosshair') : tool === 'wand' ? 'cursor-crosshair' : ''"
     aria-label="Editable pattern grid"
-    @pointerdown.self="tool === 'move' && startPan($event)"
+    @pointerdown.self="startViewportAction"
     @pointermove="pan"
     @pointerup="stop"
     @pointercancel="stop"
@@ -369,6 +374,7 @@ onBeforeUnmount(() => {
             'selection-border-bottom': visibleContains(rowHeaders[rowIndex], columnHeaders[columnIndex]) && !visibleContains(rowHeaders[rowIndex] + 1, columnHeaders[columnIndex]),
             'selection-border-left': visibleContains(rowHeaders[rowIndex], columnHeaders[columnIndex]) && !visibleContains(rowHeaders[rowIndex], columnHeaders[columnIndex] - 1),
             'selection-border-right': visibleContains(rowHeaders[rowIndex], columnHeaders[columnIndex]) && !visibleContains(rowHeaders[rowIndex], columnHeaders[columnIndex] + 1),
+            'selection-shade': visibleContains(rowHeaders[rowIndex], columnHeaders[columnIndex]),
             'cursor-move': tool === 'select' && !placingSelection && containsSelection(rowHeaders[rowIndex], columnHeaders[columnIndex]),
             'mirror-axis-left': verticalMirrorLeft(columnHeaders[columnIndex]),
             'mirror-axis-right': verticalMirrorRight(columnHeaders[columnIndex]),
