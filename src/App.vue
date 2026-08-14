@@ -32,6 +32,10 @@ const fileInput = ref<HTMLInputElement | null>(null)
 const pendingImport = ref<PatternProject | null>(null)
 const placingSelection = ref(false)
 const printMode = ref<PrintMode>('color')
+const printInColor = computed({
+  get: () => printMode.value === 'color',
+  set: (value: boolean) => { printMode.value = value ? 'color' : 'symbols' },
+})
 const downloadBackupNeeded = ref(pattern.restoredAutosave.value)
 const toolShortcuts: Record<string, DrawingTool> = {
   p: 'pencil',
@@ -274,27 +278,31 @@ onBeforeUnmount(() => {
       <main class="mx-auto max-w-[90rem] space-y-4">
         <section class="card border border-base-300 bg-base-100">
           <div class="card-body gap-3 p-3 sm:p-5">
-              <div class="flex flex-wrap items-center justify-between gap-2">
+              <div class="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <h1 class="text-xl font-bold">{{ pattern.project.value.name }}</h1>
                   <p class="text-sm text-base-content/65">Edit the complete pattern. Repeated copies update their source cells.</p>
                 </div>
-                <div class="flex flex-wrap items-center justify-end gap-2">
-                  <span class="badge badge-sm" :class="pattern.autosaveStatus.value === 'error' ? 'badge-error' : pattern.autosaveStatus.value === 'saving' ? 'badge-ghost' : 'badge-success badge-outline'">
-                    <span class="mdi" :class="pattern.autosaveStatus.value === 'error' ? 'mdi-alert-circle-outline' : pattern.autosaveStatus.value === 'saving' ? 'mdi-loading mdi-spin' : 'mdi-content-save-check-outline'" aria-hidden="true"></span>
-                    {{ pattern.autosaveStatus.value === 'error' ? 'Backup failed' : pattern.autosaveStatus.value === 'saving' ? 'Saving locally' : 'Saved locally' }}
-                  </span>
-                  <span class="badge badge-outline">{{ renderedPattern.cells[0].length }} columns shown</span>
-                  <span class="badge badge-outline">{{ renderedPattern.cells.length }} rows shown</span>
-                  <label class="sr-only" for="print-mode">PDF and print style</label>
-                  <select id="print-mode" v-model="printMode" class="select select-bordered select-sm w-auto" aria-label="PDF and print style">
-                    <option value="color">Colored</option>
-                    <option value="symbols">Black &amp; white symbols</option>
-                  </select>
-                  <button class="btn btn-primary btn-sm" type="button" @click="printPattern">
-                    <span class="mdi mdi-printer-outline text-base" aria-hidden="true"></span>
-                    Print or Save as PDF
-                  </button>
+                <div class="flex w-full flex-col items-stretch gap-2 sm:w-auto sm:items-end">
+                  <div class="flex flex-wrap items-center gap-2 sm:justify-end">
+                    <span class="badge badge-sm" :class="pattern.autosaveStatus.value === 'error' ? 'badge-error' : pattern.autosaveStatus.value === 'saving' ? 'badge-ghost' : 'badge-success badge-outline'">
+                      <span class="mdi" :class="pattern.autosaveStatus.value === 'error' ? 'mdi-alert-circle-outline' : pattern.autosaveStatus.value === 'saving' ? 'mdi-loading mdi-spin' : 'mdi-content-save-check-outline'" aria-hidden="true"></span>
+                      {{ pattern.autosaveStatus.value === 'error' ? 'Backup failed' : pattern.autosaveStatus.value === 'saving' ? 'Saving locally' : 'Saved locally' }}
+                    </span>
+                    <span class="badge badge-outline">{{ renderedPattern.cells[0].length }} columns shown</span>
+                    <span class="badge badge-outline">{{ renderedPattern.cells.length }} rows shown</span>
+                  </div>
+                  <div class="flex flex-wrap items-center justify-between gap-2 sm:justify-end">
+                    <label class="flex h-8 cursor-pointer items-center gap-2 rounded-lg border border-base-300 bg-base-200/60 px-2.5 text-xs">
+                      <span :class="!printInColor ? 'font-semibold text-base-content' : 'text-base-content/55'">B&amp;W symbols</span>
+                      <input v-model="printInColor" class="toggle toggle-primary toggle-xs" type="checkbox" aria-label="Print charts in color" />
+                      <span :class="printInColor ? 'font-semibold text-base-content' : 'text-base-content/55'">Color</span>
+                    </label>
+                    <button class="btn btn-primary btn-sm" type="button" @click="printPattern">
+                      <span class="mdi mdi-printer-outline text-base" aria-hidden="true"></span>
+                      Print or Save as PDF
+                    </button>
+                  </div>
                 </div>
               </div>
               <DrawingTools
