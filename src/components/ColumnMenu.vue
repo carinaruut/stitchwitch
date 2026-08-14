@@ -3,7 +3,7 @@ import ClickPopover from './ClickPopover.vue'
 import ColumnControls from './ColumnControls.vue'
 
 defineProps<{ selected: number; count: number }>()
-defineEmits<{ before: []; after: []; beginning: []; end: []; remove: [] }>()
+defineEmits<{ before: []; after: []; beginning: []; end: []; fill: []; erase: []; removeCurrent: []; removeColumns: [value: string] }>()
 </script>
 
 <template>
@@ -15,6 +15,6 @@ defineEmits<{ before: []; after: []; beginning: []; end: []; remove: [] }>()
         <span class="badge badge-sm hidden sm:inline-flex" :class="open ? 'badge-primary-content' : 'badge-ghost'">{{ selected + 1 }}</span>
       </button>
     </template>
-    <ColumnControls :selected="selected" :count="count" @before="$emit('before')" @after="$emit('after')" @beginning="$emit('beginning')" @end="$emit('end')" @remove="$emit('remove')" />
+    <ColumnControls :selected="selected" :count="count" @before="$emit('before')" @after="$emit('after')" @beginning="$emit('beginning')" @end="$emit('end')" @fill="$emit('fill')" @erase="$emit('erase')" @remove-current="$emit('removeCurrent')" @remove-columns="$emit('removeColumns', $event)" />
   </ClickPopover>
 </template>

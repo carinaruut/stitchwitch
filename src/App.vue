@@ -124,23 +124,41 @@ function endStroke() {
 }
 
 function handleRowAction(action: 'above' | 'below' | 'multiple' | 'delete' | 'fill' | 'erase', row: number, count = 1) {
-  pattern.selectedRow.value = row
+  if (action === 'above' || action === 'below' || action === 'multiple') pattern.selectRow(row)
   if (action === 'above') pattern.insertRow(row)
   if (action === 'below') pattern.insertRow(row + 1)
   if (action === 'multiple') pattern.insertMultipleRows(row + 1, count)
-  if (action === 'delete') pattern.deleteSelectedRow()
-  if (action === 'fill') pattern.fillRow(row, pattern.selectedColor.value)
-  if (action === 'erase') pattern.eraseRow(row)
+  if (action === 'delete') pattern.deleteSelectedRows()
+  if (action === 'fill') pattern.fillSelectedRows(pattern.selectedColor.value)
+  if (action === 'erase') pattern.eraseSelectedRows()
 }
 
 function handleColumnAction(action: 'before' | 'after' | 'multiple' | 'delete' | 'fill' | 'erase', column: number, count = 1) {
-  pattern.selectedColumn.value = column
+  if (action === 'before' || action === 'after' || action === 'multiple') pattern.selectColumn(column)
   if (action === 'before') pattern.insertColumn(column)
   if (action === 'after') pattern.insertColumn(column + 1)
   if (action === 'multiple') pattern.insertMultipleColumns(column + 1, count)
-  if (action === 'delete') pattern.deleteSelectedColumn()
-  if (action === 'fill') pattern.fillColumn(column, pattern.selectedColor.value)
-  if (action === 'erase') pattern.eraseColumn(column)
+  if (action === 'delete') pattern.deleteSelectedColumns()
+  if (action === 'fill') pattern.fillSelectedColumns(pattern.selectedColor.value)
+  if (action === 'erase') pattern.eraseSelectedColumns()
+}
+
+function deleteRows(value: string) {
+  if (pattern.selectRows(value)) pattern.deleteSelectedRows()
+}
+
+function deleteColumns(value: string) {
+  if (pattern.selectColumns(value)) pattern.deleteSelectedColumns()
+}
+
+function selectRowHeader(row: number, extend: boolean, toggle: boolean) {
+  if (toggle) pattern.clearRowSelection()
+  else pattern.selectRow(row, extend, true)
+}
+
+function selectColumnHeader(column: number, extend: boolean, toggle: boolean) {
+  if (toggle) pattern.clearColumnSelection()
+  else pattern.selectColumn(column, extend, true)
 }
 
 function printPattern() {
@@ -347,7 +365,10 @@ onBeforeUnmount(() => {
                     @after="pattern.insertRow(pattern.selectedRow.value + 1)"
                     @beginning="pattern.insertRow(0)"
                     @end="pattern.insertRow(pattern.rowCount.value)"
-                    @remove="pattern.deleteSelectedRow"
+                    @fill="pattern.fillRow(pattern.selectedRow.value, pattern.selectedColor.value)"
+                    @erase="pattern.eraseRow(pattern.selectedRow.value)"
+                    @remove-current="pattern.deleteSelectedRow"
+                    @remove-rows="deleteRows"
                   />
                   <ColumnMenu
                     :selected="pattern.selectedColumn.value"
@@ -356,7 +377,10 @@ onBeforeUnmount(() => {
                     @after="pattern.insertColumn(pattern.selectedColumn.value + 1)"
                     @beginning="pattern.insertColumn(0)"
                     @end="pattern.insertColumn(pattern.columnCount.value)"
-                    @remove="pattern.deleteSelectedColumn"
+                    @fill="pattern.fillColumn(pattern.selectedColumn.value, pattern.selectedColor.value)"
+                    @erase="pattern.eraseColumn(pattern.selectedColumn.value)"
+                    @remove-current="pattern.deleteSelectedColumn"
+                    @remove-columns="deleteColumns"
                   />
                 </template>
               </DrawingTools>
@@ -374,6 +398,8 @@ onBeforeUnmount(() => {
                 :cell-size="pattern.project.value.cellSize"
                 :selected-row="pattern.selectedRow.value"
                 :selected-column="pattern.selectedColumn.value"
+                :selected-rows="pattern.selectedRows.value"
+                :selected-columns="pattern.selectedColumns.value"
                 :tool="pattern.tool.value"
                 :selection="pattern.selection.value"
                 :placing-selection="placingSelection"
@@ -382,9 +408,9 @@ onBeforeUnmount(() => {
                 @stroke-start="beginStroke"
                 @paint="pattern.paintCell"
                 @stroke-end="endStroke"
-                @select-row="pattern.selectedRow.value = $event"
+                @select-row="selectRowHeader"
                 @row-action="handleRowAction"
-                @select-column="pattern.selectedColumn.value = $event"
+                @select-column="selectColumnHeader"
                 @column-action="handleColumnAction"
                 @select-area="pattern.setSelection"
                 @clear-selection="pattern.clearSelection"

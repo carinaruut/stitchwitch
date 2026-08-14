@@ -2,6 +2,7 @@ import { computed, ref, watch } from 'vue'
 import type { DrawingTool, GridSelection, NewPatternProject, PatternGrid, PatternProject, RepeatBox, RepeatBoxInput } from '../types/pattern'
 import { addColumn, addRow, boxesOverlap, cloneGrid, createGrid, ensureGridSize, removeColumn, removeRow, renderGrid, sourceCellFor, synchronizeRepeatBox } from '../utils/grid'
 import { normalizeColor } from '../utils/colors'
+import { parseAxisSelection } from '../utils/axisSelection'
 import { asPatternProject } from '../utils/validation'
 import { useHistory } from './useHistory'
 
@@ -49,6 +50,8 @@ export function usePattern() {
   const tool = ref<DrawingTool>('pencil')
   const selectedRow = ref(0)
   const selectedColumn = ref(0)
+  const selectedRows = ref<number[]>([0])
+  const selectedColumns = ref<number[]>([0])
   const selection = ref<GridSelection | null>(null)
   const clipboard = ref<PatternGrid | null>(null)
   const mirrorHorizontal = ref(false)
@@ -72,6 +75,56 @@ export function usePattern() {
   const autosaveStatus = ref<'saving' | 'saved' | 'error'>('saving')
   const lastSavedAt = ref<number | null>(recovered ? Date.now() : null)
   let autosaveTimer: ReturnType<typeof setTimeout> | null = null
+  let rowSelectionAnchor = 0
+  let columnSelectionAnchor = 0
+
+  function selectRow(index: number, extend = false, exclusive = false) {
+    const row = Math.max(0, Math.min(Math.floor(index), project.value.cells.length - 1))
+    if (!extend) rowSelectionAnchor = row
+    selectedRow.value = row
+    const start = extend ? Math.min(rowSelectionAnchor, row) : row
+    const end = extend ? Math.max(rowSelectionAnchor, row) : row
+    selectedRows.value = Array.from({ length: end - start + 1 }, (_, offset) => start + offset)
+    if (exclusive) selectedColumns.value = []
+  }
+
+  function selectColumn(index: number, extend = false, exclusive = false) {
+    const column = Math.max(0, Math.min(Math.floor(index), project.value.cells[0].length - 1))
+    if (!extend) columnSelectionAnchor = column
+    selectedColumn.value = column
+    const start = extend ? Math.min(columnSelectionAnchor, column) : column
+    const end = extend ? Math.max(columnSelectionAnchor, column) : column
+    selectedColumns.value = Array.from({ length: end - start + 1 }, (_, offset) => start + offset)
+    if (exclusive) selectedRows.value = []
+  }
+
+  function selectRows(value: string): boolean {
+    const rows = parseAxisSelection(value, project.value.cells.length)
+    if (!rows) return false
+    selectedRows.value = rows
+    selectedRow.value = rows[0]
+    rowSelectionAnchor = rows[0]
+    selectedColumns.value = []
+    return true
+  }
+
+  function selectColumns(value: string): boolean {
+    const columns = parseAxisSelection(value, project.value.cells[0].length)
+    if (!columns) return false
+    selectedColumns.value = columns
+    selectedColumn.value = columns[0]
+    columnSelectionAnchor = columns[0]
+    selectedRows.value = []
+    return true
+  }
+
+  function clearRowSelection() {
+    selectedRows.value = []
+  }
+
+  function clearColumnSelection() {
+    selectedColumns.value = []
+  }
 
   watch(
     () => project.value.cells,
@@ -127,8 +180,8 @@ export function usePattern() {
     project.value = { ...next, recentColors: [...next.recentColors], repeatBoxes: next.repeatBoxes.map((box) => ({ ...box })), cells: cloneGrid(next.cells) }
     recentColors.value = [...next.recentColors]
     persistColors()
-    selectedRow.value = 0
-    selectedColumn.value = 0
+    selectRow(0)
+    selectColumn(0)
     selection.value = null
     clipboard.value = null
     history.reset()
@@ -149,8 +202,8 @@ export function usePattern() {
       bottom: Math.min(project.value.cells.length - 1, Math.max(top, bottom)),
       right: Math.min(project.value.cells[0].length - 1, Math.max(left, right)),
     }
-    selectedRow.value = selection.value.top
-    selectedColumn.value = selection.value.left
+    selectRow(selection.value.top)
+    selectColumn(selection.value.left)
   }
 
   function copySelection(): boolean {
@@ -289,8 +342,8 @@ export function usePattern() {
   }
 
   function paintCell(row: number, column: number) {
-    selectedRow.value = row
-    selectedColumn.value = column
+    selectRow(row)
+    selectColumn(column)
     if (tool.value === 'eyedropper') {
       chooseColor(project.value.cells[row][column], true)
       tool.value = 'pencil'
@@ -383,7 +436,7 @@ export function usePattern() {
       for (const box of aligned) box.bottom += total * box.sections
       for (const box of aligned) if (box.enabled) cells = synchronizeRepeatBox(cells, box)
       project.value.cells = cells
-      selectedRow.value = target.top + sectionOffset
+      selectRow(target.top + sectionOffset)
       return
     }
 
@@ -392,28 +445,44 @@ export function usePattern() {
       cells = addRow(cells, index + offset, project.value.backgroundColor)
     }
     project.value.cells = cells
-    selectedRow.value = Math.min(index, cells.length - 1)
+    selectRow(Math.min(index, cells.length - 1))
+  }
+
+  function fillRows(indices: number[], color: string, rememberColor = true) {
+    const rows = [...new Set(indices)].filter((index) => index >= 0 && index < project.value.cells.length)
+    if (rows.length === 0) return
+    beginGridChange()
+    let cells = cloneGrid(project.value.cells)
+    for (const row of rows) {
+      for (let column = 0; column < cells[row].length; column += 1) {
+        const [sourceRow, sourceColumn] = sourceCellFor(project.value.repeatBoxes, row, column)
+        cells[sourceRow][sourceColumn] = color
+      }
+    }
+    project.value.cells = synchronizeEnabledBoxes(cells)
+    if (rememberColor) chooseColor(color, true)
+  }
+
+  function fillSelectedRows(color: string) {
+    fillRows(selectedRows.value, color)
   }
 
   function fillRow(index: number, color: string) {
-    beginGridChange()
-    project.value.cells[index] = Array<string>(project.value.cells[index].length).fill(color)
-    selectedRow.value = index
-    chooseColor(color, true)
+    selectRow(index)
+    fillRows([index], color)
+  }
+
+  function eraseSelectedRows() {
+    fillRows(selectedRows.value, project.value.backgroundColor, false)
   }
 
   function eraseRow(index: number) {
-    beginGridChange()
-    project.value.cells[index] = Array<string>(project.value.cells[index].length).fill(project.value.backgroundColor)
-    selectedRow.value = index
+    selectRow(index)
+    fillRows([index], project.value.backgroundColor, false)
   }
 
-  function deleteSelectedRow() {
-    if (project.value.cells.length <= 1) return
-    const index = selectedRow.value
-    selection.value = null
+  function deleteRowAt(index: number) {
     const target = project.value.repeatBoxes.find((box) => box.direction === 'down' && index >= box.top && index < box.bottom)
-    beginGridChange()
 
     if (target && project.value.cells.length > target.sections) {
       const sectionHeight = (target.bottom - target.top) / target.sections
@@ -430,13 +499,38 @@ export function usePattern() {
       else for (const box of aligned) box.bottom -= box.sections
       if (sectionHeight > 1) for (const box of aligned) if (box.enabled) cells = synchronizeRepeatBox(cells, box)
       project.value.cells = cells
-      selectedRow.value = Math.min(target.top + Math.min(sectionOffset, sectionHeight - 2), project.value.cells.length - 1)
       return
     }
 
     adjustBoxesForDelete('row', index)
     project.value.cells = removeRow(project.value.cells, index)
-    selectedRow.value = Math.min(selectedRow.value, project.value.cells.length - 1)
+  }
+
+  function deleteSelectedRows() {
+    if (project.value.cells.length <= 1) return
+    selection.value = null
+    const operations = new Map<string, number>()
+    for (const index of selectedRows.value) {
+      const target = project.value.repeatBoxes.find((box) => box.direction === 'down' && index >= box.top && index < box.bottom)
+      if (!target) operations.set(`row:${index}`, index)
+      else {
+        const sectionHeight = (target.bottom - target.top) / target.sections
+        const offset = (index - target.top) % sectionHeight
+        operations.set(`repeat:${target.top}:${target.bottom}:${target.sections}:${offset}`, target.top + offset)
+      }
+    }
+    beginGridChange()
+    const indices = [...operations.values()].sort((a, b) => b - a)
+    for (const index of indices) {
+      if (project.value.cells.length <= 1) break
+      deleteRowAt(Math.min(index, project.value.cells.length - 1))
+    }
+    selectRow(Math.min(indices.at(-1) ?? selectedRow.value, project.value.cells.length - 1))
+  }
+
+  function deleteSelectedRow() {
+    selectRow(selectedRow.value, false, true)
+    deleteSelectedRows()
   }
 
   function insertColumn(index: number) {
@@ -465,7 +559,7 @@ export function usePattern() {
       for (const box of aligned) box.right += total * box.sections
       for (const box of aligned) if (box.enabled) cells = synchronizeRepeatBox(cells, box)
       project.value.cells = cells
-      selectedColumn.value = target.left + sectionOffset
+      selectColumn(target.left + sectionOffset)
       return
     }
 
@@ -474,28 +568,44 @@ export function usePattern() {
       cells = addColumn(cells, index + offset, project.value.backgroundColor)
     }
     project.value.cells = cells
-    selectedColumn.value = Math.min(index, cells[0].length - 1)
+    selectColumn(Math.min(index, cells[0].length - 1))
+  }
+
+  function fillColumns(indices: number[], color: string, rememberColor = true) {
+    const columns = [...new Set(indices)].filter((index) => index >= 0 && index < project.value.cells[0].length)
+    if (columns.length === 0) return
+    beginGridChange()
+    let cells = cloneGrid(project.value.cells)
+    for (let row = 0; row < cells.length; row += 1) {
+      for (const column of columns) {
+        const [sourceRow, sourceColumn] = sourceCellFor(project.value.repeatBoxes, row, column)
+        cells[sourceRow][sourceColumn] = color
+      }
+    }
+    project.value.cells = synchronizeEnabledBoxes(cells)
+    if (rememberColor) chooseColor(color, true)
+  }
+
+  function fillSelectedColumns(color: string) {
+    fillColumns(selectedColumns.value, color)
   }
 
   function fillColumn(index: number, color: string) {
-    beginGridChange()
-    for (const row of project.value.cells) row[index] = color
-    selectedColumn.value = index
-    chooseColor(color, true)
+    selectColumn(index)
+    fillColumns([index], color)
+  }
+
+  function eraseSelectedColumns() {
+    fillColumns(selectedColumns.value, project.value.backgroundColor, false)
   }
 
   function eraseColumn(index: number) {
-    beginGridChange()
-    for (const row of project.value.cells) row[index] = project.value.backgroundColor
-    selectedColumn.value = index
+    selectColumn(index)
+    fillColumns([index], project.value.backgroundColor, false)
   }
 
-  function deleteSelectedColumn() {
-    if (project.value.cells[0].length <= 1) return
-    const index = selectedColumn.value
-    selection.value = null
+  function deleteColumnAt(index: number) {
     const target = project.value.repeatBoxes.find((box) => box.direction === 'across' && index >= box.left && index < box.right)
-    beginGridChange()
 
     if (target && project.value.cells[0].length > target.sections) {
       const sectionWidth = (target.right - target.left) / target.sections
@@ -512,13 +622,38 @@ export function usePattern() {
       else for (const box of aligned) box.right -= box.sections
       if (sectionWidth > 1) for (const box of aligned) if (box.enabled) cells = synchronizeRepeatBox(cells, box)
       project.value.cells = cells
-      selectedColumn.value = Math.min(target.left + Math.min(sectionOffset, sectionWidth - 2), project.value.cells[0].length - 1)
       return
     }
 
     adjustBoxesForDelete('column', index)
     project.value.cells = removeColumn(project.value.cells, index)
-    selectedColumn.value = Math.min(selectedColumn.value, project.value.cells[0].length - 1)
+  }
+
+  function deleteSelectedColumns() {
+    if (project.value.cells[0].length <= 1) return
+    selection.value = null
+    const operations = new Map<string, number>()
+    for (const index of selectedColumns.value) {
+      const target = project.value.repeatBoxes.find((box) => box.direction === 'across' && index >= box.left && index < box.right)
+      if (!target) operations.set(`column:${index}`, index)
+      else {
+        const sectionWidth = (target.right - target.left) / target.sections
+        const offset = (index - target.left) % sectionWidth
+        operations.set(`repeat:${target.left}:${target.right}:${target.sections}:${offset}`, target.left + offset)
+      }
+    }
+    beginGridChange()
+    const indices = [...operations.values()].sort((a, b) => b - a)
+    for (const index of indices) {
+      if (project.value.cells[0].length <= 1) break
+      deleteColumnAt(Math.min(index, project.value.cells[0].length - 1))
+    }
+    selectColumn(Math.min(indices.at(-1) ?? selectedColumn.value, project.value.cells[0].length - 1))
+  }
+
+  function deleteSelectedColumn() {
+    selectColumn(selectedColumn.value, false, true)
+    deleteSelectedColumns()
   }
 
   function clearGrid() {
@@ -532,8 +667,8 @@ export function usePattern() {
       project.value.cells = snapshot.cells
       project.value.repeatBoxes = snapshot.repeatBoxes
     }
-    selectedRow.value = Math.min(selectedRow.value, project.value.cells.length - 1)
-    selectedColumn.value = Math.min(selectedColumn.value, project.value.cells[0].length - 1)
+    selectRow(Math.min(selectedRow.value, project.value.cells.length - 1))
+    selectColumn(Math.min(selectedColumn.value, project.value.cells[0].length - 1))
   }
 
   function redo() {
@@ -542,8 +677,8 @@ export function usePattern() {
       project.value.cells = snapshot.cells
       project.value.repeatBoxes = snapshot.repeatBoxes
     }
-    selectedRow.value = Math.min(selectedRow.value, project.value.cells.length - 1)
-    selectedColumn.value = Math.min(selectedColumn.value, project.value.cells[0].length - 1)
+    selectRow(Math.min(selectedRow.value, project.value.cells.length - 1))
+    selectColumn(Math.min(selectedColumn.value, project.value.cells[0].length - 1))
   }
 
   return {
@@ -551,6 +686,8 @@ export function usePattern() {
     tool,
     selectedRow,
     selectedColumn,
+    selectedRows,
+    selectedColumns,
     selection,
     mirrorHorizontal,
     mirrorVertical,
@@ -572,16 +709,28 @@ export function usePattern() {
     insertRow,
     insertMultipleRows,
     fillRow,
+    fillSelectedRows,
     eraseRow,
+    eraseSelectedRows,
     deleteSelectedRow,
+    deleteSelectedRows,
     insertColumn,
     insertMultipleColumns,
     fillColumn,
+    fillSelectedColumns,
     eraseColumn,
+    eraseSelectedColumns,
     deleteSelectedColumn,
+    deleteSelectedColumns,
     clearGrid,
     flushAutosave,
     setSelection,
+    selectRow,
+    selectColumn,
+    selectRows,
+    selectColumns,
+    clearRowSelection,
+    clearColumnSelection,
     clearSelection: () => { selection.value = null },
     copySelection,
     pasteSelection,

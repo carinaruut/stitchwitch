@@ -17,6 +17,8 @@ const props = defineProps<{
   cellSize: number
   selectedRow: number
   selectedColumn: number
+  selectedRows: number[]
+  selectedColumns: number[]
   tool: DrawingTool
   selection: GridSelection | null
   placingSelection: boolean
@@ -27,9 +29,9 @@ const emit = defineEmits<{
   strokeStart: []
   paint: [row: number, column: number]
   strokeEnd: []
-  selectRow: [row: number]
+  selectRow: [row: number, extend: boolean, toggle: boolean]
   rowAction: [action: 'above' | 'below' | 'multiple' | 'delete' | 'fill' | 'erase', row: number, count?: number]
-  selectColumn: [column: number]
+  selectColumn: [column: number, extend: boolean, toggle: boolean]
   columnAction: [action: 'before' | 'after' | 'multiple' | 'delete' | 'fill' | 'erase', column: number, count?: number]
   selectArea: [top: number, left: number, bottom: number, right: number]
   clearSelection: []
@@ -63,6 +65,26 @@ function containsSelection(row: number, column: number) {
     && row <= props.selection.bottom
     && column >= props.selection.left
     && column <= props.selection.right
+}
+
+function selectedRowStartsAt(displayRow: number) {
+  return props.selectedRows.includes(props.rowHeaders[displayRow])
+    && (displayRow === 0 || !props.selectedRows.includes(props.rowHeaders[displayRow - 1]))
+}
+
+function selectedRowEndsAt(displayRow: number) {
+  return props.selectedRows.includes(props.rowHeaders[displayRow])
+    && (displayRow === props.rowHeaders.length - 1 || !props.selectedRows.includes(props.rowHeaders[displayRow + 1]))
+}
+
+function selectedColumnStartsAt(displayColumn: number) {
+  return props.selectedColumns.includes(props.columnHeaders[displayColumn])
+    && (displayColumn === 0 || !props.selectedColumns.includes(props.columnHeaders[displayColumn - 1]))
+}
+
+function selectedColumnEndsAt(displayColumn: number) {
+  return props.selectedColumns.includes(props.columnHeaders[displayColumn])
+    && (displayColumn === props.columnHeaders.length - 1 || !props.selectedColumns.includes(props.columnHeaders[displayColumn + 1]))
 }
 
 function verticalMirrorLeft(column: number) {
@@ -188,7 +210,8 @@ function openRowMenu(row: number, event: MouseEvent | KeyboardEvent) {
   const rect = (event.currentTarget as HTMLElement).getBoundingClientRect()
   const x = event instanceof MouseEvent ? event.clientX : rect.right
   const y = event instanceof MouseEvent ? event.clientY : rect.top
-  emit('selectRow', row)
+  const toggle = event instanceof MouseEvent && event.type === 'click' && !event.shiftKey && props.selectedRows.length === 1 && props.selectedRows[0] === row
+  emit('selectRow', row, event.shiftKey, toggle)
   columnMenu.value = null
   rowMenu.value = {
     row,
@@ -204,7 +227,8 @@ function openColumnMenu(column: number, event: MouseEvent | KeyboardEvent) {
   const rect = (event.currentTarget as HTMLElement).getBoundingClientRect()
   const x = event instanceof MouseEvent ? event.clientX : rect.left
   const y = event instanceof MouseEvent ? event.clientY : rect.bottom
-  emit('selectColumn', column)
+  const toggle = event instanceof MouseEvent && event.type === 'click' && !event.shiftKey && props.selectedColumns.length === 1 && props.selectedColumns[0] === column
+  emit('selectColumn', column, event.shiftKey, toggle)
   rowMenu.value = null
   columnMenu.value = {
     column,
@@ -284,10 +308,11 @@ onBeforeUnmount(() => {
         v-for="column in cells[0].length"
         :key="`column-${column}`"
         class="sticky top-0 z-10 flex items-center justify-center border-b border-base-300/70 bg-base-100 font-mono text-[10px] font-medium tabular-nums text-base-content/55 hover:bg-base-200"
-        :class="{ 'section-column-end': (columnHeaders[column - 1] + 1) % 5 === 0 && column < cells[0].length, 'bg-primary/10! font-bold text-primary!': selectedColumn === columnHeaders[column - 1], 'bg-secondary/10!': columnCopies[column - 1] > 0 }"
+        :class="{ 'section-column-end': (columnHeaders[column - 1] + 1) % 5 === 0 && column < cells[0].length, 'bg-primary/10! font-bold text-primary!': selectedColumns.includes(columnHeaders[column - 1]), 'bg-secondary/10!': columnCopies[column - 1] > 0 }"
         role="columnheader"
         tabindex="0"
-        :aria-label="`Column ${columnHeaders[column - 1] + 1}${columnCopies[column - 1] > 0 ? ', repeated copy' : ''}. Open column actions.`"
+        :aria-selected="selectedColumns.includes(columnHeaders[column - 1])"
+        :aria-label="`Column ${columnHeaders[column - 1] + 1}${columnCopies[column - 1] > 0 ? ', repeated copy' : ''}. Open column actions. Shift-click to select a range.`"
         @pointerdown="tool === 'move' && startPan($event)"
         @click="openColumnMenu(columnHeaders[column - 1], $event)"
         @contextmenu="openColumnMenu(columnHeaders[column - 1], $event)"
@@ -297,10 +322,11 @@ onBeforeUnmount(() => {
       <template v-for="(row, rowIndex) in cells" :key="rowIndex">
         <span
           class="sticky left-0 z-10 flex items-center justify-center border-r border-base-300/70 bg-base-100 font-mono text-[10px] font-medium tabular-nums text-base-content/55 hover:bg-base-200"
-          :class="{ 'section-row-end': (rowHeaders[rowIndex] + 1) % 5 === 0 && rowIndex < cells.length - 1, 'bg-primary/10! font-bold text-primary!': selectedRow === rowHeaders[rowIndex], 'bg-secondary/10!': rowCopies[rowIndex] > 0 }"
+          :class="{ 'section-row-end': (rowHeaders[rowIndex] + 1) % 5 === 0 && rowIndex < cells.length - 1, 'bg-primary/10! font-bold text-primary!': selectedRows.includes(rowHeaders[rowIndex]), 'bg-secondary/10!': rowCopies[rowIndex] > 0 }"
           role="rowheader"
           tabindex="0"
-          :aria-label="`Row ${rowHeaders[rowIndex] + 1}${rowCopies[rowIndex] > 0 ? ', repeated copy' : ''}. Open row actions.`"
+          :aria-selected="selectedRows.includes(rowHeaders[rowIndex])"
+          :aria-label="`Row ${rowHeaders[rowIndex] + 1}${rowCopies[rowIndex] > 0 ? ', repeated copy' : ''}. Open row actions. Shift-click to select a range.`"
           @pointerdown="tool === 'move' && startPan($event)"
           @click="openRowMenu(rowHeaders[rowIndex], $event)"
           @contextmenu="openRowMenu(rowHeaders[rowIndex], $event)"
@@ -312,7 +338,7 @@ onBeforeUnmount(() => {
           :key="columnIndex"
           class="pattern-cell"
           :class="{
-            'outline-2 outline-offset-[-2px] outline-neutral': tool !== 'select' && selectedRow === cellSourceRows[rowIndex][columnIndex] && selectedColumn === cellSourceColumns[rowIndex][columnIndex],
+            'outline-2 outline-offset-[-2px] outline-neutral': tool !== 'select' && selectedRows.length > 0 && selectedColumns.length > 0 && selectedRow === cellSourceRows[rowIndex][columnIndex] && selectedColumn === cellSourceColumns[rowIndex][columnIndex],
             'selection-border-top': visibleSelection && rowHeaders[rowIndex] === visibleSelection.top && columnHeaders[columnIndex] >= visibleSelection.left && columnHeaders[columnIndex] <= visibleSelection.right,
             'selection-border-bottom': visibleSelection && rowHeaders[rowIndex] === visibleSelection.bottom && columnHeaders[columnIndex] >= visibleSelection.left && columnHeaders[columnIndex] <= visibleSelection.right,
             'selection-border-left': visibleSelection && columnHeaders[columnIndex] === visibleSelection.left && rowHeaders[rowIndex] >= visibleSelection.top && rowHeaders[rowIndex] <= visibleSelection.bottom,
@@ -324,8 +350,10 @@ onBeforeUnmount(() => {
             'mirror-axis-bottom': horizontalMirrorBottom(rowHeaders[rowIndex]),
             'section-column-end': (columnHeaders[columnIndex] + 1) % 5 === 0 && columnIndex < row.length - 1,
             'section-row-end': (rowHeaders[rowIndex] + 1) % 5 === 0 && rowIndex < cells.length - 1,
-            'row-action-selected': rowMenu?.row === rowHeaders[rowIndex],
-            'column-action-selected': columnMenu?.column === columnHeaders[columnIndex],
+            'row-selection-top': selectedRowStartsAt(rowIndex),
+            'row-selection-bottom': selectedRowEndsAt(rowIndex),
+            'column-selection-left': selectedColumnStartsAt(columnIndex),
+            'column-selection-right': selectedColumnEndsAt(columnIndex),
             'repeat-copy-cell': (repeatFlags[rowIndex][columnIndex] & REPEAT_COPY) !== 0,
             'repeat-border-left': (repeatFlags[rowIndex][columnIndex] & REPEAT_LEFT) !== 0,
             'repeat-border-right': (repeatFlags[rowIndex][columnIndex] & REPEAT_RIGHT) !== 0,
@@ -350,10 +378,10 @@ onBeforeUnmount(() => {
     class="fixed z-[80] w-56 rounded-box border border-base-300 bg-base-100 p-2"
     :style="{ left: `${rowMenu.x}px`, top: `${rowMenu.y}px` }"
     role="menu"
-    :aria-label="`Actions for row ${rowMenu.row + 1}`"
+    :aria-label="`Actions for ${selectedRows.length === 1 ? `row ${rowMenu.row + 1}` : `${selectedRows.length} selected rows`}`"
     @click.stop
   >
-    <p class="px-3 py-2 text-xs font-semibold text-base-content/60">ROW {{ rowMenu.row + 1 }}</p>
+    <p class="px-3 py-2 text-xs font-semibold text-base-content/60">{{ selectedRows.length === 1 ? `ROW ${rowMenu.row + 1}` : `${selectedRows.length} ROWS SELECTED` }}</p>
     <ul class="menu menu-sm w-full p-0">
       <li><button type="button" role="menuitem" @click="runRowAction('above')"><span class="mdi mdi-arrow-up" aria-hidden="true"></span>Add row above</button></li>
       <li><button type="button" role="menuitem" @click="runRowAction('below')"><span class="mdi mdi-arrow-down" aria-hidden="true"></span>Add row below</button></li>
@@ -364,9 +392,9 @@ onBeforeUnmount(() => {
       <button class="btn btn-primary btn-xs btn-square" type="button" aria-label="Add multiple rows below" @click="runRowAction('multiple')"><span class="mdi mdi-plus" aria-hidden="true"></span></button>
     </div>
     <ul class="menu menu-sm w-full p-0">
-      <li><button type="button" role="menuitem" @click="runRowAction('fill')"><span class="mdi mdi-format-color-fill" aria-hidden="true"></span>Fill with selected color</button></li>
-      <li><button type="button" role="menuitem" @click="runRowAction('erase')"><span class="mdi mdi-eraser" aria-hidden="true"></span>Erase row</button></li>
-      <li><button class="text-error" type="button" role="menuitem" :disabled="sourceRows <= 1" @click="runRowAction('delete')"><span class="mdi mdi-delete-outline" aria-hidden="true"></span>Delete row</button></li>
+      <li><button type="button" role="menuitem" @click="runRowAction('fill')"><span class="mdi mdi-format-color-fill" aria-hidden="true"></span>Fill selected {{ selectedRows.length === 1 ? 'row' : 'rows' }}</button></li>
+      <li><button type="button" role="menuitem" @click="runRowAction('erase')"><span class="mdi mdi-eraser" aria-hidden="true"></span>Erase selected {{ selectedRows.length === 1 ? 'row' : 'rows' }}</button></li>
+      <li><button class="text-error" type="button" role="menuitem" :disabled="sourceRows <= 1" @click="runRowAction('delete')"><span class="mdi mdi-delete-outline" aria-hidden="true"></span>Delete selected {{ selectedRows.length === 1 ? 'row' : 'rows' }}</button></li>
     </ul>
   </div>
 
@@ -375,10 +403,10 @@ onBeforeUnmount(() => {
     class="fixed z-[80] w-56 rounded-box border border-base-300 bg-base-100 p-2"
     :style="{ left: `${columnMenu.x}px`, top: `${columnMenu.y}px` }"
     role="menu"
-    :aria-label="`Actions for column ${columnMenu.column + 1}`"
+    :aria-label="`Actions for ${selectedColumns.length === 1 ? `column ${columnMenu.column + 1}` : `${selectedColumns.length} selected columns`}`"
     @click.stop
   >
-    <p class="px-3 py-2 text-xs font-semibold text-base-content/60">COLUMN {{ columnMenu.column + 1 }}</p>
+    <p class="px-3 py-2 text-xs font-semibold text-base-content/60">{{ selectedColumns.length === 1 ? `COLUMN ${columnMenu.column + 1}` : `${selectedColumns.length} COLUMNS SELECTED` }}</p>
     <ul class="menu menu-sm w-full p-0">
       <li><button type="button" role="menuitem" @click="runColumnAction('before')"><span class="mdi mdi-arrow-left" aria-hidden="true"></span>Add column before</button></li>
       <li><button type="button" role="menuitem" @click="runColumnAction('after')"><span class="mdi mdi-arrow-right" aria-hidden="true"></span>Add column after</button></li>
@@ -389,9 +417,9 @@ onBeforeUnmount(() => {
       <button class="btn btn-primary btn-xs btn-square" type="button" aria-label="Add multiple columns after" @click="runColumnAction('multiple')"><span class="mdi mdi-plus" aria-hidden="true"></span></button>
     </div>
     <ul class="menu menu-sm w-full p-0">
-      <li><button type="button" role="menuitem" @click="runColumnAction('fill')"><span class="mdi mdi-format-color-fill" aria-hidden="true"></span>Fill with selected color</button></li>
-      <li><button type="button" role="menuitem" @click="runColumnAction('erase')"><span class="mdi mdi-eraser" aria-hidden="true"></span>Erase column</button></li>
-      <li><button class="text-error" type="button" role="menuitem" :disabled="sourceColumns <= 1" @click="runColumnAction('delete')"><span class="mdi mdi-delete-outline" aria-hidden="true"></span>Delete column</button></li>
+      <li><button type="button" role="menuitem" @click="runColumnAction('fill')"><span class="mdi mdi-format-color-fill" aria-hidden="true"></span>Fill selected {{ selectedColumns.length === 1 ? 'column' : 'columns' }}</button></li>
+      <li><button type="button" role="menuitem" @click="runColumnAction('erase')"><span class="mdi mdi-eraser" aria-hidden="true"></span>Erase selected {{ selectedColumns.length === 1 ? 'column' : 'columns' }}</button></li>
+      <li><button class="text-error" type="button" role="menuitem" :disabled="sourceColumns <= 1" @click="runColumnAction('delete')"><span class="mdi mdi-delete-outline" aria-hidden="true"></span>Delete selected {{ selectedColumns.length === 1 ? 'column' : 'columns' }}</button></li>
     </ul>
   </div>
 </template>

@@ -90,14 +90,20 @@ body {
   border-bottom: 3px solid var(--color-secondary) !important;
 }
 
-.row-action-selected {
-  border-bottom: 1px dashed color-mix(in oklab, currentColor 70%, transparent);
-  border-top: 1px dashed color-mix(in oklab, currentColor 70%, transparent);
+.row-selection-top {
+  border-top: 1px dashed color-mix(in oklab, currentColor 70%, transparent) !important;
 }
 
-.column-action-selected {
-  border-left: 1px dashed color-mix(in oklab, currentColor 70%, transparent);
-  border-right: 1px dashed color-mix(in oklab, currentColor 70%, transparent);
+.row-selection-bottom {
+  border-bottom: 1px dashed color-mix(in oklab, currentColor 70%, transparent) !important;
+}
+
+.column-selection-left {
+  border-left: 1px dashed color-mix(in oklab, currentColor 70%, transparent) !important;
+}
+
+.column-selection-right {
+  border-right: 1px dashed color-mix(in oklab, currentColor 70%, transparent) !important;
 }
 
 @media print {
