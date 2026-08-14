@@ -18,7 +18,7 @@ import { usePattern } from './composables/usePattern'
 import { useTheme } from './composables/useTheme'
 import { useNotifications } from './composables/useNotifications'
 import { downloadProject, readProjectFile } from './composables/useProjectFiles'
-import type { PatternProject, RepeatBoxInput } from './types/pattern'
+import type { NewPatternProject, PatternProject, RepeatBoxInput } from './types/pattern'
 import { renderGrid } from './utils/grid'
 
 const pattern = usePattern()
@@ -39,7 +39,7 @@ const renderedPattern = computed(() => renderGrid(
   pattern.project.value.repeatBoxes,
 ))
 
-function createProject(project: Omit<PatternProject, 'format' | 'version' | 'cells' | 'recentColors' | 'repeatBoxes'>) {
+function createProject(project: NewPatternProject) {
   pattern.createProject(project)
   newModalOpen.value = false
   notify('New pattern created.', 'success')
@@ -360,6 +360,7 @@ onBeforeUnmount(() => {
         </section>
 
         <PatternPreview
+          v-model:stitch="pattern.project.value.previewStitch"
           :cells="renderedPattern.cells"
         />
 

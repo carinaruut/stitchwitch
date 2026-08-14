@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { reactive, ref, watch } from 'vue'
-import type { PatternProject } from '../types/pattern'
+import type { NewPatternProject } from '../types/pattern'
 
 const props = defineProps<{ open: boolean }>()
-const emit = defineEmits<{ create: [project: Omit<PatternProject, 'format' | 'version' | 'cells' | 'recentColors' | 'repeatBoxes'>]; cancel: [] }>()
+const emit = defineEmits<{ create: [project: NewPatternProject]; cancel: [] }>()
 const error = ref('')
 const form = reactive({
   name: 'My pattern',

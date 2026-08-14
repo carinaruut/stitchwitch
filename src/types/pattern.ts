@@ -1,5 +1,6 @@
 export type PatternGrid = string[][]
 export type DrawingTool = 'pencil' | 'eraser' | 'fill' | 'eyedropper' | 'select' | 'move'
+export type PreviewStitch = 'knit' | 'cross-stitch'
 
 export interface GridSelection {
   top: number
@@ -33,7 +34,10 @@ export interface PatternProject {
   backgroundColor: string
   horizontalRepeats: number
   verticalRepeats: number
+  previewStitch: PreviewStitch
   recentColors: string[]
   repeatBoxes: RepeatBox[]
   cells: PatternGrid
 }
+
+export type NewPatternProject = Omit<PatternProject, 'format' | 'version' | 'previewStitch' | 'cells' | 'recentColors' | 'repeatBoxes'>

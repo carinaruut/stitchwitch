@@ -1,5 +1,5 @@
 import { computed, ref, watch } from 'vue'
-import type { DrawingTool, GridSelection, PatternGrid, PatternProject, RepeatBox, RepeatBoxInput } from '../types/pattern'
+import type { DrawingTool, GridSelection, NewPatternProject, PatternGrid, PatternProject, RepeatBox, RepeatBoxInput } from '../types/pattern'
 import { addColumn, addRow, boxesOverlap, cloneGrid, createGrid, ensureGridSize, removeColumn, removeRow, renderGrid, sourceCellFor, synchronizeRepeatBox } from '../utils/grid'
 import { normalizeColor } from '../utils/colors'
 import { asPatternProject } from '../utils/validation'
@@ -17,6 +17,7 @@ const DEFAULT_PROJECT: PatternProject = {
   backgroundColor: '#ffffff',
   horizontalRepeats: 1,
   verticalRepeats: 1,
+  previewStitch: 'knit',
   recentColors: [],
   repeatBoxes: [],
   cells: createGrid(20, 20, '#ffffff'),
@@ -133,8 +134,8 @@ export function usePattern() {
     history.reset()
   }
 
-  function createProject(input: Omit<PatternProject, 'format' | 'version' | 'cells' | 'recentColors' | 'repeatBoxes'>) {
-    replaceProject({ ...input, format: 'stitch-pattern', version: 1, recentColors: [...recentColors.value], repeatBoxes: [], cells: createGrid(input.rows, input.columns, input.backgroundColor) })
+  function createProject(input: NewPatternProject) {
+    replaceProject({ ...input, format: 'stitch-pattern', version: 1, previewStitch: 'knit', recentColors: [...recentColors.value], repeatBoxes: [], cells: createGrid(input.rows, input.columns, input.backgroundColor) })
   }
 
   function beginGridChange() {

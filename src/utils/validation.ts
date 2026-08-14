@@ -47,6 +47,9 @@ export function validateProject(value: unknown): ValidationResult {
     }
   }
   if (!isHexColor(project.backgroundColor)) return { valid: false, error: 'The background color is invalid.' }
+  if (project.previewStitch !== undefined && project.previewStitch !== 'knit' && project.previewStitch !== 'cross-stitch') {
+    return { valid: false, error: 'The preview stitch is invalid.' }
+  }
   if (!Array.isArray(project.cells) || project.cells.length !== project.rows) return { valid: false, error: 'The cell rows do not match the project dimensions.' }
   const columns = project.columns as number
   if (!project.cells.every((row) => Array.isArray(row) && row.length === columns && row.every(isHexColor))) {
@@ -120,6 +123,7 @@ export function asPatternProject(value: unknown): PatternProject {
     columns: cells[0].length,
     horizontalRepeats: source.repeatBoxes === undefined && Array.isArray(source.repeatRanges) && source.repeatRanges.length > 0 ? 1 : source.horizontalRepeats as number,
     verticalRepeats: source.repeatBoxes === undefined && Array.isArray(source.repeatRanges) && source.repeatRanges.length > 0 ? 1 : source.verticalRepeats as number,
+    previewStitch: source.previewStitch === 'cross-stitch' ? 'cross-stitch' : 'knit',
     recentColors: Array.isArray(source.recentColors) ? [...source.recentColors] as string[] : [],
     repeatBoxes: Array.isArray(source.repeatBoxes) ? (source.repeatBoxes as RepeatBox[]).map((box) => ({ ...box })) : [],
     cells,
