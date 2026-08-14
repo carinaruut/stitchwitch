@@ -31,19 +31,19 @@ body {
 }
 
 .selection-border-top {
-  border-top: 2px solid var(--color-primary) !important;
+  border-top: 1px dashed color-mix(in oklab, var(--color-base-content) 70%, transparent) !important;
 }
 
 .selection-border-bottom {
-  border-bottom: 2px solid var(--color-primary) !important;
+  border-bottom: 1px dashed color-mix(in oklab, var(--color-base-content) 70%, transparent) !important;
 }
 
 .selection-border-left {
-  border-left: 2px solid var(--color-primary) !important;
+  border-left: 1px dashed color-mix(in oklab, var(--color-base-content) 70%, transparent) !important;
 }
 
 .selection-border-right {
-  border-right: 2px solid var(--color-primary) !important;
+  border-right: 1px dashed color-mix(in oklab, var(--color-base-content) 70%, transparent) !important;
 }
 
 .section-column-end {

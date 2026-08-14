@@ -34,6 +34,7 @@ const emit = defineEmits<{
   selectColumn: [column: number, extend: boolean, toggle: boolean]
   columnAction: [action: 'before' | 'after' | 'multiple' | 'delete' | 'fill' | 'erase', column: number, count?: number]
   selectArea: [top: number, left: number, bottom: number, right: number]
+  magicSelect: [row: number, column: number]
   clearSelection: []
   placeSelection: [row: number, column: number]
   moveSelection: [row: number, column: number]
@@ -58,13 +59,31 @@ let dragRowOffset = 0
 let dragColumnOffset = 0
 
 const visibleSelection = computed(() => dragPreview.value ?? props.selection)
+const selectedCellKeys = computed(() => new Set(props.selection?.cells?.map(([row, column]) => `${row}:${column}`) ?? []))
+const visibleCellKeys = computed(() => new Set(visibleSelection.value?.cells?.map(([row, column]) => `${row}:${column}`) ?? []))
 
 function containsSelection(row: number, column: number) {
-  return props.selection !== null
-    && row >= props.selection.top
-    && row <= props.selection.bottom
-    && column >= props.selection.left
-    && column <= props.selection.right
+  if (!props.selection || row < props.selection.top || row > props.selection.bottom || column < props.selection.left || column > props.selection.right) return false
+  return !props.selection.cells || selectedCellKeys.value.has(`${row}:${column}`)
+}
+
+function visibleContains(row: number, column: number) {
+  const current = visibleSelection.value
+  if (!current || row < current.top || row > current.bottom || column < current.left || column > current.right) return false
+  return !current.cells || visibleCellKeys.value.has(`${row}:${column}`)
+}
+
+function selectionAt(top: number, left: number): GridSelection {
+  const current = props.selection!
+  const rowOffset = top - current.top
+  const columnOffset = left - current.left
+  return {
+    top,
+    left,
+    bottom: top + current.bottom - current.top,
+    right: left + current.right - current.left,
+    cells: current.cells?.map(([row, column]) => [row + rowOffset, column + columnOffset]),
+  }
 }
 
 function selectedRowStartsAt(displayRow: number) {
@@ -124,6 +143,11 @@ function start(row: number, column: number, displayRow: number, displayColumn: n
     startPan(event)
     return
   }
+  if (props.tool === 'wand') {
+    event.preventDefault()
+    emit('magicSelect', row, column)
+    return
+  }
   if (props.tool === 'select') {
     event.preventDefault()
     const actualRow = props.rowHeaders[displayRow]
@@ -164,11 +188,9 @@ function start(row: number, column: number, displayRow: number, displayColumn: n
 
 function enter(row: number, column: number, displayRow: number, displayColumn: number, event: PointerEvent) {
   if (draggingSelection.value && event.buttons === 1 && props.selection) {
-    const height = props.selection.bottom - props.selection.top
-    const width = props.selection.right - props.selection.left
     const top = Math.max(0, props.rowHeaders[displayRow] - dragRowOffset)
     const left = Math.max(0, props.columnHeaders[displayColumn] - dragColumnOffset)
-    dragPreview.value = { top, left, bottom: top + height, right: left + width }
+    dragPreview.value = selectionAt(top, left)
     return
   }
   if (selecting.value && event.buttons === 1) {
@@ -266,6 +288,10 @@ function keyboardPaint(row: number, column: number) {
 }
 
 function keyboardSelect(displayRow: number, displayColumn: number) {
+  if (props.tool === 'wand') {
+    emit('magicSelect', props.cellSourceRows[displayRow][displayColumn], props.cellSourceColumns[displayRow][displayColumn])
+    return
+  }
   const row = props.rowHeaders[displayRow]
   const column = props.columnHeaders[displayColumn]
   if (props.placingSelection) emit('placeSelection', row, column)
@@ -288,7 +314,7 @@ onBeforeUnmount(() => {
   <div
     ref="viewport"
     class="h-[calc(100dvh-16rem)] min-h-80 w-full min-w-0 overflow-auto border border-base-300/70 bg-base-100 p-3"
-    :class="tool === 'move' ? (panning ? 'cursor-grabbing touch-none' : 'cursor-grab touch-none') : tool === 'select' ? (placingSelection ? 'cursor-copy' : 'cursor-crosshair') : ''"
+    :class="tool === 'move' ? (panning ? 'cursor-grabbing touch-none' : 'cursor-grab touch-none') : tool === 'select' ? (placingSelection ? 'cursor-copy' : 'cursor-crosshair') : tool === 'wand' ? 'cursor-crosshair' : ''"
     aria-label="Editable pattern grid"
     @pointerdown.self="tool === 'move' && startPan($event)"
     @pointermove="pan"
@@ -338,11 +364,11 @@ onBeforeUnmount(() => {
           :key="columnIndex"
           class="pattern-cell"
           :class="{
-            'outline-2 outline-offset-[-2px] outline-neutral': tool !== 'select' && selectedRows.length > 0 && selectedColumns.length > 0 && selectedRow === cellSourceRows[rowIndex][columnIndex] && selectedColumn === cellSourceColumns[rowIndex][columnIndex],
-            'selection-border-top': visibleSelection && rowHeaders[rowIndex] === visibleSelection.top && columnHeaders[columnIndex] >= visibleSelection.left && columnHeaders[columnIndex] <= visibleSelection.right,
-            'selection-border-bottom': visibleSelection && rowHeaders[rowIndex] === visibleSelection.bottom && columnHeaders[columnIndex] >= visibleSelection.left && columnHeaders[columnIndex] <= visibleSelection.right,
-            'selection-border-left': visibleSelection && columnHeaders[columnIndex] === visibleSelection.left && rowHeaders[rowIndex] >= visibleSelection.top && rowHeaders[rowIndex] <= visibleSelection.bottom,
-            'selection-border-right': visibleSelection && columnHeaders[columnIndex] === visibleSelection.right && rowHeaders[rowIndex] >= visibleSelection.top && rowHeaders[rowIndex] <= visibleSelection.bottom,
+            'outline-2 outline-offset-[-2px] outline-neutral': tool !== 'select' && tool !== 'wand' && selectedRows.length > 0 && selectedColumns.length > 0 && selectedRow === cellSourceRows[rowIndex][columnIndex] && selectedColumn === cellSourceColumns[rowIndex][columnIndex],
+            'selection-border-top': visibleContains(rowHeaders[rowIndex], columnHeaders[columnIndex]) && !visibleContains(rowHeaders[rowIndex] - 1, columnHeaders[columnIndex]),
+            'selection-border-bottom': visibleContains(rowHeaders[rowIndex], columnHeaders[columnIndex]) && !visibleContains(rowHeaders[rowIndex] + 1, columnHeaders[columnIndex]),
+            'selection-border-left': visibleContains(rowHeaders[rowIndex], columnHeaders[columnIndex]) && !visibleContains(rowHeaders[rowIndex], columnHeaders[columnIndex] - 1),
+            'selection-border-right': visibleContains(rowHeaders[rowIndex], columnHeaders[columnIndex]) && !visibleContains(rowHeaders[rowIndex], columnHeaders[columnIndex] + 1),
             'cursor-move': tool === 'select' && !placingSelection && containsSelection(rowHeaders[rowIndex], columnHeaders[columnIndex]),
             'mirror-axis-left': verticalMirrorLeft(columnHeaders[columnIndex]),
             'mirror-axis-right': verticalMirrorRight(columnHeaders[columnIndex]),
@@ -366,8 +392,8 @@ onBeforeUnmount(() => {
           :aria-label="`Row ${rowHeaders[rowIndex] + 1}, column ${columnHeaders[columnIndex] + 1}, color ${color}${(repeatFlags[rowIndex][columnIndex] & REPEAT_COPY) !== 0 || rowCopies[rowIndex] > 0 || columnCopies[columnIndex] > 0 ? ', repeated copy' : ''}`"
           @pointerdown="start(cellSourceRows[rowIndex][columnIndex], cellSourceColumns[rowIndex][columnIndex], rowIndex, columnIndex, $event)"
           @pointerenter="enter(cellSourceRows[rowIndex][columnIndex], cellSourceColumns[rowIndex][columnIndex], rowIndex, columnIndex, $event)"
-          @keydown.enter.prevent="tool === 'select' ? keyboardSelect(rowIndex, columnIndex) : keyboardPaint(cellSourceRows[rowIndex][columnIndex], cellSourceColumns[rowIndex][columnIndex])"
-          @keydown.space.prevent="tool === 'select' ? keyboardSelect(rowIndex, columnIndex) : keyboardPaint(cellSourceRows[rowIndex][columnIndex], cellSourceColumns[rowIndex][columnIndex])"
+          @keydown.enter.prevent="tool === 'select' || tool === 'wand' ? keyboardSelect(rowIndex, columnIndex) : keyboardPaint(cellSourceRows[rowIndex][columnIndex], cellSourceColumns[rowIndex][columnIndex])"
+          @keydown.space.prevent="tool === 'select' || tool === 'wand' ? keyboardSelect(rowIndex, columnIndex) : keyboardPaint(cellSourceRows[rowIndex][columnIndex], cellSourceColumns[rowIndex][columnIndex])"
         ></div>
       </template>
     </div>

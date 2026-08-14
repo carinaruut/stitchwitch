@@ -1,5 +1,5 @@
 export type PatternGrid = string[][]
-export type DrawingTool = 'pencil' | 'eraser' | 'fill' | 'eyedropper' | 'select' | 'move'
+export type DrawingTool = 'pencil' | 'eraser' | 'fill' | 'eyedropper' | 'select' | 'wand' | 'move'
 export type PreviewStitch = 'knit' | 'cross-stitch'
 export type PrintMode = 'color' | 'symbols'
 
@@ -10,6 +10,7 @@ export interface GridSelection {
   left: number
   bottom: number
   right: number
+  cells?: Array<[row: number, column: number]>
 }
 export type RepeatDirection = 'across' | 'down'
 

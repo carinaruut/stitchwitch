@@ -79,7 +79,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleEscape))
                <p class="mt-1 text-sm text-base-content/70">Eyedropper samples one cell and returns to Pencil. Pan lets you drag the viewport without changing cells. Clear returns every cell to the background after confirmation and can be undone.</p>
              </article>
            </div>
-           <p class="mt-3 text-xs text-base-content/55">Tool shortcuts: <kbd class="kbd kbd-xs">P</kbd> Pencil, <kbd class="kbd kbd-xs">E</kbd> Eraser, <kbd class="kbd kbd-xs">F</kbd> Fill, <kbd class="kbd kbd-xs">I</kbd> Eyedropper, <kbd class="kbd kbd-xs">S</kbd> Select, and <kbd class="kbd kbd-xs">H</kbd> Pan.</p>
+           <p class="mt-3 text-xs text-base-content/55">Tool shortcuts: <kbd class="kbd kbd-xs">P</kbd> Pencil, <kbd class="kbd kbd-xs">E</kbd> Eraser, <kbd class="kbd kbd-xs">F</kbd> Fill, <kbd class="kbd kbd-xs">I</kbd> Eyedropper, <kbd class="kbd kbd-xs">S</kbd> Select, <kbd class="kbd kbd-xs">W</kbd> Magic wand, and <kbd class="kbd kbd-xs">H</kbd> Pan.</p>
          </section>
 
         <section id="guide-selection" class="mt-8 scroll-mt-4">
@@ -88,7 +88,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleEscape))
             <h2 class="text-xl font-bold">Selection tools</h2>
           </div>
           <div class="rounded-box border border-base-300 p-4">
-             <p class="text-sm text-base-content/70">Choose Select and drag a rectangle. Drag from inside the selection to move it directly, or choose Move and then click a destination. Clicking outside with Select cancels the selection.</p>
+              <p class="text-sm text-base-content/70">Choose Select and drag a rectangle, or use Magic wand to select matching-color cells connected by shared edges. Drag from inside a selection to move it directly, or choose Move and then click a destination. Clicking outside with Select cancels the selection.</p>
             <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               <div class="rounded-box bg-base-200 p-3 text-sm"><strong class="block">Copy</strong>Stores the selected cells in the internal clipboard.</div>
               <div class="rounded-box bg-base-200 p-3 text-sm"><strong class="block">Paste</strong>Places the clipboard at the selection's top-left cell and expands the canvas if needed.</div>

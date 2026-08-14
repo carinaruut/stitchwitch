@@ -8,6 +8,11 @@ import { useHistory } from './useHistory'
 
 const AUTOSAVE_KEY = 'stitch-project-autosave'
 
+interface SelectionClipboard {
+  cells: PatternGrid
+  mask: boolean[][] | null
+}
+
 const DEFAULT_PROJECT: PatternProject = {
   format: 'stitch-pattern',
   version: 1,
@@ -53,7 +58,7 @@ export function usePattern() {
   const selectedRows = ref<number[]>([0])
   const selectedColumns = ref<number[]>([0])
   const selection = ref<GridSelection | null>(null)
-  const clipboard = ref<PatternGrid | null>(null)
+  const clipboard = ref<SelectionClipboard | null>(null)
   const mirrorHorizontal = ref(false)
   const mirrorVertical = ref(false)
   const savedColor = normalizeColor(localStorage.getItem('stitch-selected-color') ?? '')
@@ -206,12 +211,74 @@ export function usePattern() {
     selectColumn(selection.value.left)
   }
 
+  function selectionCoordinates(candidate: GridSelection): Array<[number, number]> {
+    if (candidate.cells) return candidate.cells
+    const coordinates: Array<[number, number]> = []
+    for (let row = candidate.top; row <= candidate.bottom; row += 1) {
+      for (let column = candidate.left; column <= candidate.right; column += 1) coordinates.push([row, column])
+    }
+    return coordinates
+  }
+
+  function selectionClipboard(candidate: GridSelection): SelectionClipboard {
+    const rendered = renderGrid(project.value.cells, 1, 1, project.value.repeatBoxes).cells
+    const selectedCells = candidate.cells ? new Set(candidate.cells.map(([row, column]) => `${row}:${column}`)) : null
+    const cells = rendered
+      .slice(candidate.top, candidate.bottom + 1)
+      .map((row) => row.slice(candidate.left, candidate.right + 1))
+    const mask = selectedCells
+      ? cells.map((row, rowOffset) => row.map((_, columnOffset) => selectedCells.has(`${candidate.top + rowOffset}:${candidate.left + columnOffset}`)))
+      : null
+    return { cells, mask }
+  }
+
+  function setClipboardSelection(row: number, column: number, copied: SelectionClipboard) {
+    const bottom = row + copied.cells.length - 1
+    const right = column + copied.cells[0].length - 1
+    const cells = copied.mask
+      ? copied.mask.flatMap((maskRow, rowOffset) => maskRow.flatMap((selected, columnOffset) => selected ? [[row + rowOffset, column + columnOffset] as [number, number]] : []))
+      : undefined
+    selection.value = { top: row, left: column, bottom, right, cells }
+    selectRow(row)
+    selectColumn(column)
+  }
+
+  function setMagicSelection(row: number, column: number) {
+    if (row < 0 || row >= project.value.cells.length || column < 0 || column >= project.value.cells[0].length) return
+    const color = project.value.cells[row][column]
+    const cells: Array<[number, number]> = []
+    const pending: Array<[number, number]> = [[row, column]]
+    const visited = new Set([`${row}:${column}`])
+    let top = row
+    let left = column
+    let bottom = row
+    let right = column
+
+    while (pending.length > 0) {
+      const [currentRow, currentColumn] = pending.pop()!
+      cells.push([currentRow, currentColumn])
+      top = Math.min(top, currentRow)
+      left = Math.min(left, currentColumn)
+      bottom = Math.max(bottom, currentRow)
+      right = Math.max(right, currentColumn)
+      const neighbors: Array<[number, number]> = [[currentRow - 1, currentColumn], [currentRow + 1, currentColumn], [currentRow, currentColumn - 1], [currentRow, currentColumn + 1]]
+      for (const [nextRow, nextColumn] of neighbors) {
+        const key = `${nextRow}:${nextColumn}`
+        if (nextRow < 0 || nextRow >= project.value.cells.length || nextColumn < 0 || nextColumn >= project.value.cells[0].length || visited.has(key)) continue
+        if (project.value.cells[nextRow][nextColumn] !== color) continue
+        visited.add(key)
+        pending.push([nextRow, nextColumn])
+      }
+    }
+
+    selection.value = { top, left, bottom, right, cells }
+    selectRow(row)
+    selectColumn(column)
+  }
+
   function copySelection(): boolean {
     if (!selection.value) return false
-    const rendered = renderGrid(project.value.cells, 1, 1, project.value.repeatBoxes).cells
-    clipboard.value = rendered
-      .slice(selection.value.top, selection.value.bottom + 1)
-      .map((row) => row.slice(selection.value!.left, selection.value!.right + 1))
+    clipboard.value = selectionClipboard(selection.value)
     return true
   }
 
@@ -221,11 +288,12 @@ export function usePattern() {
     return next
   }
 
-  function writeClipboard(cells: PatternGrid, data: PatternGrid, row: number, column: number): PatternGrid {
+  function writeClipboard(cells: PatternGrid, data: PatternGrid, row: number, column: number, mask: boolean[][] | null = null): PatternGrid {
     let next = ensureGridSize(cells, row + data.length, column + data[0].length, project.value.backgroundColor)
     next = cloneGrid(next)
     for (let rowOffset = 0; rowOffset < data.length; rowOffset += 1) {
       for (let columnOffset = 0; columnOffset < data[rowOffset].length; columnOffset += 1) {
+        if (mask && !mask[rowOffset][columnOffset]) continue
         const [sourceRow, sourceColumn] = sourceCellFor(project.value.repeatBoxes, row + rowOffset, column + columnOffset)
         next[sourceRow][sourceColumn] = data[rowOffset][columnOffset]
       }
@@ -237,40 +305,45 @@ export function usePattern() {
     if (!selection.value || !clipboard.value) return false
     const row = selection.value.top
     const column = selection.value.left
-    if (row + clipboard.value.length > 500 || column + clipboard.value[0].length > 500) return false
+    if (row + clipboard.value.cells.length > 500 || column + clipboard.value.cells[0].length > 500) return false
     beginGridChange()
-    project.value.cells = writeClipboard(project.value.cells, clipboard.value, row, column)
-    setSelection(row, column, row + clipboard.value.length - 1, column + clipboard.value[0].length - 1)
+    project.value.cells = writeClipboard(project.value.cells, clipboard.value.cells, row, column, clipboard.value.mask)
+    setClipboardSelection(row, column, clipboard.value)
     return true
   }
 
   function moveSelectionTo(row: number, column: number): boolean {
     if (!selection.value) return false
     const source = { ...selection.value }
-    const rendered = renderGrid(project.value.cells, 1, 1, project.value.repeatBoxes).cells
-    const data = rendered.slice(source.top, source.bottom + 1).map((cells) => cells.slice(source.left, source.right + 1))
-    if (row + data.length > 500 || column + data[0].length > 500) return false
+    const copied = selectionClipboard(source)
+    if (row + copied.cells.length > 500 || column + copied.cells[0].length > 500) return false
     beginGridChange()
     let next = cloneGrid(project.value.cells)
-    for (let sourceRow = source.top; sourceRow <= source.bottom; sourceRow += 1) {
-      for (let sourceColumn = source.left; sourceColumn <= source.right; sourceColumn += 1) {
-        const [mappedRow, mappedColumn] = sourceCellFor(project.value.repeatBoxes, sourceRow, sourceColumn)
-        next[mappedRow][mappedColumn] = project.value.backgroundColor
-      }
+    for (const [sourceRow, sourceColumn] of selectionCoordinates(source)) {
+      const [mappedRow, mappedColumn] = sourceCellFor(project.value.repeatBoxes, sourceRow, sourceColumn)
+      next[mappedRow][mappedColumn] = project.value.backgroundColor
     }
-    project.value.cells = writeClipboard(next, data, row, column)
-    setSelection(row, column, row + data.length - 1, column + data[0].length - 1)
+    project.value.cells = writeClipboard(next, copied.cells, row, column, copied.mask)
+    setClipboardSelection(row, column, copied)
     return true
   }
 
   function mirrorSelection(direction: 'horizontal' | 'vertical'): boolean {
     if (!selection.value) return false
     const source = selection.value
-    const rendered = renderGrid(project.value.cells, 1, 1, project.value.repeatBoxes).cells
-    let data = rendered.slice(source.top, source.bottom + 1).map((cells) => cells.slice(source.left, source.right + 1))
-    data = direction === 'horizontal' ? data.map((row) => [...row].reverse()) : [...data].reverse()
+    const copied = selectionClipboard(source)
+    copied.cells = direction === 'horizontal' ? copied.cells.map((row) => [...row].reverse()) : [...copied.cells].reverse()
+    if (copied.mask) copied.mask = direction === 'horizontal' ? copied.mask.map((row) => [...row].reverse()) : [...copied.mask].reverse()
     beginGridChange()
-    project.value.cells = writeClipboard(project.value.cells, data, source.top, source.left)
+    let next = cloneGrid(project.value.cells)
+    if (source.cells) {
+      for (const [sourceRow, sourceColumn] of source.cells) {
+        const [mappedRow, mappedColumn] = sourceCellFor(project.value.repeatBoxes, sourceRow, sourceColumn)
+        next[mappedRow][mappedColumn] = project.value.backgroundColor
+      }
+    }
+    project.value.cells = writeClipboard(next, copied.cells, source.top, source.left, copied.mask)
+    setClipboardSelection(source.top, source.left, copied)
     return true
   }
 
@@ -380,11 +453,13 @@ export function usePattern() {
   }
 
   function floodFill(startRow: number, startColumn: number, replacement: string) {
+    const selectedCells = selection.value?.cells ? new Set(selection.value.cells.map(([row, column]) => `${row}:${column}`)) : null
     const withinSelection = (row: number, column: number) => selection.value !== null
       && row >= selection.value.top
       && row <= selection.value.bottom
       && column >= selection.value.left
       && column <= selection.value.right
+      && (!selectedCells || selectedCells.has(`${row}:${column}`))
     const startInsideSelection = withinSelection(startRow, startColumn)
     const allowed = (row: number, column: number) => !selection.value || withinSelection(row, column) === startInsideSelection
     const target = project.value.cells[startRow][startColumn]
@@ -725,6 +800,7 @@ export function usePattern() {
     clearGrid,
     flushAutosave,
     setSelection,
+    setMagicSelection,
     selectRow,
     selectColumn,
     selectRows,

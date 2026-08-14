@@ -44,6 +44,7 @@ const toolShortcuts: Record<string, DrawingTool> = {
   f: 'fill',
   i: 'eyedropper',
   s: 'select',
+  w: 'wand',
   h: 'move',
 }
 const renderedPattern = computed(() => renderGrid(
@@ -420,6 +421,7 @@ onBeforeUnmount(() => {
                 @select-column="selectColumnHeader"
                 @column-action="handleColumnAction"
                 @select-area="pattern.setSelection"
+                @magic-select="pattern.setMagicSelection"
                 @clear-selection="pattern.clearSelection"
                 @place-selection="placeSelection"
                 @move-selection="moveSelectionDirectly"

@@ -28,6 +28,7 @@ const tools: Array<{ value: DrawingTool; icon: string; label: string; shortcut: 
   { value: 'fill', icon: 'mdi-format-color-fill', label: 'Fill', shortcut: 'F' },
   { value: 'eyedropper', icon: 'mdi-eyedropper', label: 'Eyedropper', shortcut: 'I' },
   { value: 'select', icon: 'mdi-select-drag', label: 'Select area', shortcut: 'S' },
+  { value: 'wand', icon: 'mdi-auto-fix', label: 'Magic wand', shortcut: 'W' },
   { value: 'move', icon: 'mdi-hand-back-right-outline', label: 'Pan canvas', shortcut: 'H' },
 ]
 </script>
@@ -61,7 +62,7 @@ const tools: Array<{ value: DrawingTool; icon: string; label: string; shortcut: 
           <button class="btn btn-sm join-item" :class="mirrorHorizontal ? 'btn-secondary' : 'btn-ghost'" type="button" aria-label="Toggle horizontal mirror line" :aria-pressed="mirrorHorizontal" @click="$emit('toggleMirrorHorizontal')"><span class="mdi mdi-flip-vertical text-lg" aria-hidden="true"></span><span class="hidden xl:inline">Horizontal</span></button>
         </div>
       </div>
-      <div v-if="tool === 'select'" class="flex items-center gap-1 border-l border-base-300 pl-3">
+      <div v-if="tool === 'select' || tool === 'wand'" class="flex items-center gap-1 border-l border-base-300 pl-3">
         <template v-if="placingSelection">
           <span class="text-xs font-medium text-primary">Choose destination</span>
           <button class="btn btn-ghost btn-xs" type="button" @click="$emit('cancelPlacement')">Cancel</button>
@@ -78,7 +79,7 @@ const tools: Array<{ value: DrawingTool; icon: string; label: string; shortcut: 
           </div>
         </template>
       </div>
-      <span class="badge badge-sm badge-outline capitalize">{{ tool === 'move' ? 'pan' : tool }}</span>
+      <span class="badge badge-sm badge-outline capitalize">{{ tool === 'move' ? 'pan' : tool === 'wand' ? 'magic wand' : tool }}</span>
       <div v-if="$slots.settings" class="grid w-[calc(100vw-3rem)] max-w-full grid-cols-5 items-center justify-items-center gap-1 border-t border-base-300 pt-1 sm:ml-auto sm:flex sm:w-auto sm:border-l sm:border-t-0 sm:pl-2 sm:pt-0" aria-label="Pattern settings">
         <slot name="settings"></slot>
       </div>
