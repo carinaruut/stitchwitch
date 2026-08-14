@@ -1,5 +1,5 @@
 import { computed, ref, watch } from 'vue'
-import type { DrawingTool, GridSelection, NewPatternProject, PatternGrid, PatternProject, RepeatBox, RepeatBoxInput } from '../types/pattern'
+import { MAX_REPEAT_COUNT, type DrawingTool, type GridSelection, type NewPatternProject, type PatternGrid, type PatternProject, type RepeatBox, type RepeatBoxInput } from '../types/pattern'
 import { addColumn, addRow, boxesOverlap, cloneGrid, createGrid, ensureGridSize, removeColumn, removeRow, renderGrid, sourceCellFor, synchronizeRepeatBox } from '../utils/grid'
 import { normalizeColor } from '../utils/colors'
 import { parseAxisSelection } from '../utils/axisSelection'
@@ -307,7 +307,7 @@ export function usePattern() {
   function saveRepeatBox(input: RepeatBoxInput, id: string | null): string | null {
     const candidate: RepeatBox = { ...input, id: id ?? crypto.randomUUID() }
     const values = [candidate.top, candidate.bottom, candidate.left, candidate.right, candidate.sections]
-    if (!values.every(Number.isInteger) || candidate.top < 0 || candidate.left < 0 || candidate.bottom <= candidate.top || candidate.right <= candidate.left || candidate.sections < 2 || candidate.sections > 20) {
+    if (!values.every(Number.isInteger) || candidate.top < 0 || candidate.left < 0 || candidate.bottom <= candidate.top || candidate.right <= candidate.left || candidate.sections < 2 || candidate.sections > MAX_REPEAT_COUNT) {
       return 'The repeat box settings are invalid.'
     }
     if (candidate.bottom > 500 || candidate.right > 500) return 'Repeat boxes cannot extend beyond 500 rows or columns.'

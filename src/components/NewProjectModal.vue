@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { reactive, ref, watch } from 'vue'
-import type { NewPatternProject } from '../types/pattern'
+import { MAX_REPEAT_COUNT, type NewPatternProject } from '../types/pattern'
 
 const props = defineProps<{ open: boolean }>()
 const emit = defineEmits<{ create: [project: NewPatternProject]; cancel: [] }>()
@@ -26,6 +26,10 @@ function submit() {
     error.value = 'Rows and columns must be whole numbers from 1 to 200.'
     return
   }
+  if (![form.horizontalRepeats, form.verticalRepeats].every((value) => Number.isInteger(value) && value >= 1 && value <= MAX_REPEAT_COUNT)) {
+    error.value = `Repeats must be whole numbers from 1 to ${MAX_REPEAT_COUNT}.`
+    return
+  }
   emit('create', { ...form, name: form.name.trim() })
 }
 </script>
@@ -40,8 +44,8 @@ function submit() {
         <label class="form-control"><span class="label-text mb-1">Rows</span><input v-model.number="form.rows" class="input input-bordered w-full" type="number" min="1" max="200" required /></label>
         <label class="form-control"><span class="label-text mb-1">Columns</span><input v-model.number="form.columns" class="input input-bordered w-full" type="number" min="1" max="200" required /></label>
         <label class="form-control sm:col-span-2"><span class="label-text mb-1">Cell size: {{ form.cellSize }} px</span><input v-model.number="form.cellSize" class="range range-primary" type="range" min="8" max="64" /></label>
-        <label class="form-control"><span class="label-text mb-1">Horizontal repeats</span><select v-model.number="form.horizontalRepeats" class="select select-bordered w-full"><option v-for="value in 10" :key="value">{{ value }}</option></select></label>
-        <label class="form-control"><span class="label-text mb-1">Vertical repeats</span><select v-model.number="form.verticalRepeats" class="select select-bordered w-full"><option v-for="value in 10" :key="value">{{ value }}</option></select></label>
+        <label class="form-control"><span class="label-text mb-1">Horizontal repeats</span><input v-model.number="form.horizontalRepeats" class="input input-bordered w-full" type="number" min="1" :max="MAX_REPEAT_COUNT" required /></label>
+        <label class="form-control"><span class="label-text mb-1">Vertical repeats</span><input v-model.number="form.verticalRepeats" class="input input-bordered w-full" type="number" min="1" :max="MAX_REPEAT_COUNT" required /></label>
       </div>
       <div class="modal-action">
         <button class="btn" type="button" @click="$emit('cancel')">Cancel</button>

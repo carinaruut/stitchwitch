@@ -1,4 +1,4 @@
-import type { PatternGrid, PatternProject, RepeatBox } from '../types/pattern'
+import { MAX_REPEAT_COUNT, type PatternGrid, type PatternProject, type RepeatBox } from '../types/pattern'
 import { boxesOverlap } from './grid'
 import { isHexColor } from './colors'
 
@@ -30,8 +30,8 @@ export function validateProject(value: unknown): ValidationResult {
     ['rows', 1, 500],
     ['columns', 1, 500],
     ['cellSize', 8, 64],
-    ['horizontalRepeats', 1, 20],
-    ['verticalRepeats', 1, 20],
+    ['horizontalRepeats', 1, MAX_REPEAT_COUNT],
+    ['verticalRepeats', 1, MAX_REPEAT_COUNT],
   ]
   for (const [key, minimum, maximum] of integers) {
     const number = project[key]
@@ -63,7 +63,7 @@ export function validateProject(value: unknown): ValidationResult {
       if ((box.direction !== 'across' && box.direction !== 'down') || !coordinates.every(Number.isInteger) || typeof box.enabled !== 'boolean') {
         return { valid: false, error: 'A repeat box has invalid settings.' }
       }
-      if (box.top < 0 || box.left < 0 || box.bottom <= box.top || box.right <= box.left || box.bottom > (project.rows as number) || box.right > columns || box.sections < 2 || box.sections > 20) {
+      if (box.top < 0 || box.left < 0 || box.bottom <= box.top || box.right <= box.left || box.bottom > (project.rows as number) || box.right > columns || box.sections < 2 || box.sections > MAX_REPEAT_COUNT) {
         return { valid: false, error: 'A repeat box is outside the pattern.' }
       }
       const length = box.direction === 'across' ? box.right - box.left : box.bottom - box.top

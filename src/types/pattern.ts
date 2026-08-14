@@ -3,6 +3,8 @@ export type DrawingTool = 'pencil' | 'eraser' | 'fill' | 'eyedropper' | 'select'
 export type PreviewStitch = 'knit' | 'cross-stitch'
 export type PrintMode = 'color' | 'symbols'
 
+export const MAX_REPEAT_COUNT = 100
+
 export interface GridSelection {
   top: number
   left: number

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import type { RepeatBox, RepeatBoxInput, RepeatDirection } from '../types/pattern'
+import { MAX_REPEAT_COUNT, type RepeatBox, type RepeatBoxInput, type RepeatDirection } from '../types/pattern'
 
 const props = defineProps<{
   horizontal: number
@@ -82,8 +82,8 @@ const validationMessage = computed(() => {
   if (!coordinates.every((item) => Number.isInteger(item) && item > 0)) {
     return 'Coordinates and sizes must be positive whole numbers.'
   }
-  if (!Number.isInteger(value.sections) || value.sections < 2 || value.sections > 20) {
-    return 'Sections must be a whole number from 2 to 20.'
+  if (!Number.isInteger(value.sections) || value.sections < 2 || value.sections > MAX_REPEAT_COUNT) {
+    return `Sections must be a whole number from 2 to ${MAX_REPEAT_COUNT}.`
   }
   if (value.lastCross < value.firstCross) {
     return direction.value === 'across'
@@ -197,7 +197,7 @@ function cancelEdit() {
 
 function updateFallback(event: Event, eventName: 'horizontal' | 'vertical') {
   const value = Number((event.target as HTMLInputElement).value)
-  const normalized = Math.min(20, Math.max(1, Math.floor(value || 1)))
+  const normalized = Math.min(MAX_REPEAT_COUNT, Math.max(1, Math.floor(value || 1)))
   if (eventName === 'horizontal') emit('horizontal', normalized)
   else emit('vertical', normalized)
 }
@@ -251,7 +251,7 @@ function updateFallback(event: Event, eventName: 'horizontal' | 'vertical') {
           </label>
           <label class="grid gap-1">
             <span class="text-xs font-medium">Sections</span>
-            <input v-model.number="sections" class="input input-bordered input-sm min-w-0 w-full" type="number" min="2" max="20" />
+            <input v-model.number="sections" class="input input-bordered input-sm min-w-0 w-full" type="number" min="2" :max="MAX_REPEAT_COUNT" />
           </label>
           <label class="col-span-2 grid gap-1">
             <span class="text-xs font-medium">
@@ -311,11 +311,11 @@ function updateFallback(event: Event, eventName: 'horizontal' | 'vertical') {
           <div class="grid grid-cols-2 gap-2">
             <label class="form-control">
               <span class="label-text mb-1 text-xs">Across</span>
-              <input class="input input-bordered input-sm min-w-0 w-full" type="number" min="1" max="20" :value="horizontal" @change="updateFallback($event, 'horizontal')" />
+              <input class="input input-bordered input-sm min-w-0 w-full" type="number" min="1" :max="MAX_REPEAT_COUNT" :value="horizontal" @change="updateFallback($event, 'horizontal')" />
             </label>
             <label class="form-control">
               <span class="label-text mb-1 text-xs">Down</span>
-              <input class="input input-bordered input-sm min-w-0 w-full" type="number" min="1" max="20" :value="vertical" @change="updateFallback($event, 'vertical')" />
+              <input class="input input-bordered input-sm min-w-0 w-full" type="number" min="1" :max="MAX_REPEAT_COUNT" :value="vertical" @change="updateFallback($event, 'vertical')" />
             </label>
           </div>
         </div>
