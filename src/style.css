@@ -103,7 +103,7 @@ body {
 @media print {
   @page {
     margin: 12mm;
-    size: landscape;
+    size: A4 landscape;
   }
 
   body {
@@ -145,24 +145,51 @@ body {
   }
 
   .print-chart-page,
+  .print-detail-page,
   .print-repeat-page {
     break-inside: avoid;
   }
 
   .print-chart-page h2,
+  .print-detail-page h2,
   .print-repeat-page h2 {
     font-size: 14pt;
     font-weight: 700;
     margin: 0 0 3mm;
   }
 
+  .print-detail-page,
   .print-repeat-page {
     break-before: page;
   }
 
-  .print-repeat-page p {
+  .print-detail-page p,
+  .print-repeat-chart p {
     font-size: 9pt;
     margin: -1mm 0 3mm;
+  }
+
+  .print-repeat-row {
+    align-items: flex-start;
+    display: flex;
+    gap: 6mm;
+    margin-bottom: 6mm;
+  }
+
+  .print-repeat-row:last-child {
+    margin-bottom: 0;
+  }
+
+  .print-repeat-chart {
+    break-inside: avoid;
+    flex: 0 0 auto;
+  }
+
+  .print-repeat-chart h3 {
+    font-size: 11pt;
+    font-weight: 700;
+    line-height: 1.2;
+    margin: 0 0 2mm;
   }
 
   .print-chart {
