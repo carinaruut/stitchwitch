@@ -106,6 +106,26 @@ body {
   border-right: 1px dashed color-mix(in oklab, currentColor 70%, transparent) !important;
 }
 
+.tracker-cell-complete::after {
+  background:
+    linear-gradient(45deg, transparent 45%, color-mix(in oklab, currentColor 85%, transparent) 46% 54%, transparent 55%),
+    linear-gradient(-45deg, transparent 45%, color-mix(in oklab, currentColor 85%, transparent) 46% 54%, transparent 55%);
+  content: "";
+  inset: 2px;
+  pointer-events: none;
+  position: absolute;
+}
+
+.tracker-cell-complete {
+  filter: saturate(0.6) opacity(0.72);
+}
+
+.tracker-cell-next {
+  outline: 3px solid var(--color-primary);
+  outline-offset: -3px;
+  z-index: 1;
+}
+
 @media print {
   @page {
     margin: 12mm;

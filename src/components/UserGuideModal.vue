@@ -34,7 +34,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleEscape))
       </header>
 
       <nav class="flex shrink-0 gap-1 overflow-x-auto border-b border-base-300 bg-base-200/60 px-5 py-2 sm:px-7" aria-label="User guide sections">
-        <a v-for="item in ['Start', 'Tools', 'Selection', 'Mirrors', 'Repeats', 'Canvas', 'Saving', 'Output']" :key="item" class="btn btn-ghost btn-xs shrink-0" :href="`#guide-${item.toLowerCase()}`">{{ item }}</a>
+        <a v-for="item in ['Start', 'Tools', 'Selection', 'Mirrors', 'Repeats', 'Canvas', 'Tracker', 'Saving', 'Output']" :key="item" class="btn btn-ghost btn-xs shrink-0" :href="`#guide-${item.toLowerCase()}`">{{ item }}</a>
       </nav>
 
       <div class="overflow-y-auto bg-base-100 px-5 py-5 sm:px-7 sm:py-6">
@@ -149,6 +149,17 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleEscape))
               <h3 class="font-bold">Display and history</h3>
                <p class="mt-1 text-sm text-base-content/70">Grid settings change the displayed cell size without changing the pattern. Undo and Redo restore drawing, structural edits, and repeat-box changes.</p>
             </article>
+          </div>
+        </section>
+
+        <section id="guide-tracker" class="mt-8 scroll-mt-4">
+          <div class="mb-3 flex items-center gap-2">
+            <span class="mdi mdi-progress-check text-xl text-primary" aria-hidden="true"></span>
+            <h2 class="text-xl font-bold">Progress tracker</h2>
+          </div>
+          <div class="rounded-box border border-base-300 p-4">
+            <p class="text-sm text-base-content/70">Open Tracker from the top menu, then open a saved design or tracker file. Choose the starting row and stitch direction before beginning. Clicking a stitch completes every earlier row and each stitch through that point; clicking a row number completes or reopens the whole row.</p>
+            <p class="mt-3 text-sm text-base-content/70">Progress is recovered in the current browser, but browser data can be cleared. Download a <code>.stitch-tracker</code> file regularly and use it to continue on another browser or device.</p>
           </div>
         </section>
 
