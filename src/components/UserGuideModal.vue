@@ -61,7 +61,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleEscape))
             <span class="mdi mdi-tools text-xl text-primary" aria-hidden="true"></span>
             <h2 class="text-xl font-bold">Drawing and colors</h2>
           </div>
-          <div class="grid gap-3 md:grid-cols-2">
+           <div class="grid gap-3 md:grid-cols-2">
             <article class="rounded-box border border-base-300 p-4">
               <h3 class="font-bold">Color controls</h3>
               <p class="mt-1 text-sm text-base-content/70">Click the color swatch to open the browser picker. You can also enter a hex color, reuse a recent color, or choose Eyedropper and sample a cell. Colors used by Pencil and Fill are added to Recent colors.</p>
@@ -74,12 +74,13 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleEscape))
               <h3 class="font-bold">Fill</h3>
               <p class="mt-1 text-sm text-base-content/70">Fill changes a connected area of matching color. With no selection, it can flow through the full canvas. With a selection, click inside to restrict fill inside it, or click outside to preserve the selected area and fill outside.</p>
             </article>
-            <article class="rounded-box border border-base-300 p-4">
-              <h3 class="font-bold">Eyedropper, Pan, and Clear</h3>
-              <p class="mt-1 text-sm text-base-content/70">Eyedropper samples one cell and returns to Pencil. Pan lets you drag the viewport without changing cells. Clear returns every cell to the background after confirmation and can be undone.</p>
-            </article>
-          </div>
-        </section>
+             <article class="rounded-box border border-base-300 p-4">
+               <h3 class="font-bold">Eyedropper, Pan, and Clear</h3>
+               <p class="mt-1 text-sm text-base-content/70">Eyedropper samples one cell and returns to Pencil. Pan lets you drag the viewport without changing cells. Clear returns every cell to the background after confirmation and can be undone.</p>
+             </article>
+           </div>
+           <p class="mt-3 text-xs text-base-content/55">Tool shortcuts: <kbd class="kbd kbd-xs">P</kbd> Pencil, <kbd class="kbd kbd-xs">E</kbd> Eraser, <kbd class="kbd kbd-xs">F</kbd> Fill, <kbd class="kbd kbd-xs">I</kbd> Eyedropper, <kbd class="kbd kbd-xs">S</kbd> Select, and <kbd class="kbd kbd-xs">H</kbd> Pan.</p>
+         </section>
 
         <section id="guide-selection" class="mt-8 scroll-mt-4">
           <div class="mb-3 flex items-center gap-2">

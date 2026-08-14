@@ -22,13 +22,13 @@ defineEmits<{
   cancelPlacement: []
 }>()
 
-const tools: Array<{ value: DrawingTool; icon: string; label: string }> = [
-  { value: 'pencil', icon: 'mdi-pencil', label: 'Pencil' },
-  { value: 'eraser', icon: 'mdi-eraser', label: 'Eraser' },
-  { value: 'fill', icon: 'mdi-format-color-fill', label: 'Fill' },
-  { value: 'eyedropper', icon: 'mdi-eyedropper', label: 'Eyedropper' },
-  { value: 'select', icon: 'mdi-select-drag', label: 'Select area' },
-  { value: 'move', icon: 'mdi-hand-back-right-outline', label: 'Pan canvas' },
+const tools: Array<{ value: DrawingTool; icon: string; label: string; shortcut: string }> = [
+  { value: 'pencil', icon: 'mdi-pencil', label: 'Pencil', shortcut: 'P' },
+  { value: 'eraser', icon: 'mdi-eraser', label: 'Eraser', shortcut: 'E' },
+  { value: 'fill', icon: 'mdi-format-color-fill', label: 'Fill', shortcut: 'F' },
+  { value: 'eyedropper', icon: 'mdi-eyedropper', label: 'Eyedropper', shortcut: 'I' },
+  { value: 'select', icon: 'mdi-select-drag', label: 'Select area', shortcut: 'S' },
+  { value: 'move', icon: 'mdi-hand-back-right-outline', label: 'Pan canvas', shortcut: 'H' },
 ]
 </script>
 
@@ -36,12 +36,13 @@ const tools: Array<{ value: DrawingTool; icon: string; label: string }> = [
   <section class="flex flex-wrap items-center gap-2 rounded-box border border-base-300 bg-base-200/70 p-1.5" aria-label="Editor tools">
       <span class="text-sm font-semibold">Tools</span>
       <div class="join" aria-label="Drawing tool selection">
-        <div v-for="item in tools" :key="item.value" class="tooltip" :data-tip="item.label">
+        <div v-for="item in tools" :key="item.value" class="tooltip" :data-tip="`${item.label} (${item.shortcut})`">
           <button
             class="btn btn-sm join-item"
             :class="tool === item.value ? 'btn-primary' : 'btn-ghost'"
             type="button"
-            :aria-label="item.label"
+            :aria-label="`${item.label} (${item.shortcut})`"
+            :aria-keyshortcuts="item.shortcut"
             :aria-pressed="tool === item.value"
             @click="$emit('select', item.value)"
           >

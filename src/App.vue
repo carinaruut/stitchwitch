@@ -18,7 +18,7 @@ import { usePattern } from './composables/usePattern'
 import { useTheme } from './composables/useTheme'
 import { useNotifications } from './composables/useNotifications'
 import { downloadProject, readProjectFile } from './composables/useProjectFiles'
-import type { NewPatternProject, PatternProject, RepeatBoxInput } from './types/pattern'
+import type { DrawingTool, NewPatternProject, PatternProject, RepeatBoxInput } from './types/pattern'
 import { renderGrid } from './utils/grid'
 
 const pattern = usePattern()
@@ -32,6 +32,14 @@ const fileInput = ref<HTMLInputElement | null>(null)
 const pendingImport = ref<PatternProject | null>(null)
 const placingSelection = ref(false)
 const downloadBackupNeeded = ref(pattern.restoredAutosave.value)
+const toolShortcuts: Record<string, DrawingTool> = {
+  p: 'pencil',
+  e: 'eraser',
+  f: 'fill',
+  i: 'eyedropper',
+  s: 'select',
+  h: 'move',
+}
 const renderedPattern = computed(() => renderGrid(
   pattern.project.value.cells,
   pattern.project.value.horizontalRepeats,
@@ -179,12 +187,21 @@ function moveSelectionDirectly(row: number, column: number) {
   else notify('The selection cannot extend beyond 500 rows or columns.', 'error')
 }
 
-function handleSelectionShortcuts(event: KeyboardEvent) {
+function handleKeyboardShortcuts(event: KeyboardEvent) {
   const target = event.target as HTMLElement | null
-  if (target?.matches('input, textarea, select, [contenteditable="true"]')) return
+  if (target?.closest('input, textarea, select, [contenteditable="true"]')) return
+  if (newModalOpen.value || clearModalOpen.value || importModalOpen.value || guideOpen.value) return
   if (event.key === 'Escape' && placingSelection.value) {
     placingSelection.value = false
     return
+  }
+  if (!event.metaKey && !event.ctrlKey && !event.altKey) {
+    const tool = toolShortcuts[event.key.toLowerCase()]
+    if (tool) {
+      event.preventDefault()
+      selectTool(tool)
+      return
+    }
   }
   if (!(event.metaKey || event.ctrlKey) || pattern.tool.value !== 'select') return
   if (event.key.toLowerCase() === 'c' && pattern.hasSelection.value) {
@@ -220,7 +237,7 @@ watch(pattern.project, () => {
 }, { deep: true })
 
 onMounted(() => {
-  window.addEventListener('keydown', handleSelectionShortcuts)
+  window.addEventListener('keydown', handleKeyboardShortcuts)
   window.addEventListener('beforeunload', warnBeforeUnload)
   window.addEventListener('pagehide', pattern.flushAutosave)
   document.addEventListener('visibilitychange', flushHiddenProject)
@@ -228,7 +245,7 @@ onMounted(() => {
 })
 onBeforeUnmount(() => {
   pattern.flushAutosave()
-  window.removeEventListener('keydown', handleSelectionShortcuts)
+  window.removeEventListener('keydown', handleKeyboardShortcuts)
   window.removeEventListener('beforeunload', warnBeforeUnload)
   window.removeEventListener('pagehide', pattern.flushAutosave)
   document.removeEventListener('visibilitychange', flushHiddenProject)
