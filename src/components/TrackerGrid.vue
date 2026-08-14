@@ -2,7 +2,7 @@
 import { nextTick, ref } from 'vue'
 import type { PatternGrid } from '../types/pattern'
 import type { TrackerProgress } from '../types/tracker'
-import { REPEAT_BOTTOM, REPEAT_COPY, REPEAT_LEFT, REPEAT_RIGHT, REPEAT_TOP } from '../utils/grid'
+import { followsCenterBoundary, isCenterHeader, REPEAT_BOTTOM, REPEAT_COPY, REPEAT_LEFT, REPEAT_RIGHT, REPEAT_TOP } from '../utils/grid'
 import { rowCompletionRange, stitchOrdinal } from '../utils/tracker'
 
 const props = defineProps<{
@@ -81,7 +81,7 @@ function moveRowHeader(row: number, event: KeyboardEvent) {
           v-for="column in cells[0].length"
           :key="`column-${column}`"
           class="sticky top-0 z-10 flex items-center justify-center border-b border-base-300/70 bg-base-100 font-mono text-[10px] font-medium tabular-nums text-base-content/60"
-          :class="{ 'section-column-end': (columnHeaders[column - 1] + 1) % 5 === 0 && column < cells[0].length }"
+          :class="{ 'section-column-end': (columnHeaders[column - 1] + 1) % 5 === 0 && column < cells[0].length, 'center-axis-label': isCenterHeader(column - 1, cells[0].length), 'center-column-marker': followsCenterBoundary(column - 1, cells[0].length) }"
           role="columnheader"
           :aria-colindex="column + 1"
         >{{ columnHeaders[column - 1] + 1 }}</span>
@@ -94,6 +94,8 @@ function moveRowHeader(row: number, event: KeyboardEvent) {
           :class="{
             'section-row-end': (rowHeaders[rowIndex] + 1) % 5 === 0 && rowIndex < cells.length - 1,
             'bg-success/15! font-bold text-success!': rowComplete(rowIndex),
+            'center-axis-label': isCenterHeader(rowIndex, cells.length),
+            'center-row-marker': followsCenterBoundary(rowIndex, cells.length),
           }"
           type="button"
           role="rowheader"

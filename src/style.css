@@ -47,11 +47,39 @@ body {
 }
 
 .section-column-end {
-  border-right: 1.5px solid color-mix(in oklab, currentColor 40%, transparent);
+  border-right: 1.5px solid color-mix(in oklab, var(--color-base-content) 40%, transparent);
 }
 
 .section-row-end {
-  border-bottom: 1.5px solid color-mix(in oklab, currentColor 40%, transparent);
+  border-bottom: 1.5px solid color-mix(in oklab, var(--color-base-content) 40%, transparent);
+}
+
+.center-axis-label {
+  color: var(--color-accent) !important;
+  font-weight: 700;
+}
+
+.center-column-marker::after,
+.center-row-marker::after {
+  background: var(--color-accent);
+  border-radius: 999px;
+  content: "";
+  pointer-events: none;
+  position: absolute;
+}
+
+.center-column-marker::after {
+  bottom: 4px;
+  height: 8px;
+  left: -1px;
+  width: 2px;
+}
+
+.center-row-marker::after {
+  height: 2px;
+  right: 4px;
+  top: -1px;
+  width: 8px;
 }
 
 .repeat-copy-cell {

@@ -6,6 +6,16 @@ export const REPEAT_RIGHT = 4
 export const REPEAT_TOP = 8
 export const REPEAT_BOTTOM = 16
 
+export function isCenterHeader(index: number, count: number): boolean {
+  return count % 2 === 1
+    ? index === Math.floor(count / 2)
+    : index === count / 2 - 1 || index === count / 2
+}
+
+export function followsCenterBoundary(index: number, count: number): boolean {
+  return count % 2 === 0 && index === count / 2
+}
+
 export function createGrid(rows: number, columns: number, color: string): PatternGrid {
   return Array.from({ length: rows }, () => Array<string>(columns).fill(color))
 }

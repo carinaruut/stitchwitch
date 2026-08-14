@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import type { DrawingTool, GridSelection, PatternGrid } from '../types/pattern'
-import { REPEAT_BOTTOM, REPEAT_COPY, REPEAT_LEFT, REPEAT_RIGHT, REPEAT_TOP } from '../utils/grid'
+import { followsCenterBoundary, isCenterHeader, REPEAT_BOTTOM, REPEAT_COPY, REPEAT_LEFT, REPEAT_RIGHT, REPEAT_TOP } from '../utils/grid'
 
 const props = defineProps<{
   cells: PatternGrid
@@ -308,7 +308,7 @@ onBeforeUnmount(() => {
         v-for="column in cells[0].length"
         :key="`column-${column}`"
         class="sticky top-0 z-10 flex items-center justify-center border-b border-base-300/70 bg-base-100 font-mono text-[10px] font-medium tabular-nums text-base-content/55 hover:bg-base-200"
-        :class="{ 'section-column-end': (columnHeaders[column - 1] + 1) % 5 === 0 && column < cells[0].length, 'bg-primary/10! font-bold text-primary!': selectedColumns.includes(columnHeaders[column - 1]), 'bg-secondary/10!': columnCopies[column - 1] > 0 }"
+        :class="{ 'section-column-end': (columnHeaders[column - 1] + 1) % 5 === 0 && column < cells[0].length, 'bg-primary/10! font-bold text-primary!': selectedColumns.includes(columnHeaders[column - 1]), 'bg-secondary/10!': columnCopies[column - 1] > 0, 'center-axis-label': isCenterHeader(column - 1, cells[0].length), 'center-column-marker': followsCenterBoundary(column - 1, cells[0].length) }"
         role="columnheader"
         tabindex="0"
         :aria-selected="selectedColumns.includes(columnHeaders[column - 1])"
@@ -322,7 +322,7 @@ onBeforeUnmount(() => {
       <template v-for="(row, rowIndex) in cells" :key="rowIndex">
         <span
           class="sticky left-0 z-10 flex items-center justify-center border-r border-base-300/70 bg-base-100 font-mono text-[10px] font-medium tabular-nums text-base-content/55 hover:bg-base-200"
-          :class="{ 'section-row-end': (rowHeaders[rowIndex] + 1) % 5 === 0 && rowIndex < cells.length - 1, 'bg-primary/10! font-bold text-primary!': selectedRows.includes(rowHeaders[rowIndex]), 'bg-secondary/10!': rowCopies[rowIndex] > 0 }"
+          :class="{ 'section-row-end': (rowHeaders[rowIndex] + 1) % 5 === 0 && rowIndex < cells.length - 1, 'bg-primary/10! font-bold text-primary!': selectedRows.includes(rowHeaders[rowIndex]), 'bg-secondary/10!': rowCopies[rowIndex] > 0, 'center-axis-label': isCenterHeader(rowIndex, cells.length), 'center-row-marker': followsCenterBoundary(rowIndex, cells.length) }"
           role="rowheader"
           tabindex="0"
           :aria-selected="selectedRows.includes(rowHeaders[rowIndex])"
