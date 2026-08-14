@@ -88,7 +88,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleEscape))
             <h2 class="text-xl font-bold">Selection tools</h2>
           </div>
           <div class="rounded-box border border-base-300 p-4">
-            <p class="text-sm text-base-content/70">Choose Select and drag a rectangle. The single outer border marks the active area. Drag from inside the border to move it directly, or choose Move and then click a destination. Clicking outside with Select cancels the selection.</p>
+             <p class="text-sm text-base-content/70">Choose Select and drag a rectangle. Drag from inside the selection to move it directly, or choose Move and then click a destination. Clicking outside with Select cancels the selection.</p>
             <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               <div class="rounded-box bg-base-200 p-3 text-sm"><strong class="block">Copy</strong>Stores the selected cells in the internal clipboard.</div>
               <div class="rounded-box bg-base-200 p-3 text-sm"><strong class="block">Paste</strong>Places the clipboard at the selection's top-left cell and expands the canvas if needed.</div>
@@ -143,11 +143,11 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleEscape))
           <div class="grid gap-3 md:grid-cols-2">
             <article class="rounded-box border border-base-300 p-4">
               <h3 class="font-bold">Rows and columns</h3>
-              <p class="mt-1 text-sm text-base-content/70">The Rows and Columns tools fill, erase, insert around, or delete the current item. Their deletion sections also accept multiple items such as <strong>1;2;3</strong> or <strong>1-3;6</strong>. Click a numbered header to select it and click it again to deselect it; selecting a row clears the column selection and vice versa. Shift-click extends the selection to a contiguous range. A dashed line marks only the outside of each selected range. Structural changes preserve repeat boxes outside the edited area.</p>
+              <p class="mt-1 text-sm text-base-content/70">The Rows and Columns tools fill, erase, insert around, or delete the current item. Their deletion sections also accept multiple items such as <strong>1;2;3</strong> or <strong>1-3;6</strong>. Click a numbered header to select it and click it again to deselect it; selecting a row clears the column selection and vice versa. Shift-click extends the selection to a contiguous range. Structural changes preserve repeat boxes outside the edited area.</p>
             </article>
             <article class="rounded-box border border-base-300 p-4">
               <h3 class="font-bold">Display and history</h3>
-              <p class="mt-1 text-sm text-base-content/70">Grid settings change only the visible cell size. Stronger separators mark each 5-by-5 section, and headers stay visible while scrolling. Undo and Redo restore drawing, structural edits, selections actions, and repeat-box changes.</p>
+               <p class="mt-1 text-sm text-base-content/70">Grid settings change the displayed cell size without changing the pattern. Undo and Redo restore drawing, structural edits, and repeat-box changes.</p>
             </article>
           </div>
         </section>
@@ -158,8 +158,8 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleEscape))
             <h2 class="text-xl font-bold">Saving and recovery</h2>
           </div>
           <div class="grid gap-3 md:grid-cols-3">
-            <article class="rounded-box border border-base-300 p-4"><h3 class="font-bold">Local autosave</h3><p class="mt-1 text-sm text-base-content/70">Changes are saved in this browser and flushed when the tab is hidden or closed. The status badge reports Saving locally, Saved locally, or Backup failed. A valid local copy is restored after reopening.</p></article>
-            <article class="rounded-box border border-base-300 p-4"><h3 class="font-bold">Save</h3><p class="mt-1 text-sm text-base-content/70">Downloads a <code>.stitch-pattern</code> project file containing cells, dimensions, recent colors, repeat boxes, fallback repeats, and project details. Keep downloads as durable backups because browser data can be cleared.</p></article>
+             <article class="rounded-box border border-base-300 p-4"><h3 class="font-bold">Local autosave</h3><p class="mt-1 text-sm text-base-content/70">Changes are saved in this browser and restored when you reopen the app.</p></article>
+             <article class="rounded-box border border-base-300 p-4"><h3 class="font-bold">Save</h3><p class="mt-1 text-sm text-base-content/70">Downloads a <code>.stitch-pattern</code> backup. Keep downloaded backups because browser data can be cleared.</p></article>
             <article class="rounded-box border border-base-300 p-4"><h3 class="font-bold">Open</h3><p class="mt-1 text-sm text-base-content/70">Validates a downloaded project, asks before replacing current work, and then resets undo history for the imported design.</p></article>
           </div>
         </section>
@@ -170,8 +170,8 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleEscape))
             <h2 class="text-xl font-bold">Preview, printing, and PDF</h2>
           </div>
           <div class="rounded-box border border-base-300 p-4">
-            <p class="text-sm text-base-content/70">Complete pattern preview shows the fully rendered chart without grid lines, including whole-pattern repeats or active repeat boxes. Before printing, choose Colored or Black &amp; white symbols beside the print button. Symbol PDFs include a key mapping every printed symbol to its color. Print or Save as PDF produces a complete numbered overview, readable overlapping detail pages when the chart is too large for A4, and source-section charts for enabled repeat boxes. Repeat charts share pages when space allows.</p>
-            <p class="mt-3 text-sm text-base-content/70">The light/dark theme button changes the editor only; printed output always uses a white page with exact pattern colors.</p>
+             <p class="text-sm text-base-content/70">Complete pattern preview shows the rendered chart, including whole-pattern repeats or active repeat boxes. Before printing, choose Color or B&amp;W symbols beside the print button. Symbol PDFs include a color key. Print or Save as PDF creates a numbered overview, detail pages for large charts, and source charts for enabled repeat boxes.</p>
+             <p class="mt-3 text-sm text-base-content/70">The light/dark theme changes the editor only and does not affect printed output.</p>
           </div>
         </section>
 
