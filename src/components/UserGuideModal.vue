@@ -48,7 +48,6 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleEscape))
         <div>
           <p class="text-xs font-semibold uppercase tracking-[0.18em] text-primary-content">Stitch Witch</p>
           <h1 id="user-guide-title" class="mt-1 text-2xl font-bold">{{ t('guide.title') }}</h1>
-          <p class="mt-1 text-sm text-base-content/60">{{ t('guide.subtitle') }}</p>
         </div>
         <button ref="closeButton" class="btn btn-ghost btn-sm btn-square" type="button" :aria-label="t('guide.close')" @click="$emit('close')">
           <span class="mdi mdi-close text-xl" aria-hidden="true"></span>

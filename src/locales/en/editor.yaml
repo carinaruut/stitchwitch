@@ -1,5 +1,4 @@
 editor:
-  description: Edit the complete pattern. Repeated copies update their source cells.
   directions:
     horizontal: horizontally
     vertical: vertically

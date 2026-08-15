@@ -339,7 +339,6 @@ onBeforeUnmount(() => {
               <div class="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <h1 class="text-xl font-bold">{{ pattern.project.value.name }}</h1>
-                  <p class="text-sm text-base-content/65">{{ t('editor.description') }}</p>
                 </div>
                 <div class="flex w-full flex-col items-stretch gap-2 sm:w-auto sm:items-end">
                   <div class="flex flex-wrap items-center gap-2 sm:justify-end">
