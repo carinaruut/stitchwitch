@@ -80,6 +80,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleEscape))
              </article>
            </div>
            <p class="mt-3 text-xs text-base-content/55">Tool shortcuts: <kbd class="kbd kbd-xs">P</kbd> Pencil, <kbd class="kbd kbd-xs">E</kbd> Eraser, <kbd class="kbd kbd-xs">F</kbd> Fill, <kbd class="kbd kbd-xs">I</kbd> Eyedropper, <kbd class="kbd kbd-xs">S</kbd> Select, <kbd class="kbd kbd-xs">W</kbd> Magic wand, and <kbd class="kbd kbd-xs">H</kbd> Pan.</p>
+           <p class="mt-2 text-xs text-base-content/55">Editing shortcuts: <kbd class="kbd kbd-xs">Ctrl/Cmd Z</kbd> Undo and <kbd class="kbd kbd-xs">Ctrl Y</kbd> or <kbd class="kbd kbd-xs">Ctrl/Cmd Shift Z</kbd> Redo.</p>
          </section>
 
         <section id="guide-selection" class="mt-8 scroll-mt-4">

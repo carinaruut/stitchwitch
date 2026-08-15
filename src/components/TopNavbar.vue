@@ -20,8 +20,8 @@ defineEmits<{ new: []; open: []; save: []; print: []; undo: []; redo: []; theme:
       <RouterLink class="btn btn-ghost btn-sm" to="/tracker"><span class="mdi mdi-progress-check text-lg" aria-hidden="true"></span>Tracker</RouterLink>
     </nav>
     <div class="navbar-end gap-1">
-      <button class="btn btn-ghost btn-square btn-sm" type="button" :disabled="!canUndo" aria-label="Undo" @click="$emit('undo')"><span class="mdi mdi-undo text-lg" aria-hidden="true"></span></button>
-      <button class="btn btn-ghost btn-square btn-sm" type="button" :disabled="!canRedo" aria-label="Redo" @click="$emit('redo')"><span class="mdi mdi-redo text-lg" aria-hidden="true"></span></button>
+      <button class="btn btn-ghost btn-square btn-sm" type="button" :disabled="!canUndo" aria-label="Undo" aria-keyshortcuts="Control+Z Meta+Z" @click="$emit('undo')"><span class="mdi mdi-undo text-lg" aria-hidden="true"></span></button>
+      <button class="btn btn-ghost btn-square btn-sm" type="button" :disabled="!canRedo" aria-label="Redo" aria-keyshortcuts="Control+Y Control+Shift+Z Meta+Shift+Z" @click="$emit('redo')"><span class="mdi mdi-redo text-lg" aria-hidden="true"></span></button>
       <button class="btn btn-ghost btn-square btn-sm" type="button" aria-label="Open user guide" title="User guide" @click="$emit('guide')"><span class="mdi mdi-help-circle-outline text-lg" aria-hidden="true"></span></button>
       <div class="dropdown dropdown-end lg:hidden">
         <button tabindex="0" class="btn btn-ghost btn-square btn-sm" type="button" aria-label="More project actions"><span class="mdi mdi-dots-vertical text-lg" aria-hidden="true"></span></button>

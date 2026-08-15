@@ -233,6 +233,20 @@ function handleKeyboardShortcuts(event: KeyboardEvent) {
       return
     }
   }
+  if ((event.metaKey || event.ctrlKey) && !event.altKey) {
+    const key = event.key.toLowerCase()
+    if (key === 'z') {
+      event.preventDefault()
+      if (event.shiftKey) pattern.redo()
+      else pattern.undo()
+      return
+    }
+    if (key === 'y' && !event.shiftKey) {
+      event.preventDefault()
+      pattern.redo()
+      return
+    }
+  }
   if (!(event.metaKey || event.ctrlKey) || pattern.tool.value !== 'select') return
   if (event.key.toLowerCase() === 'c' && pattern.hasSelection.value) {
     event.preventDefault()
