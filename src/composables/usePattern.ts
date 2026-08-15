@@ -433,6 +433,37 @@ export function usePattern() {
     project.value.repeatBoxes = project.value.repeatBoxes.filter((candidate) => candidate.id !== id)
   }
 
+  function mirroredPaintTargets(row: number, column: number): Array<[number, number]> {
+    const rows = project.value.cells.length
+    const columns = project.value.cells[0].length
+    const box = project.value.repeatBoxes.find((candidate) => candidate.enabled
+      && row >= candidate.top && row < candidate.bottom
+      && column >= candidate.left && column < candidate.right)
+    let origins: Array<[number, number]> = [[row, column]]
+
+    if (box?.direction === 'across') {
+      const sectionWidth = (box.right - box.left) / box.sections
+      origins = Array.from({ length: box.sections }, (_, copy) => [row, column + copy * sectionWidth])
+    } else if (box?.direction === 'down') {
+      const sectionHeight = (box.bottom - box.top) / box.sections
+      origins = Array.from({ length: box.sections }, (_, copy) => [row + copy * sectionHeight, column])
+    }
+
+    const targets: Array<[number, number]> = [[row, column]]
+    for (const [originRow, originColumn] of origins) {
+      if (mirrorVertical.value) targets.push([originRow, columns - 1 - originColumn])
+      if (mirrorHorizontal.value) targets.push([rows - 1 - originRow, originColumn])
+      if (mirrorVertical.value && mirrorHorizontal.value) targets.push([rows - 1 - originRow, columns - 1 - originColumn])
+    }
+    const seen = new Set<string>()
+    return targets.filter(([targetRow, targetColumn]) => {
+      const key = `${targetRow}:${targetColumn}`
+      if (seen.has(key)) return false
+      seen.add(key)
+      return true
+    })
+  }
+
   function paintCell(row: number, column: number) {
     selectRow(row)
     selectColumn(column)
@@ -442,26 +473,14 @@ export function usePattern() {
       return
     }
     if (tool.value === 'fill') {
-      const rows = project.value.cells.length
-      const columns = project.value.cells[0].length
-      const targets: Array<[number, number]> = [[row, column]]
-      if (mirrorVertical.value) targets.push([row, columns - 1 - column])
-      if (mirrorHorizontal.value) targets.push([rows - 1 - row, column])
-      if (mirrorVertical.value && mirrorHorizontal.value) targets.push([rows - 1 - row, columns - 1 - column])
-      for (const [targetRow, targetColumn] of targets) {
+      for (const [targetRow, targetColumn] of mirroredPaintTargets(row, column)) {
         const [sourceRow, sourceColumn] = sourceCellFor(project.value.repeatBoxes, targetRow, targetColumn)
         floodFill(sourceRow, sourceColumn, selectedColor.value)
       }
       return
     }
     const color = tool.value === 'eraser' ? project.value.backgroundColor : selectedColor.value
-    const rows = project.value.cells.length
-    const columns = project.value.cells[0].length
-    const targets: Array<[number, number]> = [[row, column]]
-    if (mirrorVertical.value) targets.push([row, columns - 1 - column])
-    if (mirrorHorizontal.value) targets.push([rows - 1 - row, column])
-    if (mirrorVertical.value && mirrorHorizontal.value) targets.push([rows - 1 - row, columns - 1 - column])
-    for (const [targetRow, targetColumn] of targets) {
+    for (const [targetRow, targetColumn] of mirroredPaintTargets(row, column)) {
       const [sourceRow, sourceColumn] = sourceCellFor(project.value.repeatBoxes, targetRow, targetColumn)
       if (project.value.cells[sourceRow][sourceColumn] !== color) project.value.cells[sourceRow][sourceColumn] = color
     }
