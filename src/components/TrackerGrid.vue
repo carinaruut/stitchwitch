@@ -273,6 +273,7 @@ function moveRowHeader(row: number, event: KeyboardEvent) {
 }
 
 .tracker-stitch-single-crochet {
+  inset: 0;
   mask: url('/assets/stitch_3.png') center / 100% 100% no-repeat;
   -webkit-mask: url('/assets/stitch_3.png') center / 100% 100% no-repeat;
 }
