@@ -22,7 +22,7 @@ function readTrackerPreferences(): Partial<TrackerPreferences> {
     const value = JSON.parse(localStorage.getItem(TRACKER_PREFERENCES_KEY) ?? 'null') as Partial<TrackerPreferences> | null
     if (!value || typeof value !== 'object') return {}
     return {
-      display: value.display === 'canvas' || value.display === 'knit' || value.display === 'cross-stitch' ? value.display : undefined,
+      display: value.display === 'canvas' || value.display === 'knit' || value.display === 'cross-stitch' || value.display === 'single-crochet' ? value.display : undefined,
       cellSize: Number.isInteger(value.cellSize) && value.cellSize! >= 16 && value.cellSize! <= 48 ? value.cellSize : undefined,
       autoScroll: typeof value.autoScroll === 'boolean' ? value.autoScroll : undefined,
       keepAwake: typeof value.keepAwake === 'boolean' ? value.keepAwake : undefined,
@@ -394,6 +394,7 @@ function cancelActiveModal() {
                           <option value="canvas">{{ t('tracker.controls.canvas') }}</option>
                           <option value="knit">{{ t('tracker.controls.knit') }}</option>
                           <option value="cross-stitch">{{ t('tracker.controls.crossStitch') }}</option>
+                          <option value="single-crochet">{{ t('tracker.controls.singleCrochet') }}</option>
                         </select>
                       </label>
                       <label class="form-control gap-2">

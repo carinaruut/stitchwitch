@@ -43,6 +43,7 @@ tracker:
     canvas: Canvas
     knit: Knit
     crossStitch: Cross stitch
+    singleCrochet: Single crochet
     cellSize: Cell size
     autoScroll: Auto-scroll
     keepAwake: Keep screen awake

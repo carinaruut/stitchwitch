@@ -1,6 +1,6 @@
 export type PatternGrid = string[][]
 export type DrawingTool = 'pencil' | 'eraser' | 'fill' | 'eyedropper' | 'select' | 'wand' | 'move'
-export type PreviewStitch = 'knit' | 'cross-stitch'
+export type PreviewStitch = 'knit' | 'cross-stitch' | 'single-crochet'
 export type PatternDisplay = 'canvas' | PreviewStitch
 export type PrintMode = 'color' | 'symbols'
 

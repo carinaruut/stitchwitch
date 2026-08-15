@@ -53,7 +53,7 @@ export function asTrackerProject(value: unknown): TrackerProject {
   if (typeof progress.updatedAt !== 'string' || Number.isNaN(Date.parse(progress.updatedAt))) throw appError('tracker.updatedAt')
   const preferences = source.preferences as Partial<TrackerPreferences> | undefined
   const validPreferences = preferences
-    && (preferences.display === 'canvas' || preferences.display === 'knit' || preferences.display === 'cross-stitch')
+    && (preferences.display === 'canvas' || preferences.display === 'knit' || preferences.display === 'cross-stitch' || preferences.display === 'single-crochet')
     && Number.isInteger(preferences.cellSize) && preferences.cellSize! >= 16 && preferences.cellSize! <= 48
     && typeof preferences.autoScroll === 'boolean'
     ? { display: preferences.display, cellSize: preferences.cellSize!, autoScroll: preferences.autoScroll, keepAwake: typeof preferences.keepAwake === 'boolean' ? preferences.keepAwake : false }

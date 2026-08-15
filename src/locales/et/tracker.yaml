@@ -43,6 +43,7 @@ tracker:
     canvas: Ruudustik
     knit: Kude
     crossStitch: Ristpiste
+    singleCrochet: Kinnissilmus
     cellSize: Ruudu suurus
     autoScroll: Automaatne kerimine
     keepAwake: Hoia ekraan ärkvel

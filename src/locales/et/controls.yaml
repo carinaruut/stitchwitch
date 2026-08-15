@@ -67,6 +67,7 @@ controls:
     stitchLabel: Eelvaate piste
     knit: Silmus
     crossStitch: Ristpiste
+    singleCrochet: Kinnissilmus
     columns: "{count} veerg | {count} veergu"
     rows: "{count} rida | {count} rida"
     ariaLabel: Korduva pistemustri eelvaade

@@ -67,6 +67,7 @@ controls:
     stitchLabel: Preview stitch
     knit: Knit
     crossStitch: Cross stitch
+    singleCrochet: Single crochet
     columns: "{count} column | {count} columns"
     rows: "{count} row | {count} rows"
     ariaLabel: Repeated stitch pattern preview

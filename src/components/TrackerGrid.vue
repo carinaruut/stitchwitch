@@ -272,6 +272,11 @@ function moveRowHeader(row: number, event: KeyboardEvent) {
   -webkit-mask: url('/assets/stitch_2.png') center / 100% 100% no-repeat;
 }
 
+.tracker-stitch-single-crochet {
+  mask: url('/assets/stitch_3.png') center / 100% 100% no-repeat;
+  -webkit-mask: url('/assets/stitch_3.png') center / 100% 100% no-repeat;
+}
+
 .tracker-stitch::after {
   content: '';
   inset: 0;
@@ -285,5 +290,9 @@ function moveRowHeader(row: number, event: KeyboardEvent) {
 
 .tracker-stitch-cross-stitch::after {
   background: url('/assets/stitch_2.png') center / 100% 100% no-repeat;
+}
+
+.tracker-stitch-single-crochet::after {
+  background: url('/assets/stitch_3.png') center / 100% 100% no-repeat;
 }
 </style>

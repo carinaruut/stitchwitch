@@ -12,9 +12,11 @@ const availableWidth = ref(0)
 const fitWidth = ref(false)
 let resizeObserver: ResizeObserver | null = null
 
-const stitchDimensions = computed(() => stitch.value === 'cross-stitch'
-  ? { column: 24, row: 24, width: 28, height: 28, paddingRight: 4, paddingBottom: 4 }
-  : { column: 27, row: 24, width: 27, height: 32, paddingRight: 0, paddingBottom: 2 })
+const stitchDimensions = computed(() => {
+  if (stitch.value === 'single-crochet') return { column: 16, row: 16, width: 28, height: 28, paddingRight: 12, paddingBottom: 12 }
+  if (stitch.value === 'cross-stitch') return { column: 24, row: 24, width: 28, height: 28, paddingRight: 4, paddingBottom: 4 }
+  return { column: 27, row: 24, width: 27, height: 32, paddingRight: 0, paddingBottom: 2 }
+})
 
 const previewScale = computed(() => {
   if (!fitWidth.value || !availableWidth.value) return 1
@@ -61,6 +63,7 @@ onBeforeUnmount(() => resizeObserver?.disconnect())
             <select v-model="stitch" class="select select-bordered select-sm" :aria-label="t('controls.preview.stitchLabel')">
               <option value="knit">{{ t('controls.preview.knit') }}</option>
               <option value="cross-stitch">{{ t('controls.preview.crossStitch') }}</option>
+              <option value="single-crochet">{{ t('controls.preview.singleCrochet') }}</option>
             </select>
           </label>
           <span class="badge badge-primary">{{ t('controls.preview.columns', columns) }}</span>
@@ -76,7 +79,7 @@ onBeforeUnmount(() => resizeObserver?.disconnect())
             :aria-label="t('controls.preview.ariaLabel')"
           >
             <template v-for="(row, rowIndex) in cells" :key="rowIndex">
-              <span v-for="(color, columnIndex) in row" :key="columnIndex" class="stitch" :class="`stitch-${stitch}`" :style="{ '--stitch-color': color }" aria-hidden="true"></span>
+              <span v-for="(color, columnIndex) in row" :key="columnIndex" class="stitch" :class="`stitch-${stitch}`" :style="{ '--stitch-color': color, zIndex: stitch === 'single-crochet' ? (cells.length - rowIndex) * (columns + 1) + columns - columnIndex : undefined }" aria-hidden="true"></span>
             </template>
           </div>
         </div>
@@ -106,6 +109,13 @@ onBeforeUnmount(() => resizeObserver?.disconnect())
   -webkit-mask: url('/assets/stitch_2.png') center / 100% 100% no-repeat;
 }
 
+.stitch-single-crochet {
+  width: var(--stitch-width);
+  height: var(--stitch-height);
+  mask: url('/assets/stitch_3.png') center / 100% 100% no-repeat;
+  -webkit-mask: url('/assets/stitch_3.png') center / 100% 100% no-repeat;
+}
+
 .stitch::after {
   position: absolute;
   inset: 0;
@@ -119,5 +129,9 @@ onBeforeUnmount(() => resizeObserver?.disconnect())
 
 .stitch-cross-stitch::after {
   background: url('/assets/stitch_2.png') center / 100% 100% no-repeat;
+}
+
+.stitch-single-crochet::after {
+  background: url('/assets/stitch_3.png') center / 100% 100% no-repeat;
 }
 </style>
