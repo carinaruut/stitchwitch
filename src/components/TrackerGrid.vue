@@ -105,10 +105,21 @@ function scrollAfterStitch(row: number, column: number) {
         top = Math.max(top, Math.min(0, gridTop))
       }
     }
+  } else if (top) {
+    if (props.progress.startRow === 'top') {
+      const remainingScroll = container.scrollHeight - container.clientHeight - container.scrollTop
+      top = Math.min(top, Math.max(0, remainingScroll))
+    } else {
+      top = Math.max(top, -container.scrollTop)
+    }
   }
 
-  if (left) container.scrollBy({ left, behavior: 'smooth' })
-  if (top) (pageScrollsVertically ? window : container).scrollBy({ top, behavior: 'smooth' })
+  if (pageScrollsVertically) {
+    if (left) container.scrollBy({ left, behavior: 'smooth' })
+    if (top) window.scrollBy({ top, behavior: 'smooth' })
+  } else if (left || top) {
+    container.scrollBy({ left, top, behavior: 'smooth' })
+  }
 }
 
 function selectStitch(row: number, column: number) {
