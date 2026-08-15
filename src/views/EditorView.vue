@@ -20,7 +20,7 @@ import UserGuideModal from '../components/UserGuideModal.vue'
 import { usePattern } from '../composables/usePattern'
 import { useTheme } from '../composables/useTheme'
 import { useNotifications } from '../composables/useNotifications'
-import { downloadProject, readProjectFile } from '../composables/useProjectFiles'
+import { downloadProject, readProjectFile, safeFilename } from '../composables/useProjectFiles'
 import type { DrawingTool, NewPatternProject, PatternProject, PrintMode, RepeatBoxInput } from '../types/pattern'
 import { localizedErrorMessage } from '../utils/appError'
 import { renderGrid } from '../utils/grid'
@@ -208,6 +208,75 @@ async function printPattern(mode: PrintMode = printMode.value) {
   window.print()
 }
 
+async function downloadCanvasPng() {
+  if (printMenu.value) printMenu.value.open = false
+  try {
+    const { cells, rowHeaders, columnHeaders } = renderedPattern.value
+    const maximumDimension = Math.max(cells.length, cells[0].length)
+    const cellPixels = Math.max(1, Math.min(pattern.project.value.cellSize, Math.floor((4096 - 32) / maximumDimension)))
+    const fontPixels = Math.max(6, Math.min(14, Math.floor(cellPixels * 0.5)))
+    const largestCoordinate = String(Math.max(...rowHeaders, ...columnHeaders) + 1)
+    const headerPixels = Math.max(cellPixels, Math.ceil(largestCoordinate.length * fontPixels * 0.65) + 6)
+    const canvas = document.createElement('canvas')
+    canvas.width = headerPixels + cells[0].length * cellPixels
+    canvas.height = headerPixels + cells.length * cellPixels
+    const context = canvas.getContext('2d')
+    if (!context) throw new Error('Canvas rendering is unavailable')
+
+    context.fillStyle = '#f3f4f6'
+    context.fillRect(0, 0, canvas.width, canvas.height)
+    cells.forEach((row, rowIndex) => row.forEach((color, columnIndex) => {
+      context.fillStyle = color
+      context.fillRect(headerPixels + columnIndex * cellPixels, headerPixels + rowIndex * cellPixels, cellPixels, cellPixels)
+    }))
+
+    context.strokeStyle = '#9ca3af'
+    context.lineWidth = 1
+    context.beginPath()
+    for (let row = 0; row <= cells.length; row++) {
+      const y = Math.min(canvas.height - 0.5, headerPixels + row * cellPixels + 0.5)
+      context.moveTo(0, y)
+      context.lineTo(canvas.width, y)
+    }
+    for (let column = 0; column <= cells[0].length; column++) {
+      const x = Math.min(canvas.width - 0.5, headerPixels + column * cellPixels + 0.5)
+      context.moveTo(x, 0)
+      context.lineTo(x, canvas.height)
+    }
+    context.rect(0.5, 0.5, canvas.width - 1, canvas.height - 1)
+    context.stroke()
+
+    context.fillStyle = '#111827'
+    context.font = `${fontPixels}px sans-serif`
+    context.textAlign = 'center'
+    context.textBaseline = 'middle'
+    rowHeaders.forEach((coordinate, index) => context.fillText(String(coordinate + 1), headerPixels / 2, headerPixels + (index + 0.5) * cellPixels))
+    columnHeaders.forEach((coordinate, index) => {
+      const label = String(coordinate + 1)
+      const x = headerPixels + (index + 0.5) * cellPixels
+      if (context.measureText(label).width <= cellPixels - 2) context.fillText(label, x, headerPixels / 2)
+      else {
+        context.save()
+        context.translate(x, headerPixels / 2)
+        context.rotate(-Math.PI / 2)
+        context.fillText(label, 0, 0)
+        context.restore()
+      }
+    })
+
+    const blob = await new Promise<Blob>((resolve, reject) => canvas.toBlob(value => value ? resolve(value) : reject(new Error('PNG creation failed')), 'image/png'))
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = safeFilename(pattern.project.value.name).replace(/\.stitch-pattern$/, '.png')
+    link.click()
+    URL.revokeObjectURL(url)
+    notify(t('editor.notifications.pngDownloaded'), 'success')
+  } catch {
+    notify(t('editor.errors.pngFailed'), 'error')
+  }
+}
+
 function saveRepeatBox(input: RepeatBoxInput, id: string | null, complete: (error: string | null) => void) {
   const error = pattern.saveRepeatBox(input, id)
   complete(error)
@@ -361,6 +430,7 @@ onBeforeUnmount(() => {
       @new="newModalOpen = true"
       @open="fileInput?.click()"
       @save="saveProject"
+      @png="downloadCanvasPng"
       @print="printPattern"
       @undo="pattern.undo"
       @redo="pattern.redo"
@@ -402,11 +472,17 @@ onBeforeUnmount(() => {
                   </div>
                   <details ref="printMenu" class="dropdown dropdown-end">
                     <summary class="btn btn-primary btn-sm">
-                      <span class="mdi mdi-printer-outline text-base" aria-hidden="true"></span>
+                      <span class="mdi mdi-download-outline text-base" aria-hidden="true"></span>
                       {{ t('editor.print.button') }}
                       <span class="mdi mdi-chevron-down" aria-hidden="true"></span>
                     </summary>
                     <ul class="menu dropdown-content z-50 mt-2 w-64 rounded-box border border-base-300 bg-base-100 p-2 shadow-lg">
+                      <li>
+                        <button type="button" @click="downloadCanvasPng">
+                          <span class="mdi mdi-image-outline text-lg" aria-hidden="true"></span>
+                          <span><strong class="block">{{ t('editor.print.canvasPng') }}</strong><span class="text-xs text-base-content/60">{{ t('editor.print.canvasDescription') }}</span></span>
+                        </button>
+                      </li>
                       <li>
                         <button type="button" @click="printPattern('color')">
                           <span class="mdi mdi-palette-outline text-lg" aria-hidden="true"></span>

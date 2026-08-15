@@ -19,17 +19,19 @@ editor:
     stitches: '{count} pistet'
     entryLabel: 'Värv {color}: {stitches}'
   print:
-    button: Prindi või salvesta PDF-ina
+    button: Laadi alla
+    canvasPng: Lõuend PNG-failina
+    canvasDescription: Laadi kogu lõuend pildina alla
     colorChart: Värviline skeem
-    colorDescription: Prindi pistete värvidega
+    colorDescription: Prindi või salvesta värvilise PDF-ina
     symbolChart: Mustvalged sümbolid
-    symbolDescription: Prindi koos sümbolite legendiga
+    symbolDescription: Prindi või salvesta sümbolite legendiga mustvalge PDF
   nav:
     projectActions: Projekti toimingud
     new: Uus
     open: Ava
     save: Salvesta
-    print: Prindi
+    download: Laadi alla
     tracker: Jälgija
     undo: Võta tagasi
     redo: Tee uuesti
@@ -39,7 +41,6 @@ editor:
     newProject: Uus projekt
     openProject: Ava projekt
     saveProject: Salvesta projekt
-    printOrPdf: Prindi või salvesta PDF-ina
     openTracker: Ava jälgija
   modal:
     cancel: Loobu
@@ -54,6 +55,7 @@ editor:
     gridAlreadyClear: Ruudustik on juba tühi.
     gridCleared: Ruudustik on tühjendatud.
     projectSaved: Projekt on allalaadimiste kausta salvestatud.
+    pngDownloaded: Lõuendi PNG-fail on alla laaditud.
     importCancelled: Importimine katkestati.
     projectImported: Projekt imporditi edukalt.
     repeatBoxUpdated: Kordusala on uuendatud.
@@ -77,6 +79,7 @@ editor:
     importConfirm: Ava projekt
   errors:
     saveFailed: Projekti ei õnnestunud salvestada.
+    pngFailed: Lõuendi PNG-faili loomine nurjus.
     invalidProjectFile: Projekti fail ei ole kehtiv.
     fileTooLarge: Projekti fail on liiga suur.
     invalidJson: Valitud fail ei ole korrektne JSON.

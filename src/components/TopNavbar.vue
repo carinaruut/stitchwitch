@@ -7,7 +7,7 @@ import type { Theme } from '../composables/useTheme'
 import type { PrintMode } from '../types/pattern'
 
 defineProps<{ canUndo: boolean; canRedo: boolean; theme: Theme }>()
-const emit = defineEmits<{ new: []; open: []; save: []; print: [mode: PrintMode]; undo: []; redo: []; theme: []; guide: [] }>()
+const emit = defineEmits<{ new: []; open: []; save: []; png: []; print: [mode: PrintMode]; undo: []; redo: []; theme: []; guide: [] }>()
 const { t } = useI18n({ useScope: 'global' })
 
 function requestPrint(mode: PrintMode, event: MouseEvent) {
@@ -15,6 +15,13 @@ function requestPrint(mode: PrintMode, event: MouseEvent) {
   target.closest('details')?.removeAttribute('open')
   target.blur()
   emit('print', mode)
+}
+
+function requestPng(event: MouseEvent) {
+  const target = event.currentTarget as HTMLElement
+  target.closest('details')?.removeAttribute('open')
+  target.blur()
+  emit('png')
 }
 </script>
 
@@ -28,8 +35,9 @@ function requestPrint(mode: PrintMode, event: MouseEvent) {
       <button class="btn btn-ghost btn-sm" type="button" @click="$emit('open')"><span class="mdi mdi-folder-open-outline text-lg" aria-hidden="true"></span>{{ t('editor.nav.open') }}</button>
       <button class="btn btn-ghost btn-sm" type="button" aria-keyshortcuts="Control+S Meta+S" @click="$emit('save')"><span class="mdi mdi-content-save-outline text-lg" aria-hidden="true"></span>{{ t('editor.nav.save') }}</button>
       <details class="dropdown dropdown-end">
-        <summary class="btn btn-ghost btn-sm"><span class="mdi mdi-printer-outline text-lg" aria-hidden="true"></span>{{ t('editor.nav.print') }}<span class="mdi mdi-chevron-down" aria-hidden="true"></span></summary>
+        <summary class="btn btn-ghost btn-sm"><span class="mdi mdi-download-outline text-lg" aria-hidden="true"></span>{{ t('editor.nav.download') }}<span class="mdi mdi-chevron-down" aria-hidden="true"></span></summary>
         <ul class="menu dropdown-content z-50 mt-2 w-48 rounded-box border border-base-300 bg-base-100 p-2 shadow-lg">
+          <li><button type="button" @click="requestPng"><span class="mdi mdi-image-outline" aria-hidden="true"></span>{{ t('editor.print.canvasPng') }}</button></li>
           <li><button type="button" @click="requestPrint('color', $event)"><span class="mdi mdi-palette-outline" aria-hidden="true"></span>{{ t('editor.print.colorChart') }}</button></li>
           <li><button type="button" @click="requestPrint('symbols', $event)"><span class="mdi mdi-shape-outline" aria-hidden="true"></span>{{ t('editor.print.symbolChart') }}</button></li>
         </ul>
@@ -46,7 +54,8 @@ function requestPrint(mode: PrintMode, event: MouseEvent) {
           <li><button type="button" @click="$emit('new')"><span class="mdi mdi-file-plus-outline" aria-hidden="true"></span>{{ t('editor.nav.newProject') }}</button></li>
           <li><button type="button" @click="$emit('open')"><span class="mdi mdi-folder-open-outline" aria-hidden="true"></span>{{ t('editor.nav.openProject') }}</button></li>
           <li><button type="button" aria-keyshortcuts="Control+S Meta+S" @click="$emit('save')"><span class="mdi mdi-content-save-outline" aria-hidden="true"></span>{{ t('editor.nav.saveProject') }}</button></li>
-          <li class="menu-title">{{ t('editor.nav.printOrPdf') }}</li>
+          <li class="menu-title">{{ t('editor.nav.download') }}</li>
+          <li><button type="button" @click="requestPng"><span class="mdi mdi-image-outline" aria-hidden="true"></span>{{ t('editor.print.canvasPng') }}</button></li>
           <li><button type="button" @click="requestPrint('color', $event)"><span class="mdi mdi-palette-outline" aria-hidden="true"></span>{{ t('editor.print.colorChart') }}</button></li>
           <li><button type="button" @click="requestPrint('symbols', $event)"><span class="mdi mdi-shape-outline" aria-hidden="true"></span>{{ t('editor.print.symbolChart') }}</button></li>
           <li><RouterLink to="/tracker"><span class="mdi mdi-progress-check" aria-hidden="true"></span>{{ t('editor.nav.openTracker') }}</RouterLink></li>
