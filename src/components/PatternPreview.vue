@@ -11,6 +11,11 @@ const previewArea = ref<HTMLElement | null>(null)
 const availableWidth = ref(0)
 const fitWidth = ref(false)
 let resizeObserver: ResizeObserver | null = null
+const stitchOptions = computed<Array<{ value: PreviewStitch; label: string }>>(() => [
+  { value: 'knit', label: t('controls.preview.knit') },
+  { value: 'cross-stitch', label: t('controls.preview.crossStitch') },
+  { value: 'single-crochet', label: t('controls.preview.singleCrochet') },
+])
 
 const stitchDimensions = computed(() => {
   if (stitch.value === 'single-crochet') return { column: 16, row: 16, width: 28, height: 28, paddingRight: 12, paddingBottom: 12 }
@@ -58,14 +63,21 @@ onBeforeUnmount(() => resizeObserver?.disconnect())
             <span class="mdi mdi-fit-to-screen-outline text-lg" aria-hidden="true"></span>
             {{ t('controls.preview.fitWidth') }}
           </button>
-          <label class="flex items-center gap-2 text-sm font-medium">
-            {{ t('controls.preview.stitch') }}
-            <select v-model="stitch" class="select select-bordered select-sm" :aria-label="t('controls.preview.stitchLabel')">
-              <option value="knit">{{ t('controls.preview.knit') }}</option>
-              <option value="cross-stitch">{{ t('controls.preview.crossStitch') }}</option>
-              <option value="single-crochet">{{ t('controls.preview.singleCrochet') }}</option>
-            </select>
-          </label>
+          <div class="flex flex-wrap gap-1" role="group" :aria-label="t('controls.preview.stitchLabel')">
+            <button
+              v-for="option in stitchOptions"
+              :key="option.value"
+              class="btn btn-sm"
+              :class="stitch === option.value ? 'btn-primary' : 'btn-ghost'"
+              type="button"
+              :aria-pressed="stitch === option.value"
+              :aria-label="option.label"
+              :title="option.label"
+              @click="stitch = option.value"
+            >
+              {{ option.label }}
+            </button>
+          </div>
           <span class="badge badge-primary">{{ t('controls.preview.columns', columns) }}</span>
           <span class="badge badge-secondary">{{ t('controls.preview.rows', cells.length) }}</span>
         </div>
@@ -79,7 +91,14 @@ onBeforeUnmount(() => resizeObserver?.disconnect())
             :aria-label="t('controls.preview.ariaLabel')"
           >
             <template v-for="(row, rowIndex) in cells" :key="rowIndex">
-              <span v-for="(color, columnIndex) in row" :key="columnIndex" class="stitch" :class="`stitch-${stitch}`" :style="{ '--stitch-color': color, zIndex: stitch === 'single-crochet' ? (cells.length - rowIndex) * (columns + 1) + columns - columnIndex : stitch === 'knit' ? cells.length - rowIndex : undefined }" aria-hidden="true"></span>
+              <span
+                v-for="(color, columnIndex) in row"
+                :key="`${rowIndex}-${columnIndex}`"
+                v-memo="[color, cells.length, columns]"
+                class="stitch"
+                :style="{ '--stitch-color': color, '--row-stack': cells.length - rowIndex, '--single-stack': (cells.length - rowIndex) * (columns + 1) + columns - columnIndex }"
+                aria-hidden="true"
+              ></span>
             </template>
           </div>
         </div>
@@ -92,46 +111,39 @@ onBeforeUnmount(() => resizeObserver?.disconnect())
 .stitch {
   position: relative;
   z-index: 1;
+  width: var(--stitch-width);
+  height: var(--stitch-height);
   background: var(--stitch-color);
+  mask: var(--stitch-image) center / 100% 100% no-repeat;
+  -webkit-mask: var(--stitch-image) center / 100% 100% no-repeat;
 }
 
-.stitch-knit {
-  width: var(--stitch-width);
-  height: var(--stitch-height);
-  mask: url('/assets/stitch_1.png') center / 100% 100% no-repeat;
-  -webkit-mask: url('/assets/stitch_1.png') center / 100% 100% no-repeat;
+.stitch-grid-knit {
+  --stitch-image: url('/assets/stitch_1.webp');
 }
 
-.stitch-cross-stitch {
-  width: var(--stitch-width);
-  height: var(--stitch-height);
-  mask: url('/assets/stitch_2.png') center / 100% 100% no-repeat;
-  -webkit-mask: url('/assets/stitch_2.png') center / 100% 100% no-repeat;
+.stitch-grid-cross-stitch {
+  --stitch-image: url('/assets/stitch_2.webp');
 }
 
-.stitch-single-crochet {
-  width: var(--stitch-width);
-  height: var(--stitch-height);
-  mask: url('/assets/stitch_3.png') center / 100% 100% no-repeat;
-  -webkit-mask: url('/assets/stitch_3.png') center / 100% 100% no-repeat;
+.stitch-grid-single-crochet {
+  --stitch-image: url('/assets/stitch_3.webp');
+}
+
+.stitch-grid-knit .stitch {
+  z-index: var(--row-stack);
+}
+
+.stitch-grid-single-crochet .stitch {
+  z-index: var(--single-stack);
 }
 
 .stitch::after {
   position: absolute;
   inset: 0;
   content: '';
+  background: var(--stitch-image) center / 100% 100% no-repeat;
   mix-blend-mode: multiply;
 }
 
-.stitch-knit::after {
-  background: url('/assets/stitch_1.png') center / 100% 100% no-repeat;
-}
-
-.stitch-cross-stitch::after {
-  background: url('/assets/stitch_2.png') center / 100% 100% no-repeat;
-}
-
-.stitch-single-crochet::after {
-  background: url('/assets/stitch_3.png') center / 100% 100% no-repeat;
-}
 </style>

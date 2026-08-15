@@ -263,19 +263,19 @@ function moveRowHeader(row: number, event: KeyboardEvent) {
 
 .tracker-stitch-knit {
   inset: -2px 0;
-  mask: url('/assets/stitch_1.png') center / 100% 100% no-repeat;
-  -webkit-mask: url('/assets/stitch_1.png') center / 100% 100% no-repeat;
+  mask: url('/assets/stitch_1.webp') center / 100% 100% no-repeat;
+  -webkit-mask: url('/assets/stitch_1.webp') center / 100% 100% no-repeat;
 }
 
 .tracker-stitch-cross-stitch {
-  mask: url('/assets/stitch_2.png') center / 100% 100% no-repeat;
-  -webkit-mask: url('/assets/stitch_2.png') center / 100% 100% no-repeat;
+  mask: url('/assets/stitch_2.webp') center / 100% 100% no-repeat;
+  -webkit-mask: url('/assets/stitch_2.webp') center / 100% 100% no-repeat;
 }
 
 .tracker-stitch-single-crochet {
   inset: 0;
-  mask: url('/assets/stitch_3.png') center / 100% 100% no-repeat;
-  -webkit-mask: url('/assets/stitch_3.png') center / 100% 100% no-repeat;
+  mask: url('/assets/stitch_3.webp') center / 100% 100% no-repeat;
+  -webkit-mask: url('/assets/stitch_3.webp') center / 100% 100% no-repeat;
 }
 
 .tracker-stitch::after {
@@ -286,14 +286,14 @@ function moveRowHeader(row: number, event: KeyboardEvent) {
 }
 
 .tracker-stitch-knit::after {
-  background: url('/assets/stitch_1.png') center / 100% 100% no-repeat;
+  background: url('/assets/stitch_1.webp') center / 100% 100% no-repeat;
 }
 
 .tracker-stitch-cross-stitch::after {
-  background: url('/assets/stitch_2.png') center / 100% 100% no-repeat;
+  background: url('/assets/stitch_2.webp') center / 100% 100% no-repeat;
 }
 
 .tracker-stitch-single-crochet::after {
-  background: url('/assets/stitch_3.png') center / 100% 100% no-repeat;
+  background: url('/assets/stitch_3.webp') center / 100% 100% no-repeat;
 }
 </style>
