@@ -15,7 +15,7 @@ let resizeObserver: ResizeObserver | null = null
 const stitchDimensions = computed(() => {
   if (stitch.value === 'single-crochet') return { column: 16, row: 16, width: 28, height: 28, paddingRight: 12, paddingBottom: 12 }
   if (stitch.value === 'cross-stitch') return { column: 24, row: 24, width: 28, height: 28, paddingRight: 4, paddingBottom: 4 }
-  return { column: 27, row: 24, width: 27, height: 32, paddingRight: 0, paddingBottom: 2 }
+  return { column: 26, row: 22, width: 27, height: 32, paddingRight: 1, paddingBottom: 4 }
 })
 
 const previewScale = computed(() => {
@@ -79,7 +79,7 @@ onBeforeUnmount(() => resizeObserver?.disconnect())
             :aria-label="t('controls.preview.ariaLabel')"
           >
             <template v-for="(row, rowIndex) in cells" :key="rowIndex">
-              <span v-for="(color, columnIndex) in row" :key="columnIndex" class="stitch" :class="`stitch-${stitch}`" :style="{ '--stitch-color': color, zIndex: stitch === 'single-crochet' ? (cells.length - rowIndex) * (columns + 1) + columns - columnIndex : undefined }" aria-hidden="true"></span>
+              <span v-for="(color, columnIndex) in row" :key="columnIndex" class="stitch" :class="`stitch-${stitch}`" :style="{ '--stitch-color': color, zIndex: stitch === 'single-crochet' ? (cells.length - rowIndex) * (columns + 1) + columns - columnIndex : stitch === 'knit' ? cells.length - rowIndex : undefined }" aria-hidden="true"></span>
             </template>
           </div>
         </div>
