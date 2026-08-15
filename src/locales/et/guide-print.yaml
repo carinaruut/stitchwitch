@@ -105,7 +105,7 @@ guide:
     openText: Kontrollib allalaaditud projekti, küsib enne aktiivse töö asendamist kinnitust ning lähtestab seejärel imporditud kavandi tagasivõtmisajaloo.
   output:
     title: Eelvaade, printimine ja PDF
-    intro: Terve mustri eelvaates kuvatakse valmis skeem koos kogu mustri korduste või aktiivsete kordusaladega. Ava printimine või PDF-failina salvestamine ja vali värviline skeem või mustvalged sümbolid. Sümbolitega PDF sisaldab värvilegendit. Mõlemad valikud loovad nummerdatud ülevaate, suurte skeemide detaillehed ja lubatud kordusalade lähteosade skeemid.
+    intro: Terve mustri eelvaates kuvatakse valmis skeem koos kogu mustri korduste või aktiivsete kordusaladega. Ava printimine või PDF-failina salvestamine ja vali värviline skeem või mustvalged sümbolid. Värviline PDF sisaldab värvinäidiste legendit koos pistete arvuga. Sümbolitega PDF sisaldab mustvalget legendit kirjeldavate värvinimede ja pistete arvuga. Mõlemad valikud loovad nummerdatud ülevaate, suurte skeemide detaillehed ja lubatud kordusalade lähteosade skeemid.
     themeNote: Hele või tume kujundus muudab ainult redaktorit ega mõjuta prinditavat väljundit.
   accessibility:
     title: Klaviatuur ja hõlbustus
@@ -129,5 +129,35 @@ print:
     symbols: Nummerdatud mustvalgete sümbolitega skeemi ülevaade
     color: Nummerdatud täieliku pisteskeemi ülevaade
   symbolKeyTitle: "Sümbolite legend · Lehekülg {page}/{total}"
-  symbolKeyDescription: Iga sümbol tähistab kõigil skeemilehtedel sama värvi.
+  symbolKeyDescription: Iga sümbol tähistab kõigil skeemilehtedel nimetatud värvi.
+  colorWithTone: '{tone} {color}'
+  tones:
+    dark: Tume
+    light: Hele
+    muted: Tuhm
+    vivid: Erk
+  colors:
+    black: Must
+    gray: Hall
+    white: Valge
+    red: Punane
+    orange: Oranž
+    yellow: Kollane
+    lime: Laimiroheline
+    green: Roheline
+    teal: Sinakasroheline
+    turquoise: Türkiissinine
+    cyan: Tsüaansinine
+    blue: Sinine
+    indigo: Indigo
+    purple: Lilla
+    magenta: Magenta
+    mauve: Lillakasroosa
+    pink: Roosa
+    brown: Pruun
+    beige: Beež
+  colorLegendTitle: "Värvilegend · Lehekülg {page}/{total}"
+  colorLegendDescription: Pistete arv sisaldab tervet kuvatavat mustrit ja kõiki kordusi.
+  oneStitch: '{count} piste'
+  stitches: '{count} pistet'
   repeatChartsTitle: "Korduste lähteosade skeemid · Lehekülg {page}/{total}"

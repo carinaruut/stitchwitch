@@ -249,6 +249,7 @@ body {
   .print-chart-page,
   .print-detail-page,
   .print-symbol-key-page,
+  .print-color-key-page,
   .print-repeat-page {
     background: white !important;
     color: black !important;
@@ -290,6 +291,7 @@ body {
   .print-chart-page,
   .print-detail-page,
   .print-symbol-key-page,
+  .print-color-key-page,
   .print-repeat-page {
     break-inside: avoid;
   }
@@ -297,6 +299,7 @@ body {
   .print-chart-page h2,
   .print-detail-page h2,
   .print-symbol-key-page h2,
+  .print-color-key-page h2,
   .print-repeat-page h2 {
     font-size: 14pt;
     font-weight: 700;
@@ -304,13 +307,23 @@ body {
   }
 
   .print-detail-page,
-  .print-symbol-key-page,
-  .print-repeat-page {
+  .print-start-page,
+  .print-page-group-multiple {
     break-before: page;
+  }
+
+  .print-page-group {
+    break-inside: avoid;
+    padding-top: 5mm;
+  }
+
+  .print-page-group.print-page-group-multiple {
+    break-inside: auto;
   }
 
   .print-detail-page p,
   .print-symbol-key-page p,
+  .print-color-key-page p,
   .print-repeat-chart p {
     font-size: 9pt;
     margin: -1mm 0 3mm;
@@ -375,7 +388,7 @@ body {
 
   .print-symbol-key {
     display: grid;
-    gap: 3mm 5mm;
+    gap: 2mm 4mm;
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
@@ -385,21 +398,35 @@ body {
     display: flex;
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     font-size: 9pt;
-    gap: 3mm;
-    min-height: 9mm;
-    padding: 1.5mm 2mm;
+    gap: 2mm;
+    min-height: 8mm;
+    padding: 1mm 1.5mm;
   }
 
   .print-symbol-key-mark {
     align-items: center;
     border: 0.25mm solid #737373;
     display: flex;
-    flex: 0 0 7mm;
+    flex: 0 0 6mm;
     font-family: Arial, "Apple Symbols", sans-serif;
     font-size: 10pt;
     font-weight: 700;
-    height: 7mm;
+    height: 6mm;
     justify-content: center;
+  }
+
+  .print-color-key-mark {
+    border: 0.25mm solid #737373;
+    box-sizing: border-box;
+    flex: 0 0 6mm;
+    height: 6mm;
+  }
+
+  .print-key-count {
+    font-family: Arial, sans-serif;
+    font-size: 8pt;
+    margin-left: auto;
+    white-space: nowrap;
   }
 
   .print-chart-corner,

@@ -2,7 +2,8 @@
 import { computed, type CSSProperties } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { PatternGrid, PatternProject, PrintMode } from '../types/pattern'
-import { findUsedColors, renderGrid } from '../utils/grid'
+import { countColors, renderGrid } from '../utils/grid'
+import { describeColor } from '../utils/colors'
 import PrintChart from './PrintChart.vue'
 
 const CHART_WIDTH_MM = 238
@@ -14,7 +15,7 @@ const MAX_CELL_MM = 5
 const TILE_COLUMNS = 55
 const TILE_ROWS = 35
 const REPEAT_GAP_MM = 6
-const SYMBOLS_PER_KEY_PAGE = 48
+const KEY_ENTRIES_PER_PAGE = 52
 const PRINT_SYMBOLS = [
   '●', '○', '■', '□', '▲', '△', '◆', '◇', '✕', '＋', '−', '│', '╱', '╲', '✦', '✚',
   '✖', '★', '☆', '♠', '♣', '♥', '♦', '☀', '☾', '☁', '☂', '⌁', '≈', '≡', '⊙', '⊗',
@@ -48,7 +49,7 @@ interface RepeatPage {
 }
 
 const props = defineProps<{ project: PatternProject; mode: PrintMode }>()
-const { t } = useI18n({ useScope: 'global' })
+const { n, t } = useI18n({ useScope: 'global' })
 const renderedPattern = computed(() => renderGrid(props.project.cells, props.project.horizontalRepeats, props.project.verticalRepeats, props.project.repeatBoxes))
 const pattern = computed(() => renderedPattern.value.cells)
 const columns = computed(() => pattern.value[0].length)
@@ -58,8 +59,15 @@ const chartStyle = computed(() => ({
   gridTemplateColumns: `repeat(${columns.value + 1}, ${chartCellSize.value}mm)`,
   gridTemplateRows: `repeat(${rows.value + 1}, ${chartCellSize.value}mm)`,
 }))
-const symbolEntries = computed(() => findUsedColors(pattern.value).filter((color) => color.toLowerCase() !== '#ffffff').map((color, index) => ({
-  color,
+const legendEntries = computed(() => countColors(pattern.value))
+const legendPages = computed(() => props.mode === 'color'
+  ? Array.from(
+      { length: Math.ceil(legendEntries.value.length / KEY_ENTRIES_PER_PAGE) },
+      (_, index) => legendEntries.value.slice(index * KEY_ENTRIES_PER_PAGE, (index + 1) * KEY_ENTRIES_PER_PAGE),
+    )
+  : [])
+const symbolEntries = computed(() => legendEntries.value.filter(({ color }) => color.toLowerCase() !== '#ffffff').map((entry, index) => ({
+  ...entry,
   symbol: PRINT_SYMBOLS[index] ?? String(index + 1),
 })))
 const symbolMap = computed(() => props.mode === 'symbols'
@@ -68,10 +76,22 @@ const symbolMap = computed(() => props.mode === 'symbols'
 const symbolKeyPages = computed(() => {
   if (props.mode !== 'symbols') return []
   return Array.from(
-    { length: Math.ceil(symbolEntries.value.length / SYMBOLS_PER_KEY_PAGE) },
-    (_, index) => symbolEntries.value.slice(index * SYMBOLS_PER_KEY_PAGE, (index + 1) * SYMBOLS_PER_KEY_PAGE),
+    { length: Math.ceil(symbolEntries.value.length / KEY_ENTRIES_PER_PAGE) },
+    (_, index) => symbolEntries.value.slice(index * KEY_ENTRIES_PER_PAGE, (index + 1) * KEY_ENTRIES_PER_PAGE),
   )
 })
+
+function stitchCount(count: number) {
+  return t(count === 1 ? 'print.oneStitch' : 'print.stitches', { count: n(count, 'integer') })
+}
+
+function colorName(color: string) {
+  const description = describeColor(color)
+  const name = t(`print.colors.${description.name}`)
+  return description.tone
+    ? t('print.colorWithTone', { tone: t(`print.tones.${description.tone}`), color: name })
+    : name
+}
 
 function makeChart(
   id: string,
@@ -227,16 +247,33 @@ const repeatPages = computed(() => {
       />
     </section>
 
-    <section v-for="(entries, pageIndex) in symbolKeyPages" :key="pageIndex" class="print-symbol-key-page">
-      <h2>{{ t('print.symbolKeyTitle', { page: pageIndex + 1, total: symbolKeyPages.length }) }}</h2>
-      <p>{{ t('print.symbolKeyDescription') }}</p>
-      <div class="print-symbol-key">
-        <div v-for="entry in entries" :key="entry.color" class="print-symbol-key-entry">
-          <span class="print-symbol-key-mark">{{ entry.symbol }}</span>
-          <span>{{ entry.color.toUpperCase() }}</span>
+    <div v-if="symbolKeyPages.length" class="print-page-group" :class="{ 'print-page-group-multiple': symbolKeyPages.length > 1 }">
+      <section v-for="(entries, pageIndex) in symbolKeyPages" :key="`symbol-${pageIndex}`" class="print-symbol-key-page" :class="{ 'print-start-page': pageIndex > 0 }">
+        <h2>{{ t('print.symbolKeyTitle', { page: pageIndex + 1, total: symbolKeyPages.length }) }}</h2>
+        <p>{{ t('print.symbolKeyDescription') }}</p>
+        <div class="print-symbol-key">
+          <div v-for="entry in entries" :key="entry.color" class="print-symbol-key-entry">
+            <span class="print-symbol-key-mark">{{ entry.symbol }}</span>
+            <span>{{ colorName(entry.color) }}</span>
+            <strong class="print-key-count">{{ stitchCount(entry.count) }}</strong>
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </div>
+
+    <div v-if="legendPages.length" class="print-page-group" :class="{ 'print-page-group-multiple': legendPages.length > 1 }">
+      <section v-for="(entries, pageIndex) in legendPages" :key="`color-${pageIndex}`" class="print-color-key-page" :class="{ 'print-start-page': pageIndex > 0 }">
+        <h2>{{ t('print.colorLegendTitle', { page: pageIndex + 1, total: legendPages.length }) }}</h2>
+        <p>{{ t('print.colorLegendDescription') }}</p>
+        <div class="print-symbol-key">
+          <div v-for="entry in entries" :key="entry.color" class="print-symbol-key-entry">
+            <span class="print-color-key-mark" :style="{ backgroundColor: entry.color }"></span>
+            <span>{{ entry.color.toUpperCase() }}</span>
+            <strong class="print-key-count">{{ stitchCount(entry.count) }}</strong>
+          </div>
+        </div>
+      </section>
+    </div>
 
     <section v-for="detail in detailCharts" :key="detail.id" class="print-detail-page">
       <h2>{{ detail.title }}</h2>
@@ -251,22 +288,24 @@ const repeatPages = computed(() => {
       />
     </section>
 
-    <section v-for="(page, pageIndex) in repeatPages" :key="pageIndex" class="print-repeat-page">
-      <h2>{{ t('print.repeatChartsTitle', { page: pageIndex + 1, total: repeatPages.length }) }}</h2>
-      <div v-for="(row, rowIndex) in page.rows" :key="rowIndex" class="print-repeat-row">
-        <article v-for="repeat in row.charts" :key="repeat.id" class="print-repeat-chart" :style="{ width: `${repeat.width}mm` }">
-          <h3>{{ repeat.title }}</h3>
-          <p>{{ repeat.description }}</p>
-          <PrintChart
-            :cells="repeat.cells"
-            :row-headers="repeat.rowHeaders"
-            :column-headers="repeat.columnHeaders"
-            :chart-style="repeat.style"
-            :label="repeat.title"
-            :symbols="symbolMap"
-          />
-        </article>
-      </div>
-    </section>
+    <div v-if="repeatPages.length" class="print-page-group" :class="{ 'print-page-group-multiple': repeatPages.length > 1 }">
+      <section v-for="(page, pageIndex) in repeatPages" :key="`repeat-${pageIndex}`" class="print-repeat-page" :class="{ 'print-start-page': pageIndex > 0 }">
+        <h2>{{ t('print.repeatChartsTitle', { page: pageIndex + 1, total: repeatPages.length }) }}</h2>
+        <div v-for="(row, rowIndex) in page.rows" :key="rowIndex" class="print-repeat-row">
+          <article v-for="repeat in row.charts" :key="repeat.id" class="print-repeat-chart" :style="{ width: `${repeat.width}mm` }">
+            <h3>{{ repeat.title }}</h3>
+            <p>{{ repeat.description }}</p>
+            <PrintChart
+              :cells="repeat.cells"
+              :row-headers="repeat.rowHeaders"
+              :column-headers="repeat.columnHeaders"
+              :chart-style="repeat.style"
+              :label="repeat.title"
+              :symbols="symbolMap"
+            />
+          </article>
+        </div>
+      </section>
+    </div>
   </article>
 </template>

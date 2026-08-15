@@ -5,6 +5,7 @@ import { useI18n } from 'vue-i18n'
 import TopNavbar from '../components/TopNavbar.vue'
 import DrawingTools from '../components/DrawingTools.vue'
 import ColorMenu from '../components/ColorMenu.vue'
+import ColorLegend from '../components/ColorLegend.vue'
 import GridMenu from '../components/GridMenu.vue'
 import RepeatMenu from '../components/RepeatMenu.vue'
 import RowMenu from '../components/RowMenu.vue'
@@ -505,6 +506,8 @@ onBeforeUnmount(() => {
               />
           </div>
         </section>
+
+        <ColorLegend :cells="renderedPattern.cells" />
 
         <PatternPreview
           v-model:stitch="pattern.project.value.previewStitch"

@@ -183,6 +183,8 @@ export function renderGrid(grid: PatternGrid, horizontal: number, vertical: numb
   }
 }
 
-export function findUsedColors(grid: PatternGrid): string[] {
-  return [...new Set(grid.flat())]
+export function countColors(grid: PatternGrid): Array<{ color: string; count: number }> {
+  const counts = new Map<string, number>()
+  for (const color of grid.flat()) counts.set(color, (counts.get(color) ?? 0) + 1)
+  return [...counts].map(([color, count]) => ({ color, count }))
 }

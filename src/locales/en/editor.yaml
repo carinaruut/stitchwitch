@@ -11,6 +11,13 @@ editor:
     columns: '{count} columns'
     oneRow: '{count} row'
     rows: '{count} rows'
+  legend:
+    title: Color legend
+    oneTotal: '{count} total stitch'
+    total: '{count} total stitches'
+    oneStitch: '{count} stitch'
+    stitches: '{count} stitches'
+    entryLabel: 'Color {color}: {stitches}'
   print:
     button: Print or Save as PDF
     colorChart: Color chart

@@ -11,6 +11,13 @@ editor:
     columns: '{count} veergu'
     oneRow: '{count} rida'
     rows: '{count} rida'
+  legend:
+    title: Värvilegend
+    oneTotal: 'Kokku {count} piste'
+    total: 'Kokku {count} pistet'
+    oneStitch: '{count} piste'
+    stitches: '{count} pistet'
+    entryLabel: 'Värv {color}: {stitches}'
   print:
     button: Prindi või salvesta PDF-ina
     colorChart: Värviline skeem
