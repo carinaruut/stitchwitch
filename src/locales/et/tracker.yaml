@@ -44,6 +44,7 @@ tracker:
     crossStitch: Ristpiste
     cellSize: Ruudu suurus
     autoScroll: Automaatne kerimine
+    keepAwake: Hoia ekraan ärkvel
   instructions:
     resetOrder: Jälgimisjärjekorra muutmiseks lähtesta edenemine.
     usage: Kõigi pistete märkimiseks kuni valitud pisteni klõpsa pistet. Kogu rea lõpetamiseks või taasavamiseks klõpsa rea numbrit.
@@ -55,6 +56,7 @@ tracker:
     removed: Kohalik tööjärg eemaldati.
     removeFailed: Brauseri taastekoopiat ei saanud eemaldada.
     autosaveFailed: Automaatne salvestamine brauserisse nurjus. Edenemise kaotsimineku vältimiseks laadi tööjärg kohe alla.
+    keepAwakeFailed: Brauser ei saanud ekraani ärkvel hoida.
     recovered: Tööjärg taastati sellest brauserist.
     close: Sulge
     dismissAria: 'Sulge teade: {message}'

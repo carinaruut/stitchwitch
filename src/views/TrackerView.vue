@@ -27,6 +27,10 @@ const clearModalOpen = ref(false)
 const cellSize = ref(Math.min(40, Math.max(18, state.tracker.value?.pattern.cellSize ?? 24)))
 const display = ref<PatternDisplay>('canvas')
 const autoScroll = ref(true)
+const keepAwake = ref(false)
+const wakeLockSupported = typeof navigator !== 'undefined' && 'wakeLock' in navigator
+let wakeLock: WakeLockSentinel | null = null
+let wakeLockRequestPending = false
 
 const dimensions = computed(() => state.tracker.value ? renderedDimensions(state.tracker.value.pattern) : null)
 const tooLarge = computed(() => dimensions.value ? dimensions.value.rows * dimensions.value.columns > MAX_TRACKER_STITCHES : false)
@@ -112,6 +116,39 @@ function changeAlternation(event: Event) {
   state.setOrder(state.tracker.value.progress.startRow, state.tracker.value.progress.firstRowDirection, (event.target as HTMLInputElement).checked)
 }
 
+async function requestWakeLock() {
+  if (!wakeLockSupported || !keepAwake.value || document.visibilityState !== 'visible' || wakeLock || wakeLockRequestPending) return
+  wakeLockRequestPending = true
+  try {
+    const sentinel = await navigator.wakeLock.request('screen')
+    if (!keepAwake.value) {
+      await sentinel.release()
+      return
+    }
+    wakeLock = sentinel
+    sentinel.addEventListener('release', () => {
+      if (wakeLock === sentinel) wakeLock = null
+    }, { once: true })
+  } catch {
+    keepAwake.value = false
+    notify(t('tracker.notifications.keepAwakeFailed'), 'error')
+  } finally {
+    wakeLockRequestPending = false
+  }
+}
+
+function releaseWakeLock() {
+  const sentinel = wakeLock
+  wakeLock = null
+  if (sentinel && !sentinel.released) void sentinel.release()
+}
+
+function changeKeepAwake(event: Event) {
+  keepAwake.value = (event.target as HTMLInputElement).checked
+  if (keepAwake.value) void requestWakeLock()
+  else releaseWakeLock()
+}
+
 function selectStitch(row: number, column: number) {
   if (!renderedPattern.value) return
   state.selectStitch(row, column, renderedPattern.value.cells.length, renderedPattern.value.cells[0].length)
@@ -125,6 +162,8 @@ function confirmReset() {
 
 function confirmClear() {
   if (state.clearTracker()) {
+    keepAwake.value = false
+    releaseWakeLock()
     clearModalOpen.value = false
     notify(t('tracker.notifications.removed'), 'success')
   } else {
@@ -139,8 +178,12 @@ function warnBeforeUnload(event: BeforeUnloadEvent) {
   event.returnValue = t('tracker.warnings.beforeUnload')
 }
 
-function flushHiddenTracker() {
-  if (document.visibilityState === 'hidden') state.flushAutosave()
+function handleVisibilityChange() {
+  if (document.visibilityState === 'hidden') {
+    state.flushAutosave()
+    return
+  }
+  if (keepAwake.value) void requestWakeLock()
 }
 
 onBeforeRouteLeave(() => {
@@ -160,15 +203,17 @@ watch(state.autosaveStatus, (status) => {
 onMounted(() => {
   window.addEventListener('beforeunload', warnBeforeUnload)
   window.addEventListener('pagehide', state.flushAutosave)
-  document.addEventListener('visibilitychange', flushHiddenTracker)
+  document.addEventListener('visibilitychange', handleVisibilityChange)
   if (state.restoredAutosave.value) notify(t('tracker.notifications.recovered'), 'success')
 })
 
 onBeforeUnmount(() => {
   state.flushAutosave()
+  keepAwake.value = false
+  releaseWakeLock()
   window.removeEventListener('beforeunload', warnBeforeUnload)
   window.removeEventListener('pagehide', state.flushAutosave)
-  document.removeEventListener('visibilitychange', flushHiddenTracker)
+  document.removeEventListener('visibilitychange', handleVisibilityChange)
 })
 
 function confirmActiveModal() {
@@ -286,6 +331,7 @@ function cancelActiveModal() {
                 </label>
                 <label class="flex items-center gap-2 text-xs">{{ t('tracker.controls.cellSize') }} <input v-model.number="cellSize" class="range range-xs w-24" type="range" min="16" max="48" :aria-label="t('tracker.controls.cellSize')" /></label>
                 <label class="flex items-center gap-2 text-xs"><input v-model="autoScroll" class="toggle toggle-primary toggle-sm" type="checkbox" />{{ t('tracker.controls.autoScroll') }}</label>
+                <label v-if="wakeLockSupported" class="flex items-center gap-2 text-xs"><input class="toggle toggle-primary toggle-sm" type="checkbox" :checked="keepAwake" @change="changeKeepAwake" />{{ t('tracker.controls.keepAwake') }}</label>
                 <div class="tooltip" :data-tip="t('tracker.actions.reset')">
                   <button class="btn btn-ghost btn-square btn-sm text-error" type="button" :disabled="state.completedCount.value === 0" :aria-label="t('tracker.actions.reset')" @click="resetModalOpen = true"><span class="mdi mdi-restart text-lg" aria-hidden="true"></span></button>
                 </div>
