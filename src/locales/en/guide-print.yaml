@@ -117,7 +117,7 @@ print:
   dimensions: "{columns} columns by {rows} rows"
   fullChart: Full stitch chart
   fullChartDetail: Full stitch chart detail
-  overlapDescription: Adjacent pages overlap by one stitch
+  detailDescription: Full-size chart split into consecutive sections
   partTitle: "{title} · Part {part} of {total}"
   tileDescription: "{description} · Chart rows {firstRow}-{lastRow}, columns {firstColumn}-{lastColumn}"
   repeatSourceTitle: "Repeat {number} source section"

@@ -117,7 +117,7 @@ print:
   dimensions: "Veerge: {columns} · ridu: {rows}"
   fullChart: Kogu pisteskeem
   fullChartDetail: Kogu pisteskeemi detailvaade
-  overlapDescription: Kõrvutised leheküljed kattuvad ühe piste võrra
+  detailDescription: Täissuuruses skeem on jagatud järjestikusteks osadeks
   partTitle: "{title} · Osa {part}/{total}"
   tileDescription: "{description} · Skeemi read {firstRow}-{lastRow}, veerud {firstColumn}-{lastColumn}"
   repeatSourceTitle: "Korduse {number} lähteosa"

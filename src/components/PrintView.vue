@@ -9,7 +9,7 @@ import PrintChart from './PrintChart.vue'
 const CHART_WIDTH_MM = 238
 const OVERVIEW_HEIGHT_MM = 160
 const REPEAT_CHART_HEIGHT_MM = 145
-const REPEAT_PAGE_HEIGHT_MM = 170
+const PAGE_CONTENT_HEIGHT_MM = 170
 const READABLE_CELL_MM = 4
 const MAX_CELL_MM = 5
 const TILE_COLUMNS = 55
@@ -37,14 +37,14 @@ interface PrintableChart {
   height: number
 }
 
-interface RepeatPageRow {
+interface PrintPageRow {
   charts: PrintableChart[]
   width: number
   height: number
 }
 
-interface RepeatPage {
-  rows: RepeatPageRow[]
+interface PrintPage {
+  rows: PrintPageRow[]
   height: number
 }
 
@@ -136,8 +136,8 @@ function tileChart(
 
   return rowStarts.flatMap((coreTop) => columnStarts.map((coreLeft) => {
     tileNumber += 1
-    const top = coreTop === 0 ? 0 : coreTop - 1
-    const left = coreLeft === 0 ? 0 : coreLeft - 1
+    const top = coreTop
+    const left = coreLeft
     const bottom = Math.min(cells.length, coreTop + TILE_ROWS)
     const right = Math.min(columnHeaders.length, coreLeft + TILE_COLUMNS)
     return makeChart(
@@ -163,12 +163,45 @@ const detailCharts = computed(() => {
   return tileChart(
     'full-chart',
     t('print.fullChartDetail'),
-    t('print.overlapDescription'),
+    t('print.detailDescription'),
     pattern.value,
     renderedPattern.value.rowHeaders,
     renderedPattern.value.columnHeaders,
   )
 })
+
+function packCharts(charts: PrintableChart[]): PrintPage[] {
+  const pages: PrintPage[] = []
+
+  for (const chart of charts) {
+    let page = pages.at(-1)
+    let row = page?.rows.at(-1)
+    const widthWithGap = row ? row.width + REPEAT_GAP_MM + chart.width : chart.width
+    const rowHeightIncrease = row ? Math.max(row.height, chart.height) - row.height : chart.height
+
+    if (page && row && widthWithGap <= CHART_WIDTH_MM && page.height + rowHeightIncrease <= PAGE_CONTENT_HEIGHT_MM) {
+      row.charts.push(chart)
+      row.width = widthWithGap
+      row.height = Math.max(row.height, chart.height)
+      page.height += rowHeightIncrease
+      continue
+    }
+
+    const nextRowHeight = (page?.rows.length ? REPEAT_GAP_MM : 0) + chart.height
+    if (!page || page.height + nextRowHeight > PAGE_CONTENT_HEIGHT_MM) {
+      page = { rows: [], height: 0 }
+      pages.push(page)
+    }
+
+    row = { charts: [chart], width: chart.width, height: chart.height }
+    page.rows.push(row)
+    page.height += (page.rows.length > 1 ? REPEAT_GAP_MM : 0) + chart.height
+  }
+
+  return pages
+}
+
+const detailPages = computed(() => packCharts(detailCharts.value))
 
 const repeatCharts = computed(() => props.project.repeatBoxes
   .filter((box) => box.enabled)
@@ -196,36 +229,7 @@ const repeatCharts = computed(() => props.project.repeatBoxes
     return [makeChart(box.id, title, description, cells, rowHeaders, columnHeaders, fittedCellSize)]
   }))
 
-const repeatPages = computed(() => {
-  const pages: RepeatPage[] = []
-
-  for (const chart of repeatCharts.value) {
-    let page = pages.at(-1)
-    let row = page?.rows.at(-1)
-    const widthWithGap = row ? row.width + REPEAT_GAP_MM + chart.width : chart.width
-    const rowHeightIncrease = row ? Math.max(row.height, chart.height) - row.height : chart.height
-
-    if (page && row && widthWithGap <= CHART_WIDTH_MM && page.height + rowHeightIncrease <= REPEAT_PAGE_HEIGHT_MM) {
-      row.charts.push(chart)
-      row.width = widthWithGap
-      row.height = Math.max(row.height, chart.height)
-      page.height += rowHeightIncrease
-      continue
-    }
-
-    const nextRowHeight = (page?.rows.length ? REPEAT_GAP_MM : 0) + chart.height
-    if (!page || page.height + nextRowHeight > REPEAT_PAGE_HEIGHT_MM) {
-      page = { rows: [], height: 0 }
-      pages.push(page)
-    }
-
-    row = { charts: [chart], width: chart.width, height: chart.height }
-    page.rows.push(row)
-    page.height += (page.rows.length > 1 ? REPEAT_GAP_MM : 0) + chart.height
-  }
-
-  return pages
-})
+const repeatPages = computed(() => packCharts(repeatCharts.value))
 </script>
 
 <template>
@@ -275,17 +279,21 @@ const repeatPages = computed(() => {
       </section>
     </div>
 
-    <section v-for="detail in detailCharts" :key="detail.id" class="print-detail-page">
-      <h2>{{ detail.title }}</h2>
-      <p>{{ detail.description }}</p>
-      <PrintChart
-        :cells="detail.cells"
-        :row-headers="detail.rowHeaders"
-        :column-headers="detail.columnHeaders"
-        :chart-style="detail.style"
-        :label="detail.title"
-        :symbols="symbolMap"
-      />
+    <section v-for="(page, pageIndex) in detailPages" :key="`detail-${pageIndex}`" class="print-detail-page">
+      <div v-for="(row, rowIndex) in page.rows" :key="rowIndex" class="print-repeat-row">
+        <article v-for="detail in row.charts" :key="detail.id" class="print-repeat-chart" :style="{ width: `${detail.width}mm` }">
+          <h2>{{ detail.title }}</h2>
+          <p>{{ detail.description }}</p>
+          <PrintChart
+            :cells="detail.cells"
+            :row-headers="detail.rowHeaders"
+            :column-headers="detail.columnHeaders"
+            :chart-style="detail.style"
+            :label="detail.title"
+            :symbols="symbolMap"
+          />
+        </article>
+      </div>
     </section>
 
     <div v-if="repeatPages.length" class="print-page-group" :class="{ 'print-page-group-multiple': repeatPages.length > 1 }">
