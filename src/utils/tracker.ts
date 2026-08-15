@@ -1,5 +1,5 @@
 import type { PatternProject } from '../types/pattern'
-import type { TrackerDirection, TrackerProgress, TrackerProject, TrackerStartRow } from '../types/tracker'
+import type { TrackerDirection, TrackerPreferences, TrackerProgress, TrackerProject, TrackerStartRow } from '../types/tracker'
 import { asPatternProject } from './validation'
 import { appError } from './appError'
 
@@ -18,7 +18,7 @@ export function trackerTotal(pattern: PatternProject) {
   return dimensions.rows * dimensions.columns
 }
 
-export function createTracker(pattern: PatternProject): TrackerProject {
+export function createTracker(pattern: PatternProject, preferences?: TrackerPreferences): TrackerProject {
   return {
     format: 'stitch-tracker',
     version: 1,
@@ -30,6 +30,7 @@ export function createTracker(pattern: PatternProject): TrackerProject {
       alternateRows: false,
       updatedAt: new Date().toISOString(),
     },
+    ...(preferences ? { preferences: { ...preferences } } : {}),
   }
 }
 
@@ -50,6 +51,13 @@ export function asTrackerProject(value: unknown): TrackerProject {
   }
   if (typeof progress.alternateRows !== 'boolean') throw appError('tracker.alternateRows')
   if (typeof progress.updatedAt !== 'string' || Number.isNaN(Date.parse(progress.updatedAt))) throw appError('tracker.updatedAt')
+  const preferences = source.preferences as Partial<TrackerPreferences> | undefined
+  const validPreferences = preferences
+    && (preferences.display === 'canvas' || preferences.display === 'knit' || preferences.display === 'cross-stitch')
+    && Number.isInteger(preferences.cellSize) && preferences.cellSize! >= 16 && preferences.cellSize! <= 48
+    && typeof preferences.autoScroll === 'boolean'
+    ? { display: preferences.display, cellSize: preferences.cellSize!, autoScroll: preferences.autoScroll, keepAwake: typeof preferences.keepAwake === 'boolean' ? preferences.keepAwake : false }
+    : undefined
   return {
     format: 'stitch-tracker',
     version: 1,
@@ -61,6 +69,7 @@ export function asTrackerProject(value: unknown): TrackerProject {
       alternateRows: progress.alternateRows,
       updatedAt: progress.updatedAt,
     },
+    ...(validPreferences ? { preferences: validPreferences } : {}),
   }
 }
 

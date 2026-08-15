@@ -10,30 +10,50 @@ import { useTheme } from '../composables/useTheme'
 import { useTracker } from '../composables/useTracker'
 import { downloadTracker, readTrackerInput } from '../composables/useTrackerFiles'
 import type { PatternDisplay, PatternProject } from '../types/pattern'
-import type { TrackerDirection, TrackerProject, TrackerStartRow } from '../types/tracker'
+import type { TrackerDirection, TrackerPreferences, TrackerProject, TrackerStartRow } from '../types/tracker'
 import { localizedErrorMessage } from '../utils/appError'
 import { renderGrid } from '../utils/grid'
 import { MAX_TRACKER_STITCHES, renderedDimensions } from '../utils/tracker'
+
+const TRACKER_PREFERENCES_KEY = 'stitch-tracker-preferences'
+
+function readTrackerPreferences(): Partial<TrackerPreferences> {
+  try {
+    const value = JSON.parse(localStorage.getItem(TRACKER_PREFERENCES_KEY) ?? 'null') as Partial<TrackerPreferences> | null
+    if (!value || typeof value !== 'object') return {}
+    return {
+      display: value.display === 'canvas' || value.display === 'knit' || value.display === 'cross-stitch' ? value.display : undefined,
+      cellSize: Number.isInteger(value.cellSize) && value.cellSize! >= 16 && value.cellSize! <= 48 ? value.cellSize : undefined,
+      autoScroll: typeof value.autoScroll === 'boolean' ? value.autoScroll : undefined,
+      keepAwake: typeof value.keepAwake === 'boolean' ? value.keepAwake : undefined,
+    }
+  } catch {
+    return {}
+  }
+}
 
 const state = useTracker()
 const { d, n, t } = useI18n({ useScope: 'global' })
 const { theme, toggleTheme } = useTheme()
 const { notifications, notify, dismiss } = useNotifications()
+const browserPreferences = readTrackerPreferences()
+const savedPreferences = state.tracker.value?.preferences ?? browserPreferences
 const fileInput = ref<HTMLInputElement | null>(null)
 const trackerGrid = ref<{ enterFullscreen: () => Promise<void>; exitFullscreen: () => Promise<void> } | null>(null)
 const pendingInput = ref<{ tracker?: TrackerProject; pattern?: PatternProject } | null>(null)
 const replaceModalOpen = ref(false)
 const resetModalOpen = ref(false)
 const clearModalOpen = ref(false)
-const cellSize = ref(Math.min(40, Math.max(18, state.tracker.value?.pattern.cellSize ?? 24)))
-const display = ref<PatternDisplay>('canvas')
-const autoScroll = ref(true)
-const keepAwake = ref(false)
+const cellSize = ref(savedPreferences.cellSize ?? Math.min(40, Math.max(18, state.tracker.value?.pattern.cellSize ?? 24)))
+const display = ref<PatternDisplay>(savedPreferences.display ?? 'canvas')
+const autoScroll = ref(savedPreferences.autoScroll ?? true)
+const keepAwake = ref(savedPreferences.keepAwake ?? false)
 const wakeLockSupported = typeof navigator !== 'undefined' && 'wakeLock' in navigator
 const fullscreenSupported = typeof document !== 'undefined' && document.fullscreenEnabled
 const trackerFullscreen = ref(false)
 let wakeLock: WakeLockSentinel | null = null
 let wakeLockRequestPending = false
+let hasCellSizePreference = state.tracker.value?.preferences?.cellSize !== undefined || browserPreferences.cellSize !== undefined
 
 const dimensions = computed(() => state.tracker.value ? renderedDimensions(state.tracker.value.pattern) : null)
 const tooLarge = computed(() => dimensions.value ? dimensions.value.rows * dimensions.value.columns > MAX_TRACKER_STITCHES : false)
@@ -80,9 +100,25 @@ async function selectFile(event: Event) {
 }
 
 function applyInput(input: { tracker?: TrackerProject; pattern?: PatternProject }) {
-  if (input.tracker) state.openTracker(input.tracker)
-  else if (input.pattern) state.openPattern(input.pattern)
-  cellSize.value = Math.min(40, Math.max(18, state.tracker.value?.pattern.cellSize ?? 24))
+  if (!hasCellSizePreference) {
+    const pattern = input.tracker?.pattern ?? input.pattern
+    if (pattern) cellSize.value = Math.min(40, Math.max(18, pattern.cellSize))
+  }
+  const preferences = { display: display.value, cellSize: cellSize.value, autoScroll: autoScroll.value, keepAwake: keepAwake.value }
+  if (input.tracker) {
+    state.openTracker(input.tracker, preferences)
+    const trackerPreferences = state.tracker.value?.preferences
+    if (trackerPreferences) {
+      display.value = trackerPreferences.display
+      cellSize.value = trackerPreferences.cellSize
+      autoScroll.value = trackerPreferences.autoScroll
+      keepAwake.value = trackerPreferences.keepAwake
+      if (keepAwake.value) void requestWakeLock()
+      else releaseWakeLock()
+    }
+  } else if (input.pattern) {
+    state.openPattern(input.pattern, preferences)
+  }
   pendingInput.value = null
   replaceModalOpen.value = false
   notify(input.tracker ? t('tracker.notifications.trackerOpened') : t('tracker.notifications.designOpened'), 'success')
@@ -211,11 +247,27 @@ watch(state.autosaveStatus, (status) => {
     notify(t('tracker.notifications.autosaveFailed'), 'error', 8000)
   }
 })
+watch([display, cellSize, autoScroll, keepAwake], () => {
+  hasCellSizePreference = true
+  const preferences = {
+    display: display.value,
+    cellSize: cellSize.value,
+    autoScroll: autoScroll.value,
+    keepAwake: keepAwake.value,
+  } satisfies TrackerPreferences
+  try {
+    localStorage.setItem(TRACKER_PREFERENCES_KEY, JSON.stringify(preferences))
+  } catch {
+    // Display preferences are optional when browser storage is unavailable.
+  }
+  state.setPreferences(preferences)
+})
 
 onMounted(() => {
   window.addEventListener('beforeunload', warnBeforeUnload)
   window.addEventListener('pagehide', state.flushAutosave)
   document.addEventListener('visibilitychange', handleVisibilityChange)
+  if (keepAwake.value) void requestWakeLock()
   if (state.restoredAutosave.value) notify(t('tracker.notifications.recovered'), 'success')
 })
 
@@ -250,7 +302,6 @@ function cancelActiveModal() {
     <header class="navbar min-h-14 border-b border-base-300 bg-base-100 px-2 sm:px-4">
       <div class="navbar-start gap-2">
         <span class="text-lg font-semibold tracking-tight">{{ t('tracker.brand') }}</span>
-        <span class="badge badge-primary badge-outline">{{ t('tracker.name') }}</span>
       </div>
       <nav class="navbar-center hidden gap-1 sm:flex" :aria-label="t('tracker.actions.label')">
         <RouterLink class="btn btn-ghost btn-sm" to="/"><span class="mdi mdi-pencil-ruler text-lg" aria-hidden="true"></span>{{ t('tracker.actions.editor') }}</RouterLink>
@@ -271,7 +322,7 @@ function cancelActiveModal() {
       <section v-if="!state.tracker.value" class="grid min-h-[calc(100dvh-7rem)] place-items-center">
         <div class="card w-full max-w-2xl border border-base-300 bg-base-100 shadow-sm">
           <div class="card-body items-start gap-5 p-6 sm:p-10">
-            <div class="grid size-14 place-items-center rounded-2xl bg-primary/10 text-primary"><span class="mdi mdi-progress-check text-3xl" aria-hidden="true"></span></div>
+            <div class="grid size-14 place-items-center rounded-2xl bg-primary/10 text-primary-content"><span class="mdi mdi-progress-check text-3xl" aria-hidden="true"></span></div>
             <div>
               <h1 class="text-3xl font-bold tracking-tight">{{ t('tracker.empty.title') }}</h1>
               <p class="mt-2 max-w-xl text-base-content/70">{{ t('tracker.empty.description') }}</p>
@@ -290,7 +341,7 @@ function cancelActiveModal() {
           <div class="card-body gap-4 p-4 sm:p-5">
             <div class="flex flex-wrap items-start justify-between gap-4">
               <div>
-                <p class="text-xs font-semibold uppercase tracking-widest text-primary">{{ t('tracker.progress.heading') }}</p>
+                <p class="text-xs font-semibold uppercase tracking-widest text-primary-content">{{ t('tracker.progress.heading') }}</p>
                 <h1 class="mt-1 text-2xl font-bold">{{ state.tracker.value.pattern.name }}</h1>
                 <p class="mt-1 text-sm text-base-content/65">{{ t('tracker.progress.completed', { completed: n(state.completedCount.value, 'integer'), total: n(state.totalCount.value, 'integer') }) }}</p>
               </div>

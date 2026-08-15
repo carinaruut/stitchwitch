@@ -1,4 +1,4 @@
-import type { PatternProject } from './pattern'
+import type { PatternDisplay, PatternProject } from './pattern'
 
 export type TrackerStartRow = 'top' | 'bottom'
 export type TrackerDirection = 'left-to-right' | 'right-to-left'
@@ -11,9 +11,17 @@ export interface TrackerProgress {
   updatedAt: string
 }
 
+export interface TrackerPreferences {
+  display: PatternDisplay
+  cellSize: number
+  autoScroll: boolean
+  keepAwake: boolean
+}
+
 export interface TrackerProject {
   format: 'stitch-tracker'
   version: 1
   pattern: PatternProject
   progress: TrackerProgress
+  preferences?: TrackerPreferences
 }

@@ -1,6 +1,6 @@
 import { computed, ref } from 'vue'
 import type { PatternProject } from '../types/pattern'
-import type { TrackerDirection, TrackerProject, TrackerStartRow } from '../types/tracker'
+import type { TrackerDirection, TrackerPreferences, TrackerProject, TrackerStartRow } from '../types/tracker'
 import { asTrackerProject, createTracker, rowCompletionRange, stitchOrdinal, trackerTotal } from '../utils/tracker'
 
 const STORAGE_KEY = 'stitch-tracker-autosave'
@@ -62,16 +62,25 @@ export function useTracker() {
     scheduleAutosave()
   }
 
-  function openPattern(pattern: PatternProject) {
-    tracker.value = createTracker(pattern)
+  function openPattern(pattern: PatternProject, preferences?: TrackerPreferences) {
+    tracker.value = createTracker(pattern, preferences)
     backupNeeded.value = true
     scheduleAutosave()
   }
 
-  function openTracker(value: TrackerProject) {
+  function openTracker(value: TrackerProject, fallbackPreferences?: TrackerPreferences) {
     tracker.value = asTrackerProject(value)
+    if (!tracker.value.preferences && fallbackPreferences) tracker.value.preferences = { ...fallbackPreferences }
     backupNeeded.value = false
     scheduleAutosave()
+  }
+
+  function setPreferences(preferences: TrackerPreferences) {
+    if (!tracker.value) return
+    const current = tracker.value.preferences
+    if (current?.display === preferences.display && current.cellSize === preferences.cellSize && current.autoScroll === preferences.autoScroll && current.keepAwake === preferences.keepAwake) return
+    tracker.value.preferences = { ...preferences }
+    changed()
   }
 
   function setOrder(startRow: TrackerStartRow, firstRowDirection: TrackerDirection, alternateRows: boolean) {
@@ -132,6 +141,7 @@ export function useTracker() {
     restoredAutosave,
     openPattern,
     openTracker,
+    setPreferences,
     setOrder,
     selectStitch,
     selectRow,
