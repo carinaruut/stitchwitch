@@ -20,10 +20,10 @@ const emit = defineEmits<{
   remove: [id: string]
 }>()
 
-type SizingMode = 'boundary' | 'size'
+type SizingMode = 'boundary' | 'sections'
 
 const direction = ref<RepeatDirection>('across')
-const sizingMode = ref<SizingMode>('size')
+const sizingMode = ref<SizingMode>('sections')
 const firstCross = ref(1)
 const lastCross = ref(1)
 const start = ref(1)
@@ -66,24 +66,20 @@ const values = computed(() => ({
   sections: Number(sections.value),
 }))
 
-const totalLength = computed(() => {
-  const value = values.value
-  return sizingMode.value === 'boundary'
-    ? value.ending - value.start
-    : value.sectionSize * value.sections
-})
+const totalLength = computed(() => sizingMode.value === 'boundary'
+  ? values.value.ending - values.value.start
+  : values.value.sectionSize * values.value.sections)
+const sectionCount = computed(() => sizingMode.value === 'boundary'
+  ? totalLength.value / values.value.sectionSize
+  : values.value.sections)
 
 const validationMessage = computed(() => {
   const value = values.value
-  const coordinates = [value.firstCross, value.lastCross, value.start]
-  if (sizingMode.value === 'boundary') coordinates.push(value.ending)
-  else coordinates.push(value.sectionSize)
+  const coordinates = [value.firstCross, value.lastCross, value.start, value.sectionSize]
+  coordinates.push(sizingMode.value === 'boundary' ? value.ending : value.sections)
 
   if (!coordinates.every((item) => Number.isInteger(item) && item > 0)) {
     return 'Coordinates and sizes must be positive whole numbers.'
-  }
-  if (!Number.isInteger(value.sections) || value.sections < 2 || value.sections > MAX_REPEAT_COUNT) {
-    return `Sections must be a whole number from 2 to ${MAX_REPEAT_COUNT}.`
   }
   if (value.lastCross < value.firstCross) {
     return direction.value === 'across'
@@ -97,8 +93,11 @@ const validationMessage = computed(() => {
   if (totalLength.value <= 0 || value.start - 1 + totalLength.value > 500) {
     return 'The repeat box must end after its start and stay within 500 rows or columns.'
   }
-  if (sizingMode.value === 'boundary' && totalLength.value % value.sections !== 0) {
-    return 'The repeat length must divide evenly by the number of sections.'
+  if (sizingMode.value === 'boundary' && !Number.isInteger(sectionCount.value)) {
+    return 'The repeat length must divide evenly by the section size.'
+  }
+  if (sectionCount.value < 2 || sectionCount.value > MAX_REPEAT_COUNT) {
+    return `The repeat must contain from 2 to ${MAX_REPEAT_COUNT} sections.`
   }
   return ''
 })
@@ -120,7 +119,7 @@ const input = computed<RepeatBoxInput | null>(() => {
       bottom: value.lastCross,
       left: value.start - 1,
       right: end,
-      sections: value.sections,
+      sections: sectionCount.value,
       enabled: editingEnabled.value,
     }
   }
@@ -130,7 +129,7 @@ const input = computed<RepeatBoxInput | null>(() => {
     bottom: end,
     left: value.firstCross - 1,
     right: value.lastCross,
-    sections: value.sections,
+    sections: sectionCount.value,
     enabled: editingEnabled.value,
   }
 })
@@ -191,7 +190,7 @@ function edit(box: RepeatBox) {
 function cancelEdit() {
   editingId.value = null
   editingEnabled.value = true
-  sizingMode.value = 'size'
+  sizingMode.value = 'sections'
   selectedDefaults()
 }
 
@@ -222,18 +221,16 @@ function updateFallback(event: Event, eventName: 'horizontal' | 'vertical') {
           </label>
         </fieldset>
 
-        <fieldset>
-          <legend class="mb-1.5 text-xs font-semibold text-base-content/65">Size by</legend>
-          <div class="grid grid-cols-2 gap-1 rounded-box bg-base-200 p-1">
-            <label class="cursor-pointer">
-              <input v-model="sizingMode" class="peer sr-only" type="radio" name="sizing-mode" value="boundary" />
-              <span class="btn btn-xs h-8 w-full border-0 peer-checked:btn-primary">End boundary</span>
-            </label>
-            <label class="cursor-pointer">
-              <input v-model="sizingMode" class="peer sr-only" type="radio" name="sizing-mode" value="size" />
-              <span class="btn btn-xs h-8 w-full border-0 peer-checked:btn-primary">Section size</span>
-            </label>
-          </div>
+        <fieldset class="grid grid-cols-2 gap-1 rounded-box bg-base-200 p-1">
+          <legend class="sr-only">Repeat sizing method</legend>
+          <label class="cursor-pointer">
+            <input v-model="sizingMode" class="peer sr-only" type="radio" name="repeat-sizing" value="sections" />
+            <span class="btn btn-xs h-8 w-full border-0 peer-checked:btn-primary">Section count</span>
+          </label>
+          <label class="cursor-pointer">
+            <input v-model="sizingMode" class="peer sr-only" type="radio" name="repeat-sizing" value="boundary" />
+            <span class="btn btn-xs h-8 w-full border-0 peer-checked:btn-primary">End boundary</span>
+          </label>
         </fieldset>
 
         <div class="grid grid-cols-2 gap-2">
@@ -250,19 +247,25 @@ function updateFallback(event: Event, eventName: 'horizontal' | 'vertical') {
             <input v-model.number="start" class="input input-bordered input-sm min-w-0 w-full" type="number" min="1" max="500" />
           </label>
           <label class="grid gap-1">
-            <span class="text-xs font-medium">Sections</span>
-            <input v-model.number="sections" class="input input-bordered input-sm min-w-0 w-full" type="number" min="2" :max="MAX_REPEAT_COUNT" />
+            <template v-if="sizingMode === 'boundary'">
+              <span class="text-xs font-medium">End before {{ direction === 'across' ? 'column' : 'row' }}</span>
+              <input v-model.number="ending" class="input input-bordered input-sm min-w-0 w-full" type="number" min="2" max="501" />
+            </template>
+            <template v-else>
+              <span class="text-xs font-medium">Sections</span>
+              <input v-model.number="sections" class="input input-bordered input-sm min-w-0 w-full" type="number" min="2" :max="MAX_REPEAT_COUNT" />
+            </template>
           </label>
           <label class="col-span-2 grid gap-1">
-            <span class="text-xs font-medium">
-              <template v-if="sizingMode === 'boundary'">End before {{ direction === 'across' ? 'column' : 'row' }}</template>
-              <template v-else>Section {{ direction === 'across' ? 'width' : 'height' }}</template>
-            </span>
-            <input v-if="sizingMode === 'boundary'" v-model.number="ending" class="input input-bordered input-sm w-full" type="number" min="1" max="501" />
-            <input v-else v-model.number="sectionSize" class="input input-bordered input-sm w-full" type="number" min="1" />
+            <span class="text-xs font-medium">Section {{ direction === 'across' ? 'width' : 'height' }}</span>
+            <input v-model.number="sectionSize" class="input input-bordered input-sm w-full" type="number" min="1" max="500" />
           </label>
         </div>
-        <p class="text-[11px] text-base-content/50">Bottom/right is included. Sections includes the source.</p>
+        <p class="text-[11px] text-base-content/50">
+          Bottom/right is included.
+          <template v-if="sizingMode === 'boundary'">The end boundary is excluded; repeat count is calculated from section size.</template>
+          <template v-else>The ending boundary is calculated from section size and count.</template>
+        </p>
 
         <p v-if="displayedError" class="text-xs text-error" role="alert">{{ displayedError }}</p>
         <div v-else class="rounded-box bg-base-200/70 px-3 py-2 text-xs" aria-live="polite">

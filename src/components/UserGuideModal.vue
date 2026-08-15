@@ -125,12 +125,12 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleEscape))
           <div class="rounded-box border border-base-300 p-4">
             <p class="text-sm text-base-content/70">A repeat box divides one rectangular area into equal sections. The first section is the source; editing any displayed copy updates every section. Choose <strong>Across</strong> for side-by-side sections or <strong>Down</strong> for stacked sections.</p>
             <div class="mt-4 grid gap-3 md:grid-cols-2">
-              <div class="rounded-box bg-base-200 p-3 text-sm"><strong class="block">End boundary</strong>Provide the box range, the boundary where repetition stops, and the total number of sections. The available length must divide evenly.</div>
-              <div class="rounded-box bg-base-200 p-3 text-sm"><strong class="block">Section size</strong>Provide the start, one section's width or height, and the total number of sections. The ending boundary is calculated for you.</div>
+              <div class="rounded-box bg-base-200 p-3 text-sm"><strong class="block">Section count</strong>Provide one section's width or height and the number of sections. The ending boundary is calculated automatically.</div>
+              <div class="rounded-box bg-base-200 p-3 text-sm"><strong class="block">End boundary</strong>Provide where repetition stops and one section's width or height. The section count is calculated automatically, and the form reports when the section size does not fit the range exactly.</div>
             </div>
             <div class="alert mt-4 text-sm">
               <span class="mdi mdi-lightbulb-outline" aria-hidden="true"></span>
-              <span>Example: rows 5-10, start column 10, end before column 20, and 5 sections creates columns <strong>10-11 | 12-13 | 14-15 | 16-17 | 18-19</strong>.</span>
+              <span>Example: rows 5-10, start column 10, end before column 20, and section width 2 automatically creates 5 sections: <strong>10-11 | 12-13 | 14-15 | 16-17 | 18-19</strong>.</span>
             </div>
             <p class="mt-3 text-sm text-base-content/70">The canvas grows automatically when a box extends beyond it. Saved boxes can be edited, disabled, re-enabled, or deleted. Compatible non-overlapping boxes can coexist. The Whole-pattern fallback repeats the complete chart only when no repeat boxes exist.</p>
           </div>
