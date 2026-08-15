@@ -38,6 +38,7 @@ const placingSelection = ref(false)
 const printMode = ref<PrintMode>('color')
 const printMenu = ref<HTMLDetailsElement | null>(null)
 const downloadBackupNeeded = ref(pattern.restoredAutosave.value)
+const patternName = ref(pattern.project.value.name)
 const toolShortcuts: Record<string, DrawingTool> = {
   p: 'pencil',
   e: 'eraser',
@@ -56,6 +57,26 @@ const renderedPattern = computed(() => renderGrid(
 
 function localizeProjectError(error: unknown, fallbackKey: string) {
   return localizedErrorMessage(error, t) ?? t(fallbackKey)
+}
+
+function savePatternName() {
+  const name = patternName.value.trim()
+  if (!name) {
+    patternName.value = pattern.project.value.name
+    return
+  }
+  patternName.value = name
+  pattern.project.value.name = name
+}
+
+function cancelPatternName(event: KeyboardEvent) {
+  patternName.value = pattern.project.value.name
+  blurPatternName(event)
+}
+
+function blurPatternName(event: KeyboardEvent) {
+  const input = event.currentTarget as HTMLInputElement
+  input.blur()
 }
 
 function createProject(project: NewPatternProject) {
@@ -292,6 +313,9 @@ watch(pattern.autosaveStatus, (status) => {
 watch(pattern.project, () => {
   downloadBackupNeeded.value = true
 }, { deep: true })
+watch(() => pattern.project.value.name, (name) => {
+  patternName.value = name
+})
 
 onBeforeRouteLeave(() => {
   pattern.flushAutosave()
@@ -338,7 +362,17 @@ onBeforeUnmount(() => {
           <div class="card-body gap-3 p-3 sm:p-5">
               <div class="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <h1 class="text-xl font-bold">{{ pattern.project.value.name }}</h1>
+                  <input
+                    v-model="patternName"
+                    class="input input-ghost h-auto min-h-0 w-full max-w-lg px-0 py-0 text-xl font-bold focus:px-2 focus:py-1"
+                    type="text"
+                    required
+                    maxlength="100"
+                    :aria-label="t('controls.newProject.projectName')"
+                    @blur="savePatternName"
+                    @keydown.enter.prevent="blurPatternName"
+                    @keydown.esc.prevent="cancelPatternName"
+                  />
                 </div>
                 <div class="flex w-full flex-col items-stretch gap-2 sm:w-auto sm:items-end">
                   <div class="flex flex-wrap items-center gap-2 sm:justify-end">

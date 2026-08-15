@@ -31,7 +31,6 @@ const tools = computed<Array<{ value: DrawingTool; icon: string; label: string; 
 
 <template>
   <section class="flex flex-wrap items-center gap-2 rounded-box border border-base-300 bg-base-200/70 p-1.5" :aria-label="t('controls.drawing.regionLabel')">
-      <span class="text-sm font-semibold">{{ t('controls.drawing.title') }}</span>
       <div class="flex flex-wrap gap-1" :aria-label="t('controls.drawing.selectionLabel')">
         <div v-for="item in tools" :key="item.value" class="tooltip" :data-tip="t('controls.drawing.toolTooltip', { label: item.label, shortcut: item.shortcut })">
           <button

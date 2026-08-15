@@ -5,7 +5,6 @@ controls:
     edit: Edit
   drawing:
     regionLabel: Editor tools
-    title: Tools
     selectionLabel: Drawing tool selection
     toolTooltip: "{label} ({shortcut})"
     tools:

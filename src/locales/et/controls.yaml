@@ -5,7 +5,6 @@ controls:
     edit: Muuda
   drawing:
     regionLabel: Redaktori tööriistad
-    title: Tööriistad
     selectionLabel: Joonistustööriista valik
     toolTooltip: "{label} ({shortcut})"
     tools:
