@@ -20,6 +20,7 @@ const { d, n, t } = useI18n({ useScope: 'global' })
 const { theme, toggleTheme } = useTheme()
 const { notifications, notify, dismiss } = useNotifications()
 const fileInput = ref<HTMLInputElement | null>(null)
+const trackerGrid = ref<{ enterFullscreen: () => Promise<void>; exitFullscreen: () => Promise<void> } | null>(null)
 const pendingInput = ref<{ tracker?: TrackerProject; pattern?: PatternProject } | null>(null)
 const replaceModalOpen = ref(false)
 const resetModalOpen = ref(false)
@@ -29,6 +30,8 @@ const display = ref<PatternDisplay>('canvas')
 const autoScroll = ref(true)
 const keepAwake = ref(false)
 const wakeLockSupported = typeof navigator !== 'undefined' && 'wakeLock' in navigator
+const fullscreenSupported = typeof document !== 'undefined' && document.fullscreenEnabled
+const trackerFullscreen = ref(false)
 let wakeLock: WakeLockSentinel | null = null
 let wakeLockRequestPending = false
 
@@ -147,6 +150,15 @@ function changeKeepAwake(event: Event) {
   keepAwake.value = (event.target as HTMLInputElement).checked
   if (keepAwake.value) void requestWakeLock()
   else releaseWakeLock()
+}
+
+async function toggleFullscreen() {
+  try {
+    if (trackerFullscreen.value) await trackerGrid.value?.exitFullscreen()
+    else await trackerGrid.value?.enterFullscreen()
+  } catch {
+    notify(t('tracker.notifications.fullscreenFailed'), 'error')
+  }
 }
 
 function selectStitch(row: number, column: number) {
@@ -332,6 +344,9 @@ function cancelActiveModal() {
                 <label class="flex items-center gap-2 text-xs">{{ t('tracker.controls.cellSize') }} <input v-model.number="cellSize" class="range range-xs w-24" type="range" min="16" max="48" :aria-label="t('tracker.controls.cellSize')" /></label>
                 <label class="flex items-center gap-2 text-xs"><input v-model="autoScroll" class="toggle toggle-primary toggle-sm" type="checkbox" />{{ t('tracker.controls.autoScroll') }}</label>
                 <label v-if="wakeLockSupported" class="flex items-center gap-2 text-xs"><input class="toggle toggle-primary toggle-sm" type="checkbox" :checked="keepAwake" @change="changeKeepAwake" />{{ t('tracker.controls.keepAwake') }}</label>
+                <div v-if="fullscreenSupported" class="tooltip" :data-tip="t(trackerFullscreen ? 'tracker.controls.exitFullscreen' : 'tracker.controls.fullscreen')">
+                  <button class="btn btn-ghost btn-square btn-sm" type="button" :aria-label="t(trackerFullscreen ? 'tracker.controls.exitFullscreen' : 'tracker.controls.fullscreen')" @click="toggleFullscreen"><span class="mdi text-lg" :class="trackerFullscreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'" aria-hidden="true"></span></button>
+                </div>
                 <div class="tooltip" :data-tip="t('tracker.actions.reset')">
                   <button class="btn btn-ghost btn-square btn-sm text-error" type="button" :disabled="state.completedCount.value === 0" :aria-label="t('tracker.actions.reset')" @click="resetModalOpen = true"><span class="mdi mdi-restart text-lg" aria-hidden="true"></span></button>
                 </div>
@@ -349,6 +364,7 @@ function cancelActiveModal() {
             </div>
             <TrackerGrid
               v-else-if="renderedPattern"
+              ref="trackerGrid"
               :cells="renderedPattern.cells"
               :row-headers="renderedPattern.rowHeaders"
               :column-headers="renderedPattern.columnHeaders"
@@ -360,6 +376,7 @@ function cancelActiveModal() {
               :auto-scroll="autoScroll"
               @stitch="selectStitch"
               @row="state.selectRow($event, renderedPattern.cells.length, renderedPattern.cells[0].length)"
+              @fullscreen-change="trackerFullscreen = $event"
             />
           </div>
         </section>

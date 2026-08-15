@@ -45,6 +45,8 @@ tracker:
     cellSize: Cell size
     autoScroll: Auto-scroll
     keepAwake: Keep screen awake
+    fullscreen: Enter fullscreen
+    exitFullscreen: Exit fullscreen
   instructions:
     resetOrder: Reset progress to change the tracking order.
     usage: Click a stitch to complete everything through it. Click a row number to complete or reopen that entire row.
@@ -57,6 +59,7 @@ tracker:
     removeFailed: The browser recovery copy could not be removed.
     autosaveFailed: Browser autosave failed. Download the tracker now to avoid losing progress.
     keepAwakeFailed: The browser could not keep the screen awake.
+    fullscreenFailed: The browser could not enter fullscreen mode.
     recovered: Recovered your tracker from this browser.
     close: Close
     dismissAria: 'Dismiss notification: {message}'

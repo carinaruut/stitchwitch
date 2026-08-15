@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, ref } from 'vue'
+import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { PatternDisplay, PatternGrid } from '../types/pattern'
 import type { TrackerProgress } from '../types/tracker'
@@ -23,11 +23,32 @@ const { t } = useI18n({ useScope: 'global' })
 const emit = defineEmits<{
   stitch: [row: number, column: number]
   row: [row: number]
+  'fullscreen-change': [active: boolean]
 }>()
 
+const fullscreenTarget = ref<HTMLElement | null>(null)
 const viewport = ref<HTMLElement | null>(null)
 const activeCell = ref({ row: 0, column: 0 })
 const activeRowHeader = ref(0)
+const isFullscreen = ref(false)
+
+function handleFullscreenChange() {
+  isFullscreen.value = document.fullscreenElement === fullscreenTarget.value
+  emit('fullscreen-change', isFullscreen.value)
+}
+
+async function enterFullscreen() {
+  await fullscreenTarget.value?.requestFullscreen()
+}
+
+async function exitFullscreen() {
+  if (document.fullscreenElement === fullscreenTarget.value) await document.exitFullscreen()
+}
+
+defineExpose({ enterFullscreen, exitFullscreen })
+
+onMounted(() => document.addEventListener('fullscreenchange', handleFullscreenChange))
+onBeforeUnmount(() => document.removeEventListener('fullscreenchange', handleFullscreenChange))
 
 function ordinal(row: number, column: number) {
   return stitchOrdinal(row, column, props.cells.length, props.cells[0].length, props.progress)
@@ -112,7 +133,8 @@ function moveRowHeader(row: number, event: KeyboardEvent) {
 </script>
 
 <template>
-  <div ref="viewport" class="h-[calc(100dvh-21rem)] min-h-96 w-full min-w-0 overflow-auto rounded-box border border-base-300/70 bg-base-100 p-3" :aria-label="t('tracker.grid.label')">
+  <div ref="fullscreenTarget" class="tracker-fullscreen relative w-full min-w-0 bg-base-100">
+    <div ref="viewport" class="tracker-viewport h-[calc(100dvh-21rem)] min-h-96 w-full min-w-0 overflow-auto rounded-box border border-base-300/70 bg-base-100 p-3" :aria-label="t('tracker.grid.label')">
     <div
       class="grid w-max border border-base-300/70 bg-base-100"
       :style="{ gridTemplateColumns: `32px repeat(${cells[0].length}, ${cellSize}px)`, gridTemplateRows: `32px repeat(${cells.length}, ${cellSize}px)` }"
@@ -187,6 +209,8 @@ function moveRowHeader(row: number, event: KeyboardEvent) {
         </button>
       </div>
     </div>
+    </div>
+    <button v-if="isFullscreen" class="btn btn-neutral btn-square btn-sm absolute right-4 top-4 z-30 shadow-lg" type="button" :aria-label="t('tracker.controls.exitFullscreen')" :title="t('tracker.controls.exitFullscreen')" @click="exitFullscreen"><span class="mdi mdi-fullscreen-exit text-xl" aria-hidden="true"></span></button>
   </div>
 </template>
 
@@ -196,6 +220,13 @@ function moveRowHeader(row: number, event: KeyboardEvent) {
   inset: 1px;
   pointer-events: none;
   position: absolute;
+}
+
+.tracker-fullscreen:fullscreen .tracker-viewport {
+  border: 0;
+  border-radius: 0;
+  height: 100dvh;
+  min-height: 0;
 }
 
 .tracker-stitch-knit {
