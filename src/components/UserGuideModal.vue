@@ -4,9 +4,19 @@ import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 const props = defineProps<{ open: boolean }>()
 const emit = defineEmits<{ close: [] }>()
 const closeButton = ref<HTMLButtonElement | null>(null)
+const guideContent = ref<HTMLElement | null>(null)
+const sections = ['Start', 'Tools', 'Selection', 'Mirrors', 'Repeats', 'Canvas', 'Tracker', 'Saving', 'Output']
 
 function handleEscape(event: KeyboardEvent) {
   if (props.open && event.key === 'Escape') emit('close')
+}
+
+function scrollToSection(item: string) {
+  const container = guideContent.value
+  const section = container?.querySelector<HTMLElement>(`#guide-${item.toLowerCase()}`)
+  if (!container || !section) return
+  const top = section.getBoundingClientRect().top - container.getBoundingClientRect().top + container.scrollTop - 16
+  container.scrollTo({ top, behavior: 'smooth' })
 }
 
 watch(() => props.open, async (open) => {
@@ -24,7 +34,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleEscape))
     <article class="modal-box flex max-h-[88dvh] w-11/12 max-w-5xl flex-col overflow-hidden p-0">
       <header class="flex shrink-0 items-start justify-between gap-4 border-b border-base-300 bg-base-100 px-5 py-4 sm:px-7">
         <div>
-          <p class="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Stitch Witch</p>
+          <p class="text-xs font-semibold uppercase tracking-[0.18em] text-primary-content">Stitch Witch</p>
           <h1 id="user-guide-title" class="mt-1 text-2xl font-bold">User guide</h1>
           <p class="mt-1 text-sm text-base-content/60">Design, repeat, preview, and save color charts entirely in your browser.</p>
         </div>
@@ -34,10 +44,10 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleEscape))
       </header>
 
       <nav class="flex shrink-0 gap-1 overflow-x-auto border-b border-base-300 bg-base-200/60 px-5 py-2 sm:px-7" aria-label="User guide sections">
-        <a v-for="item in ['Start', 'Tools', 'Selection', 'Mirrors', 'Repeats', 'Canvas', 'Tracker', 'Saving', 'Output']" :key="item" class="btn btn-ghost btn-xs shrink-0" :href="`#guide-${item.toLowerCase()}`">{{ item }}</a>
+        <button v-for="item in sections" :key="item" class="btn btn-ghost btn-xs shrink-0" type="button" @click="scrollToSection(item)">{{ item }}</button>
       </nav>
 
-      <div class="overflow-y-auto bg-base-100 px-5 py-5 sm:px-7 sm:py-6">
+      <div ref="guideContent" class="overflow-y-auto bg-base-100 px-5 py-5 sm:px-7 sm:py-6">
         <section id="guide-start" class="scroll-mt-4">
           <div class="rounded-box bg-primary px-5 py-5 text-primary-content">
             <div class="flex items-center gap-3">
@@ -58,7 +68,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleEscape))
 
         <section id="guide-tools" class="mt-8 scroll-mt-4">
           <div class="mb-3 flex items-center gap-2">
-            <span class="mdi mdi-tools text-xl text-primary" aria-hidden="true"></span>
+            <span class="mdi mdi-tools text-xl text-primary-content" aria-hidden="true"></span>
             <h2 class="text-xl font-bold">Drawing and colors</h2>
           </div>
            <div class="grid gap-3 md:grid-cols-2">
@@ -85,11 +95,11 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleEscape))
 
         <section id="guide-selection" class="mt-8 scroll-mt-4">
           <div class="mb-3 flex items-center gap-2">
-            <span class="mdi mdi-select-drag text-xl text-primary" aria-hidden="true"></span>
+            <span class="mdi mdi-select-drag text-xl text-primary-content" aria-hidden="true"></span>
             <h2 class="text-xl font-bold">Selection tools</h2>
           </div>
           <div class="rounded-box border border-base-300 p-4">
-              <p class="text-sm text-base-content/70">Choose Select and drag a rectangle, or use Magic wand to select matching-color cells connected by shared edges. Drag from inside a selection to move it directly, or choose Move and then click a destination. Clicking outside with Select cancels the selection.</p>
+              <p class="text-sm text-base-content/70">Choose Select and drag a rectangle, or use Magic wand to select matching-color cells connected by shared edges. Right-click inside the selection for move, copy, paste, flip, fill, and erase actions. You can also drag from inside a selection to move it directly. Clicking outside with Select cancels the selection.</p>
             <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               <div class="rounded-box bg-base-200 p-3 text-sm"><strong class="block">Copy</strong>Stores the selected cells in the internal clipboard.</div>
               <div class="rounded-box bg-base-200 p-3 text-sm"><strong class="block">Paste</strong>Places the clipboard at the selection's top-left cell and expands the canvas if needed.</div>
@@ -102,7 +112,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleEscape))
 
         <section id="guide-mirrors" class="mt-8 scroll-mt-4">
           <div class="mb-3 flex items-center gap-2">
-            <span class="mdi mdi-reflect-horizontal text-xl text-primary" aria-hidden="true"></span>
+            <span class="mdi mdi-reflect-horizontal text-xl text-primary-content" aria-hidden="true"></span>
             <h2 class="text-xl font-bold">Live mirror lines</h2>
           </div>
           <div class="grid gap-3 md:grid-cols-2">
@@ -119,7 +129,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleEscape))
 
         <section id="guide-repeats" class="mt-8 scroll-mt-4">
           <div class="mb-3 flex items-center gap-2">
-            <span class="mdi mdi-repeat text-xl text-primary" aria-hidden="true"></span>
+            <span class="mdi mdi-repeat text-xl text-primary-content" aria-hidden="true"></span>
             <h2 class="text-xl font-bold">Repeat boxes</h2>
           </div>
           <div class="rounded-box border border-base-300 p-4">
@@ -128,7 +138,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleEscape))
               <div class="rounded-box bg-base-200 p-3 text-sm"><strong class="block">Section count</strong>Provide one section's width or height and the number of sections. The ending boundary is calculated automatically.</div>
               <div class="rounded-box bg-base-200 p-3 text-sm"><strong class="block">End boundary</strong>Provide where repetition stops and one section's width or height. The section count is calculated automatically, and the form reports when the section size does not fit the range exactly.</div>
             </div>
-            <div class="alert mt-4 text-sm">
+            <div class="alert mt-4 border-accent bg-accent text-sm text-accent-content">
               <span class="mdi mdi-lightbulb-outline" aria-hidden="true"></span>
               <span>Example: rows 5-10, start column 10, end before column 20, and section width 2 automatically creates 5 sections: <strong>10-11 | 12-13 | 14-15 | 16-17 | 18-19</strong>.</span>
             </div>
@@ -138,7 +148,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleEscape))
 
         <section id="guide-canvas" class="mt-8 scroll-mt-4">
           <div class="mb-3 flex items-center gap-2">
-            <span class="mdi mdi-grid text-xl text-primary" aria-hidden="true"></span>
+            <span class="mdi mdi-grid text-xl text-primary-content" aria-hidden="true"></span>
             <h2 class="text-xl font-bold">Canvas structure</h2>
           </div>
           <div class="grid gap-3 md:grid-cols-2">
@@ -155,7 +165,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleEscape))
 
         <section id="guide-tracker" class="mt-8 scroll-mt-4">
           <div class="mb-3 flex items-center gap-2">
-            <span class="mdi mdi-progress-check text-xl text-primary" aria-hidden="true"></span>
+            <span class="mdi mdi-progress-check text-xl text-primary-content" aria-hidden="true"></span>
             <h2 class="text-xl font-bold">Progress tracker</h2>
           </div>
           <div class="rounded-box border border-base-300 p-4">
@@ -166,7 +176,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleEscape))
 
         <section id="guide-saving" class="mt-8 scroll-mt-4">
           <div class="mb-3 flex items-center gap-2">
-            <span class="mdi mdi-content-save-check-outline text-xl text-primary" aria-hidden="true"></span>
+            <span class="mdi mdi-content-save-check-outline text-xl text-primary-content" aria-hidden="true"></span>
             <h2 class="text-xl font-bold">Saving and recovery</h2>
           </div>
           <div class="grid gap-3 md:grid-cols-3">
@@ -178,11 +188,11 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleEscape))
 
         <section id="guide-output" class="mt-8 scroll-mt-4">
           <div class="mb-3 flex items-center gap-2">
-            <span class="mdi mdi-printer-outline text-xl text-primary" aria-hidden="true"></span>
+            <span class="mdi mdi-printer-outline text-xl text-primary-content" aria-hidden="true"></span>
             <h2 class="text-xl font-bold">Preview, printing, and PDF</h2>
           </div>
           <div class="rounded-box border border-base-300 p-4">
-             <p class="text-sm text-base-content/70">Complete pattern preview shows the rendered chart, including whole-pattern repeats or active repeat boxes. Before printing, choose Color or B&amp;W symbols beside the print button. Symbol PDFs include a color key. Print or Save as PDF creates a numbered overview, detail pages for large charts, and source charts for enabled repeat boxes.</p>
+             <p class="text-sm text-base-content/70">Complete pattern preview shows the rendered chart, including whole-pattern repeats or active repeat boxes. Open Print or Save as PDF and choose a Color chart or B&amp;W symbols. Symbol PDFs include a color key. Either option creates a numbered overview, detail pages for large charts, and source charts for enabled repeat boxes.</p>
              <p class="mt-3 text-sm text-base-content/70">The light/dark theme changes the editor only and does not affect printed output.</p>
           </div>
         </section>

@@ -3,6 +3,8 @@ import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import type { DrawingTool, GridSelection, PatternGrid } from '../types/pattern'
 import { followsCenterBoundary, isCenterHeader, REPEAT_BOTTOM, REPEAT_COPY, REPEAT_LEFT, REPEAT_RIGHT, REPEAT_TOP } from '../utils/grid'
 
+type SelectionAction = 'move' | 'copy' | 'paste' | 'flip-horizontal' | 'flip-vertical' | 'fill' | 'erase'
+
 const props = defineProps<{
   cells: PatternGrid
   cellSourceRows: number[][]
@@ -22,6 +24,7 @@ const props = defineProps<{
   tool: DrawingTool
   selection: GridSelection | null
   placingSelection: boolean
+  canPaste: boolean
   mirrorHorizontal: boolean
   mirrorVertical: boolean
 }>()
@@ -35,7 +38,7 @@ const emit = defineEmits<{
   columnAction: [action: 'before' | 'after' | 'multiple' | 'delete' | 'fill' | 'erase', column: number, count?: number]
   selectArea: [top: number, left: number, bottom: number, right: number]
   magicSelect: [row: number, column: number]
-  selectionAction: [action: 'fill' | 'erase']
+  selectionAction: [action: SelectionAction]
   clearSelection: []
   placeSelection: [row: number, column: number]
   moveSelection: [row: number, column: number]
@@ -287,12 +290,12 @@ function openSelectionMenu(row: number, column: number, event: MouseEvent) {
   rowMenu.value = null
   columnMenu.value = null
   selectionMenu.value = {
-    x: Math.max(8, Math.min(event.clientX, window.innerWidth - 176)),
-    y: Math.max(8, Math.min(event.clientY, window.innerHeight - 112)),
+    x: Math.max(8, Math.min(event.clientX, window.innerWidth - 224)),
+    y: Math.max(8, Math.min(event.clientY, window.innerHeight - 296)),
   }
 }
 
-function runSelectionAction(action: 'fill' | 'erase') {
+function runSelectionAction(action: SelectionAction) {
   emit('selectionAction', action)
   selectionMenu.value = null
 }
@@ -361,10 +364,10 @@ onBeforeUnmount(() => {
         v-for="column in cells[0].length"
         :key="`column-${column}`"
         class="sticky top-0 z-10 flex items-center justify-center border-b border-base-300/70 bg-base-100 font-mono text-[10px] font-medium tabular-nums text-base-content/55 hover:bg-base-200"
-        :class="{ 'section-column-end': (columnHeaders[column - 1] + 1) % 5 === 0 && column < cells[0].length, 'bg-primary/10! font-bold text-primary!': selectedColumns.includes(columnHeaders[column - 1]), 'bg-secondary/10!': columnCopies[column - 1] > 0, 'center-axis-label': isCenterHeader(column - 1, cells[0].length), 'center-column-marker': followsCenterBoundary(column - 1, cells[0].length) }"
+        :class="{ 'section-column-end': (columnHeaders[column - 1] + 1) % 5 === 0 && column < cells[0].length, 'bg-secondary/20! font-bold text-secondary!': tool !== 'move' && selectedColumns.includes(columnHeaders[column - 1]), 'bg-secondary/10!': columnCopies[column - 1] > 0, 'center-axis-label': isCenterHeader(column - 1, cells[0].length), 'center-column-marker': followsCenterBoundary(column - 1, cells[0].length) }"
         role="columnheader"
         tabindex="0"
-        :aria-selected="selectedColumns.includes(columnHeaders[column - 1])"
+        :aria-selected="tool !== 'move' && selectedColumns.includes(columnHeaders[column - 1])"
         :aria-label="`Column ${columnHeaders[column - 1] + 1}${columnCopies[column - 1] > 0 ? ', repeated copy' : ''}. Open column actions. Shift-click to select a range.`"
         @pointerdown="tool === 'move' && startPan($event)"
         @click="openColumnMenu(columnHeaders[column - 1], $event)"
@@ -375,10 +378,10 @@ onBeforeUnmount(() => {
       <template v-for="(row, rowIndex) in cells" :key="rowIndex">
         <span
           class="sticky left-0 z-10 flex items-center justify-center border-r border-base-300/70 bg-base-100 font-mono text-[10px] font-medium tabular-nums text-base-content/55 hover:bg-base-200"
-          :class="{ 'section-row-end': (rowHeaders[rowIndex] + 1) % 5 === 0 && rowIndex < cells.length - 1, 'bg-primary/10! font-bold text-primary!': selectedRows.includes(rowHeaders[rowIndex]), 'bg-secondary/10!': rowCopies[rowIndex] > 0, 'center-axis-label': isCenterHeader(rowIndex, cells.length), 'center-row-marker': followsCenterBoundary(rowIndex, cells.length) }"
+          :class="{ 'section-row-end': (rowHeaders[rowIndex] + 1) % 5 === 0 && rowIndex < cells.length - 1, 'bg-secondary/20! font-bold text-secondary!': tool !== 'move' && selectedRows.includes(rowHeaders[rowIndex]), 'bg-secondary/10!': rowCopies[rowIndex] > 0, 'center-axis-label': isCenterHeader(rowIndex, cells.length), 'center-row-marker': followsCenterBoundary(rowIndex, cells.length) }"
           role="rowheader"
           tabindex="0"
-          :aria-selected="selectedRows.includes(rowHeaders[rowIndex])"
+          :aria-selected="tool !== 'move' && selectedRows.includes(rowHeaders[rowIndex])"
           :aria-label="`Row ${rowHeaders[rowIndex] + 1}${rowCopies[rowIndex] > 0 ? ', repeated copy' : ''}. Open row actions. Shift-click to select a range.`"
           @pointerdown="tool === 'move' && startPan($event)"
           @click="openRowMenu(rowHeaders[rowIndex], $event)"
@@ -391,7 +394,7 @@ onBeforeUnmount(() => {
           :key="columnIndex"
           class="pattern-cell"
           :class="{
-            'outline-2 outline-offset-[-2px] outline-neutral': tool !== 'select' && tool !== 'wand' && selectedRows.length > 0 && selectedColumns.length > 0 && selectedRow === cellSourceRows[rowIndex][columnIndex] && selectedColumn === cellSourceColumns[rowIndex][columnIndex],
+            'outline-2 outline-offset-[-2px] outline-neutral': tool !== 'select' && tool !== 'wand' && tool !== 'move' && selectedRows.length > 0 && selectedColumns.length > 0 && selectedRow === cellSourceRows[rowIndex][columnIndex] && selectedColumn === cellSourceColumns[rowIndex][columnIndex],
             'selection-border-top': visibleContains(rowHeaders[rowIndex], columnHeaders[columnIndex]) && !visibleContains(rowHeaders[rowIndex] - 1, columnHeaders[columnIndex]),
             'selection-border-bottom': visibleContains(rowHeaders[rowIndex], columnHeaders[columnIndex]) && !visibleContains(rowHeaders[rowIndex] + 1, columnHeaders[columnIndex]),
             'selection-border-left': visibleContains(rowHeaders[rowIndex], columnHeaders[columnIndex]) && !visibleContains(rowHeaders[rowIndex], columnHeaders[columnIndex] - 1),
@@ -404,10 +407,10 @@ onBeforeUnmount(() => {
             'mirror-axis-bottom': horizontalMirrorBottom(rowHeaders[rowIndex]),
             'section-column-end': (columnHeaders[columnIndex] + 1) % 5 === 0 && columnIndex < row.length - 1,
             'section-row-end': (rowHeaders[rowIndex] + 1) % 5 === 0 && rowIndex < cells.length - 1,
-            'row-selection-top': selectedRowStartsAt(rowIndex),
-            'row-selection-bottom': selectedRowEndsAt(rowIndex),
-            'column-selection-left': selectedColumnStartsAt(columnIndex),
-            'column-selection-right': selectedColumnEndsAt(columnIndex),
+            'row-selection-top': tool !== 'move' && selectedRowStartsAt(rowIndex),
+            'row-selection-bottom': tool !== 'move' && selectedRowEndsAt(rowIndex),
+            'column-selection-left': tool !== 'move' && selectedColumnStartsAt(columnIndex),
+            'column-selection-right': tool !== 'move' && selectedColumnEndsAt(columnIndex),
             'repeat-copy-cell': (repeatFlags[rowIndex][columnIndex] & REPEAT_COPY) !== 0,
             'repeat-border-left': (repeatFlags[rowIndex][columnIndex] & REPEAT_LEFT) !== 0,
             'repeat-border-right': (repeatFlags[rowIndex][columnIndex] & REPEAT_RIGHT) !== 0,
@@ -430,13 +433,19 @@ onBeforeUnmount(() => {
 
   <div
     v-if="selectionMenu"
-    class="fixed z-[80] w-40 rounded-box border border-base-300 bg-base-100 p-2 shadow-lg"
+    class="fixed z-[80] w-52 rounded-box border border-base-300 bg-base-100 p-2 shadow-lg"
     :style="{ left: `${selectionMenu.x}px`, top: `${selectionMenu.y}px` }"
     role="menu"
     aria-label="Selection actions"
     @click.stop
   >
     <ul class="menu menu-sm w-full p-0">
+      <li><button type="button" role="menuitem" @click="runSelectionAction('move')"><span class="mdi mdi-cursor-move" aria-hidden="true"></span>Move selection</button></li>
+      <li><button type="button" role="menuitem" @click="runSelectionAction('copy')"><span class="mdi mdi-content-copy" aria-hidden="true"></span>Copy selection</button></li>
+      <li><button type="button" role="menuitem" :disabled="!canPaste" @click="runSelectionAction('paste')"><span class="mdi mdi-content-paste" aria-hidden="true"></span>Paste into selection</button></li>
+      <li><button type="button" role="menuitem" @click="runSelectionAction('flip-horizontal')"><span class="mdi mdi-flip-horizontal" aria-hidden="true"></span>Flip horizontally</button></li>
+      <li><button type="button" role="menuitem" @click="runSelectionAction('flip-vertical')"><span class="mdi mdi-flip-vertical" aria-hidden="true"></span>Flip vertically</button></li>
+      <li class="my-1 border-t border-base-300"></li>
       <li><button type="button" role="menuitem" @click="runSelectionAction('fill')"><span class="mdi mdi-format-color-fill" aria-hidden="true"></span>Fill selection</button></li>
       <li><button type="button" role="menuitem" @click="runSelectionAction('erase')"><span class="mdi mdi-eraser" aria-hidden="true"></span>Erase selection</button></li>
     </ul>

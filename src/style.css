@@ -3,6 +3,76 @@
   themes: light --default, dark --prefersdark;
 }
 
+@plugin "daisyui/theme" {
+  name: "light";
+  default: false;
+  prefersdark: false;
+  color-scheme: "light";
+  --color-base-100: #fff9f6;
+  --color-base-200: #fff9f6;
+  --color-base-300: #f7e4db;
+  --color-base-content: #16213d;
+  --color-primary: #fde0e0;
+  --color-primary-content: #c5005a;
+  --color-secondary: #a683ff;
+  --color-secondary-content: #2e0c67;
+  --color-accent: #ffd6a7;
+  --color-accent-content: #9f2d00;
+  --color-neutral: #262629;
+  --color-neutral-content: #e4e4e7;
+  --color-info: #00a4f2;
+  --color-info-content: #042e49;
+  --color-success: #00ba7b;
+  --color-success-content: #002c21;
+  --color-warning: oklch(82% 0.189 84.429);
+  --color-warning-content: oklch(41% 0.112 45.904);
+  --color-error: oklch(71% 0.194 13.428);
+  --color-error-content: oklch(27% 0.105 12.094);
+  --radius-selector: 0.5rem;
+  --radius-field: 1rem;
+  --radius-box: 1rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 1;
+  --noise: 0;
+}
+
+@plugin "daisyui/theme" {
+  name: "dark";
+  default: false;
+  prefersdark: true;
+  color-scheme: "dark";
+  --color-base-100: #11182b;
+  --color-base-200: #18213a;
+  --color-base-300: #2a3553;
+  --color-base-content: #fff4ef;
+  --color-primary: #ff9abb;
+  --color-primary-content: #46001f;
+  --color-secondary: #b9a2ff;
+  --color-secondary-content: #24104f;
+  --color-accent: #ffc783;
+  --color-accent-content: #481b00;
+  --color-neutral: #302f38;
+  --color-neutral-content: #f4eef2;
+  --color-info: #38bdf8;
+  --color-info-content: #052a3b;
+  --color-success: #34d399;
+  --color-success-content: #032a1e;
+  --color-warning: oklch(82% 0.17 84.429);
+  --color-warning-content: oklch(30% 0.09 45.904);
+  --color-error: oklch(72% 0.18 13.428);
+  --color-error-content: oklch(28% 0.09 12.094);
+  --radius-selector: 0.5rem;
+  --radius-field: 1rem;
+  --radius-box: 1rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 1;
+  --noise: 0;
+}
+
 html,
 body,
 #app {
@@ -64,13 +134,13 @@ body {
 }
 
 .center-axis-label {
-  color: var(--color-accent) !important;
+  color: var(--color-info) !important;
   font-weight: 700;
 }
 
 .center-column-marker::after,
 .center-row-marker::after {
-  background: var(--color-accent);
+  background: var(--color-info);
   border-radius: 999px;
   content: "";
   pointer-events: none;
@@ -169,7 +239,14 @@ body {
     size: A4 landscape;
   }
 
-  body {
+  html,
+  body,
+  #app,
+  .print-only,
+  .print-chart-page,
+  .print-detail-page,
+  .print-symbol-key-page,
+  .print-repeat-page {
     background: white !important;
     color: black !important;
   }

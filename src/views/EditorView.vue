@@ -33,10 +33,7 @@ const fileInput = ref<HTMLInputElement | null>(null)
 const pendingImport = ref<PatternProject | null>(null)
 const placingSelection = ref(false)
 const printMode = ref<PrintMode>('color')
-const printInColor = computed({
-  get: () => printMode.value === 'color',
-  set: (value: boolean) => { printMode.value = value ? 'color' : 'symbols' },
-})
+const printMenu = ref<HTMLDetailsElement | null>(null)
 const downloadBackupNeeded = ref(pattern.restoredAutosave.value)
 const toolShortcuts: Record<string, DrawingTool> = {
   p: 'pencil',
@@ -145,9 +142,14 @@ function handleColumnAction(action: 'before' | 'after' | 'multiple' | 'delete' |
   if (action === 'erase') pattern.eraseSelectedColumns()
 }
 
-function handleSelectionAction(action: 'fill' | 'erase') {
+function handleSelectionAction(action: 'move' | 'copy' | 'paste' | 'flip-horizontal' | 'flip-vertical' | 'fill' | 'erase') {
+  if (action === 'move') startMoveSelection()
+  if (action === 'copy') copySelection()
+  if (action === 'paste') pasteSelection()
+  if (action === 'flip-horizontal') mirrorSelection('horizontal')
+  if (action === 'flip-vertical') mirrorSelection('vertical')
   if (action === 'fill') pattern.fillSelection(pattern.selectedColor.value)
-  else pattern.eraseSelection()
+  if (action === 'erase') pattern.eraseSelection()
 }
 
 function deleteRows(value: string) {
@@ -168,7 +170,10 @@ function selectColumnHeader(column: number, extend: boolean, toggle: boolean) {
   else pattern.selectColumn(column, extend, true)
 }
 
-function printPattern() {
+async function printPattern(mode: PrintMode = printMode.value) {
+  printMode.value = mode
+  if (printMenu.value) printMenu.value.open = false
+  await nextTick()
   window.print()
 }
 
@@ -180,6 +185,7 @@ function saveRepeatBox(input: RepeatBoxInput, id: string | null, complete: (erro
 
 function selectTool(tool: typeof pattern.tool.value) {
   pattern.tool.value = tool
+  if (tool === 'move') pattern.clearSelection()
   if (tool !== 'select') placingSelection.value = false
 }
 
@@ -330,39 +336,48 @@ onBeforeUnmount(() => {
                 </div>
                 <div class="flex w-full flex-col items-stretch gap-2 sm:w-auto sm:items-end">
                   <div class="flex flex-wrap items-center gap-2 sm:justify-end">
-                    <span class="badge badge-sm" :class="pattern.autosaveStatus.value === 'error' ? 'badge-error' : pattern.autosaveStatus.value === 'saving' ? 'badge-ghost' : 'badge-success badge-outline'">
+                    <span class="badge badge-xs" :class="pattern.autosaveStatus.value === 'error' ? 'badge-error' : pattern.autosaveStatus.value === 'saving' ? 'badge-ghost' : 'badge-success badge-outline'">
                       <span class="mdi" :class="pattern.autosaveStatus.value === 'error' ? 'mdi-alert-circle-outline' : pattern.autosaveStatus.value === 'saving' ? 'mdi-loading mdi-spin' : 'mdi-content-save-check-outline'" aria-hidden="true"></span>
                       {{ pattern.autosaveStatus.value === 'error' ? 'Backup failed' : pattern.autosaveStatus.value === 'saving' ? 'Saving locally' : 'Saved locally' }}
                     </span>
-                    <span class="badge badge-outline">{{ renderedPattern.cells[0].length }} columns shown</span>
-                    <span class="badge badge-outline">{{ renderedPattern.cells.length }} rows shown</span>
+                    <span v-if="downloadBackupNeeded" class="badge badge-xs badge-warning badge-outline">
+                      <span class="mdi mdi-download-alert-outline" aria-hidden="true"></span>
+                      Latest changes not downloaded
+                    </span>
+                    <span class="badge badge-primary">{{ renderedPattern.cells[0].length }} columns</span>
+                    <span class="badge badge-secondary">{{ renderedPattern.cells.length }} rows</span>
                   </div>
-                  <div class="flex flex-wrap items-center justify-between gap-2 sm:justify-end">
-                    <label class="flex h-8 cursor-pointer items-center gap-2 rounded-lg border border-base-300 bg-base-200/60 px-2.5 text-xs">
-                      <span :class="!printInColor ? 'font-semibold text-base-content' : 'text-base-content/55'">B&amp;W symbols</span>
-                      <input v-model="printInColor" class="toggle toggle-primary toggle-xs" type="checkbox" aria-label="Print charts in color" />
-                      <span :class="printInColor ? 'font-semibold text-base-content' : 'text-base-content/55'">Color</span>
-                    </label>
-                    <button class="btn btn-primary btn-sm" type="button" @click="printPattern">
+                  <details ref="printMenu" class="dropdown dropdown-end">
+                    <summary class="btn btn-primary btn-sm">
                       <span class="mdi mdi-printer-outline text-base" aria-hidden="true"></span>
                       Print or Save as PDF
-                    </button>
-                  </div>
+                      <span class="mdi mdi-chevron-down" aria-hidden="true"></span>
+                    </summary>
+                    <ul class="menu dropdown-content z-50 mt-2 w-64 rounded-box border border-base-300 bg-base-100 p-2 shadow-lg">
+                      <li>
+                        <button type="button" @click="printPattern('color')">
+                          <span class="mdi mdi-palette-outline text-lg" aria-hidden="true"></span>
+                          <span><strong class="block">Color chart</strong><span class="text-xs text-base-content/60">Print using stitch colors</span></span>
+                          <span v-if="printMode === 'color'" class="mdi mdi-check ml-auto text-success" aria-hidden="true"></span>
+                        </button>
+                      </li>
+                      <li>
+                        <button type="button" @click="printPattern('symbols')">
+                          <span class="mdi mdi-shape-outline text-lg" aria-hidden="true"></span>
+                          <span><strong class="block">B&amp;W symbols</strong><span class="text-xs text-base-content/60">Print with a symbol key</span></span>
+                          <span v-if="printMode === 'symbols'" class="mdi mdi-check ml-auto text-success" aria-hidden="true"></span>
+                        </button>
+                      </li>
+                    </ul>
+                  </details>
                 </div>
               </div>
               <DrawingTools
                 :tool="pattern.tool.value"
-                :can-copy="pattern.hasSelection.value"
-                :can-paste="pattern.hasClipboard.value && pattern.hasSelection.value"
                 :placing-selection="placingSelection"
                 :mirror-horizontal="pattern.mirrorHorizontal.value"
                 :mirror-vertical="pattern.mirrorVertical.value"
                 @select="selectTool"
-                @copy="copySelection"
-                @paste="pasteSelection"
-                @move-selection="startMoveSelection"
-                @mirror-horizontal="mirrorSelection('horizontal')"
-                @mirror-vertical="mirrorSelection('vertical')"
                 @toggle-mirror-horizontal="toggleMirror('horizontal')"
                 @toggle-mirror-vertical="toggleMirror('vertical')"
                 @cancel-placement="placingSelection = false"
@@ -430,6 +445,7 @@ onBeforeUnmount(() => {
                 :tool="pattern.tool.value"
                 :selection="pattern.selection.value"
                 :placing-selection="placingSelection"
+                :can-paste="pattern.hasClipboard.value"
                 :mirror-horizontal="pattern.mirrorHorizontal.value"
                 :mirror-vertical="pattern.mirrorVertical.value"
                 @stroke-start="beginStroke"

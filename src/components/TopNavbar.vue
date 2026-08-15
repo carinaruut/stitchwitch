@@ -2,9 +2,17 @@
 import { RouterLink } from 'vue-router'
 import ThemeToggle from './ThemeToggle.vue'
 import type { Theme } from '../composables/useTheme'
+import type { PrintMode } from '../types/pattern'
 
 defineProps<{ canUndo: boolean; canRedo: boolean; theme: Theme }>()
-defineEmits<{ new: []; open: []; save: []; print: []; undo: []; redo: []; theme: []; guide: [] }>()
+const emit = defineEmits<{ new: []; open: []; save: []; print: [mode: PrintMode]; undo: []; redo: []; theme: []; guide: [] }>()
+
+function requestPrint(mode: PrintMode, event: MouseEvent) {
+  const target = event.currentTarget as HTMLElement
+  target.closest('details')?.removeAttribute('open')
+  target.blur()
+  emit('print', mode)
+}
 </script>
 
 <template>
@@ -16,7 +24,13 @@ defineEmits<{ new: []; open: []; save: []; print: []; undo: []; redo: []; theme:
       <button class="btn btn-ghost btn-sm" type="button" @click="$emit('new')"><span class="mdi mdi-file-plus-outline text-lg" aria-hidden="true"></span>New</button>
       <button class="btn btn-ghost btn-sm" type="button" @click="$emit('open')"><span class="mdi mdi-folder-open-outline text-lg" aria-hidden="true"></span>Open</button>
       <button class="btn btn-ghost btn-sm" type="button" @click="$emit('save')"><span class="mdi mdi-content-save-outline text-lg" aria-hidden="true"></span>Save</button>
-      <button class="btn btn-ghost btn-sm" type="button" @click="$emit('print')"><span class="mdi mdi-printer-outline text-lg" aria-hidden="true"></span>Print</button>
+      <details class="dropdown dropdown-end">
+        <summary class="btn btn-ghost btn-sm"><span class="mdi mdi-printer-outline text-lg" aria-hidden="true"></span>Print<span class="mdi mdi-chevron-down" aria-hidden="true"></span></summary>
+        <ul class="menu dropdown-content z-50 mt-2 w-48 rounded-box border border-base-300 bg-base-100 p-2 shadow-lg">
+          <li><button type="button" @click="requestPrint('color', $event)"><span class="mdi mdi-palette-outline" aria-hidden="true"></span>Color chart</button></li>
+          <li><button type="button" @click="requestPrint('symbols', $event)"><span class="mdi mdi-shape-outline" aria-hidden="true"></span>B&amp;W symbols</button></li>
+        </ul>
+      </details>
       <RouterLink class="btn btn-ghost btn-sm" to="/tracker"><span class="mdi mdi-progress-check text-lg" aria-hidden="true"></span>Tracker</RouterLink>
     </nav>
     <div class="navbar-end gap-1">
@@ -29,7 +43,9 @@ defineEmits<{ new: []; open: []; save: []; print: []; undo: []; redo: []; theme:
           <li><button type="button" @click="$emit('new')"><span class="mdi mdi-file-plus-outline" aria-hidden="true"></span>New project</button></li>
           <li><button type="button" @click="$emit('open')"><span class="mdi mdi-folder-open-outline" aria-hidden="true"></span>Open project</button></li>
           <li><button type="button" @click="$emit('save')"><span class="mdi mdi-content-save-outline" aria-hidden="true"></span>Save project</button></li>
-           <li><button type="button" @click="$emit('print')"><span class="mdi mdi-printer-outline" aria-hidden="true"></span>Print or PDF</button></li>
+          <li class="menu-title">Print or PDF</li>
+          <li><button type="button" @click="requestPrint('color', $event)"><span class="mdi mdi-palette-outline" aria-hidden="true"></span>Color chart</button></li>
+          <li><button type="button" @click="requestPrint('symbols', $event)"><span class="mdi mdi-shape-outline" aria-hidden="true"></span>B&amp;W symbols</button></li>
           <li><RouterLink to="/tracker"><span class="mdi mdi-progress-check" aria-hidden="true"></span>Open tracker</RouterLink></li>
         </ul>
       </div>
