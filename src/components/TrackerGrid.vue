@@ -47,8 +47,12 @@ async function exitFullscreen() {
 
 defineExpose({ enterFullscreen, exitFullscreen })
 
-onMounted(() => document.addEventListener('fullscreenchange', handleFullscreenChange))
-onBeforeUnmount(() => document.removeEventListener('fullscreenchange', handleFullscreenChange))
+onMounted(() => {
+  document.addEventListener('fullscreenchange', handleFullscreenChange)
+})
+onBeforeUnmount(() => {
+  document.removeEventListener('fullscreenchange', handleFullscreenChange)
+})
 
 function ordinal(row: number, column: number) {
   return stitchOrdinal(row, column, props.cells.length, props.cells[0].length, props.progress)
@@ -73,9 +77,11 @@ function scrollAfterStitch(row: number, column: number) {
   const cellRect = cell.getBoundingClientRect()
   const gridHeaderSize = 32
   const visibleLeft = viewportRect.left + gridHeaderSize
-  const visibleTop = viewportRect.top + gridHeaderSize
+  const pageScrollsVertically = !isFullscreen.value && container.scrollHeight <= container.clientHeight + 1
+  const visibleTop = pageScrollsVertically ? Math.max(viewportRect.top + gridHeaderSize, 0) : viewportRect.top + gridHeaderSize
+  const visibleBottom = pageScrollsVertically ? Math.min(viewportRect.bottom, window.innerHeight) : viewportRect.bottom
   const horizontalMidpoint = (visibleLeft + viewportRect.right) / 2
-  const verticalMidpoint = (visibleTop + viewportRect.bottom) / 2
+  const verticalMidpoint = (visibleTop + visibleBottom) / 2
   const cellCenterX = (cellRect.left + cellRect.right) / 2
   const cellCenterY = (cellRect.top + cellRect.bottom) / 2
   const keepVisible = props.cellSize * 5
@@ -86,9 +92,23 @@ function scrollAfterStitch(row: number, column: number) {
   if (direction === 'left-to-right' && cellCenterX > horizontalMidpoint) left = cellRect.left - visibleLeft - keepVisible
   if (direction === 'right-to-left' && cellCenterX < horizontalMidpoint) left = cellRect.right - viewportRect.right + keepVisible
   if (props.progress.startRow === 'top' && cellCenterY > verticalMidpoint) top = cellRect.top - visibleTop - keepVisible
-  if (props.progress.startRow === 'bottom' && cellCenterY < verticalMidpoint) top = cellRect.bottom - viewportRect.bottom + keepVisible
+  if (props.progress.startRow === 'bottom' && cellCenterY < verticalMidpoint) top = cellRect.bottom - visibleBottom + keepVisible
 
-  if (left || top) container.scrollBy({ left, top, behavior: 'smooth' })
+  if (pageScrollsVertically && top) {
+    const boundaryRow = props.progress.startRow === 'top' ? props.cells.length - 1 : 0
+    const boundaryCell = container.querySelector<HTMLElement>(`[data-tracker-cell="${boundaryRow}-0"]`)
+    const boundaryRect = boundaryCell?.getBoundingClientRect()
+    if (boundaryRect) {
+      if (props.progress.startRow === 'top') top = Math.min(top, Math.max(0, boundaryRect.bottom - window.innerHeight))
+      else {
+        const gridTop = container.querySelector<HTMLElement>('[role="grid"]')?.getBoundingClientRect().top ?? boundaryRect.top - gridHeaderSize
+        top = Math.max(top, Math.min(0, gridTop))
+      }
+    }
+  }
+
+  if (left) container.scrollBy({ left, behavior: 'smooth' })
+  if (top) (pageScrollsVertically ? window : container).scrollBy({ top, behavior: 'smooth' })
 }
 
 function selectStitch(row: number, column: number) {
@@ -134,7 +154,7 @@ function moveRowHeader(row: number, event: KeyboardEvent) {
 
 <template>
   <div ref="fullscreenTarget" class="tracker-fullscreen relative w-full min-w-0 bg-base-100">
-    <div ref="viewport" class="tracker-viewport h-[calc(100dvh-21rem)] min-h-96 w-full min-w-0 overflow-auto rounded-box border border-base-300/70 bg-base-100 p-3" :aria-label="t('tracker.grid.label')">
+    <div ref="viewport" class="tracker-viewport w-full min-w-0 overflow-x-auto rounded-box border border-base-300/70 bg-base-100 p-3" :aria-label="t('tracker.grid.label')">
     <div
       class="grid w-max border border-base-300/70 bg-base-100"
       :style="{ gridTemplateColumns: `32px repeat(${cells[0].length}, ${cellSize}px)`, gridTemplateRows: `32px repeat(${cells.length}, ${cellSize}px)` }"
@@ -227,6 +247,7 @@ function moveRowHeader(row: number, event: KeyboardEvent) {
   border-radius: 0;
   height: 100dvh;
   min-height: 0;
+  overflow-y: auto;
 }
 
 .tracker-stitch-knit {
