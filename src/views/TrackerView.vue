@@ -333,17 +333,27 @@ function cancelActiveModal() {
                 </label>
               </div>
               <div class="flex flex-wrap items-center gap-2">
-                <label class="flex items-center gap-2 text-xs">
-                  {{ t('tracker.controls.display') }}
-                  <select v-model="display" class="select select-bordered select-sm" :aria-label="t('tracker.controls.displayAria')">
-                    <option value="canvas">{{ t('tracker.controls.canvas') }}</option>
-                    <option value="knit">{{ t('tracker.controls.knit') }}</option>
-                    <option value="cross-stitch">{{ t('tracker.controls.crossStitch') }}</option>
-                  </select>
-                </label>
-                <label class="flex items-center gap-2 text-xs">{{ t('tracker.controls.cellSize') }} <input v-model.number="cellSize" class="range range-xs w-24" type="range" min="16" max="48" :aria-label="t('tracker.controls.cellSize')" /></label>
-                <label class="flex items-center gap-2 text-xs"><input v-model="autoScroll" class="toggle toggle-primary toggle-sm" type="checkbox" />{{ t('tracker.controls.autoScroll') }}</label>
-                <label v-if="wakeLockSupported" class="flex items-center gap-2 text-xs"><input class="toggle toggle-primary toggle-sm" type="checkbox" :checked="keepAwake" @change="changeKeepAwake" />{{ t('tracker.controls.keepAwake') }}</label>
+                <details class="dropdown dropdown-end">
+                  <summary class="btn btn-ghost btn-square btn-sm" :aria-label="t('tracker.controls.settings')" :title="t('tracker.controls.settings')"><span class="mdi mdi-cog-outline text-xl" aria-hidden="true"></span></summary>
+                  <div class="dropdown-content z-40 mt-2 w-72 rounded-box border border-base-300 bg-base-100 p-4 shadow-lg">
+                    <div class="flex flex-col gap-6">
+                      <label class="form-control gap-1">
+                        <span class="text-xs font-semibold">{{ t('tracker.controls.display') }}</span>
+                        <select v-model="display" class="select select-bordered select-sm w-full" :aria-label="t('tracker.controls.displayAria')">
+                          <option value="canvas">{{ t('tracker.controls.canvas') }}</option>
+                          <option value="knit">{{ t('tracker.controls.knit') }}</option>
+                          <option value="cross-stitch">{{ t('tracker.controls.crossStitch') }}</option>
+                        </select>
+                      </label>
+                      <label class="form-control gap-2">
+                        <span class="flex items-center justify-between gap-3 text-xs font-semibold"><span>{{ t('tracker.controls.cellSize') }}</span><span class="font-mono font-normal tabular-nums">{{ cellSize }} px</span></span>
+                        <input v-model.number="cellSize" class="range range-xs w-full" type="range" min="16" max="48" :aria-label="t('tracker.controls.cellSize')" />
+                      </label>
+                      <label class="flex items-center justify-between gap-3 text-sm"><span>{{ t('tracker.controls.autoScroll') }}</span><input v-model="autoScroll" class="toggle toggle-primary toggle-sm" type="checkbox" /></label>
+                      <label v-if="wakeLockSupported" class="flex items-center justify-between gap-3 text-sm"><span>{{ t('tracker.controls.keepAwake') }}</span><input class="toggle toggle-primary toggle-sm" type="checkbox" :checked="keepAwake" @change="changeKeepAwake" /></label>
+                    </div>
+                  </div>
+                </details>
                 <div v-if="fullscreenSupported" class="tooltip" :data-tip="t(trackerFullscreen ? 'tracker.controls.exitFullscreen' : 'tracker.controls.fullscreen')">
                   <button class="btn btn-ghost btn-square btn-sm" type="button" :aria-label="t(trackerFullscreen ? 'tracker.controls.exitFullscreen' : 'tracker.controls.fullscreen')" @click="toggleFullscreen"><span class="mdi text-lg" :class="trackerFullscreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'" aria-hidden="true"></span></button>
                 </div>

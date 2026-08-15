@@ -37,6 +37,7 @@ tracker:
     rightToLeft: Right to left
     alternate: Alternate direction each row
   controls:
+    settings: Settings
     display: Display
     displayAria: Tracker stitch display
     canvas: Canvas

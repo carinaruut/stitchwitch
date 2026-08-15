@@ -37,6 +37,7 @@ tracker:
     rightToLeft: Paremalt vasakule
     alternate: Vaheta suunda igal real
   controls:
+    settings: Seaded
     display: Vaade
     displayAria: Tööjärje pistete vaade
     canvas: Ruudustik
