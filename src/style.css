@@ -214,13 +214,16 @@ body {
 }
 
 .tracker-cell-complete::after {
-  background:
-    linear-gradient(45deg, transparent 45%, color-mix(in oklab, currentColor 85%, transparent) 46% 54%, transparent 55%),
-    linear-gradient(-45deg, transparent 45%, color-mix(in oklab, currentColor 85%, transparent) 46% 54%, transparent 55%);
+  background: color-mix(in oklab, currentColor 85%, transparent);
   content: "";
-  inset: 2px;
+  height: 2px;
+  left: 0;
   pointer-events: none;
   position: absolute;
+  right: -1px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 3;
 }
 
 .tracker-cell-complete {

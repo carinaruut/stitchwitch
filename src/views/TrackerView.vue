@@ -9,7 +9,7 @@ import { useNotifications } from '../composables/useNotifications'
 import { useTheme } from '../composables/useTheme'
 import { useTracker } from '../composables/useTracker'
 import { downloadTracker, readTrackerInput } from '../composables/useTrackerFiles'
-import type { PatternProject } from '../types/pattern'
+import type { PatternDisplay, PatternProject } from '../types/pattern'
 import type { TrackerDirection, TrackerProject, TrackerStartRow } from '../types/tracker'
 import { renderGrid } from '../utils/grid'
 import { MAX_TRACKER_STITCHES, renderedDimensions } from '../utils/tracker'
@@ -23,6 +23,7 @@ const replaceModalOpen = ref(false)
 const resetModalOpen = ref(false)
 const clearModalOpen = ref(false)
 const cellSize = ref(Math.min(40, Math.max(18, state.tracker.value?.pattern.cellSize ?? 24)))
+const display = ref<PatternDisplay>('canvas')
 
 const dimensions = computed(() => state.tracker.value ? renderedDimensions(state.tracker.value.pattern) : null)
 const tooLarge = computed(() => dimensions.value ? dimensions.value.rows * dimensions.value.columns > MAX_TRACKER_STITCHES : false)
@@ -238,6 +239,14 @@ onBeforeUnmount(() => {
                 </label>
               </div>
               <div class="flex flex-wrap items-center gap-2">
+                <label class="flex items-center gap-2 text-xs">
+                  Display
+                  <select v-model="display" class="select select-bordered select-sm" aria-label="Tracker stitch display">
+                    <option value="canvas">Canvas</option>
+                    <option value="knit">Knit</option>
+                    <option value="cross-stitch">Cross stitch</option>
+                  </select>
+                </label>
                 <label class="flex items-center gap-2 text-xs">Cell size <input v-model.number="cellSize" class="range range-xs w-24" type="range" min="16" max="48" /></label>
                 <button class="btn btn-ghost btn-sm text-error" type="button" :disabled="state.completedCount.value === 0" @click="resetModalOpen = true">Reset progress</button>
                 <button class="btn btn-ghost btn-sm" type="button" @click="clearModalOpen = true">Close tracker</button>
@@ -258,6 +267,7 @@ onBeforeUnmount(() => {
               :repeat-flags="renderedPattern.repeatFlags"
               :repeat-color-indices="renderedPattern.repeatColorIndices"
               :cell-size="cellSize"
+              :display="display"
               :progress="state.tracker.value.progress"
               @stitch="selectStitch"
               @row="state.selectRow($event, renderedPattern.cells.length, renderedPattern.cells[0].length)"

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { nextTick, ref } from 'vue'
-import type { PatternGrid } from '../types/pattern'
+import type { PatternDisplay, PatternGrid } from '../types/pattern'
 import type { TrackerProgress } from '../types/tracker'
-import { followsCenterBoundary, isCenterHeader, repeatOutlineColor, REPEAT_BOTTOM, REPEAT_COPY, REPEAT_LEFT, REPEAT_RIGHT, REPEAT_TOP } from '../utils/grid'
+import { followsCenterBoundary, isCenterHeader, repeatOutlineColor, REPEAT_COPY } from '../utils/grid'
 import { rowCompletionRange, stitchOrdinal } from '../utils/tracker'
 
 const props = defineProps<{
@@ -12,6 +12,7 @@ const props = defineProps<{
   repeatFlags: number[][]
   repeatColorIndices: number[][]
   cellSize: number
+  display: PatternDisplay
   progress: TrackerProgress
 }>()
 
@@ -114,17 +115,14 @@ function moveRowHeader(row: number, event: KeyboardEvent) {
           :data-tracker-cell="`${rowIndex}-${columnIndex}`"
           class="pattern-cell tracker-cell relative"
           :class="{
+            'bg-transparent': display !== 'canvas',
             'tracker-cell-complete': ordinal(rowIndex, columnIndex) < progress.completedCount,
             'tracker-cell-next': ordinal(rowIndex, columnIndex) === progress.completedCount,
             'section-column-end': (columnHeaders[columnIndex] + 1) % 5 === 0 && columnIndex < row.length - 1,
             'section-row-end': (rowHeaders[rowIndex] + 1) % 5 === 0 && rowIndex < cells.length - 1,
             'repeat-copy-cell': (repeatFlags[rowIndex][columnIndex] & REPEAT_COPY) !== 0,
-            'repeat-border-left': (repeatFlags[rowIndex][columnIndex] & REPEAT_LEFT) !== 0,
-            'repeat-border-right': (repeatFlags[rowIndex][columnIndex] & REPEAT_RIGHT) !== 0,
-            'repeat-border-top': (repeatFlags[rowIndex][columnIndex] & REPEAT_TOP) !== 0,
-            'repeat-border-bottom': (repeatFlags[rowIndex][columnIndex] & REPEAT_BOTTOM) !== 0,
           }"
-          :style="{ backgroundColor: color, '--repeat-color': repeatOutlineColor(repeatColorIndices[rowIndex][columnIndex]) }"
+          :style="{ backgroundColor: display === 'canvas' ? color : undefined, '--repeat-color': repeatOutlineColor(repeatColorIndices[rowIndex][columnIndex]) }"
           type="button"
           role="gridcell"
           :aria-rowindex="rowIndex + 2"
@@ -135,8 +133,51 @@ function moveRowHeader(row: number, event: KeyboardEvent) {
           @focus="activeCell = { row: rowIndex, column: columnIndex }"
           @click="$emit('stitch', rowIndex, columnIndex)"
           @keydown="moveCell(rowIndex, columnIndex, $event)"
-        ></button>
+        >
+          <span
+            v-if="display !== 'canvas'"
+            class="tracker-stitch"
+            :class="`tracker-stitch-${display}`"
+            :style="{ '--stitch-color': color }"
+            aria-hidden="true"
+          ></span>
+        </button>
       </div>
     </div>
   </div>
 </template>
+
+<style scoped>
+.tracker-stitch {
+  background: var(--stitch-color);
+  inset: 1px;
+  pointer-events: none;
+  position: absolute;
+}
+
+.tracker-stitch-knit {
+  inset: -2px 0;
+  mask: url('/assets/stitch_1.png') center / 100% 100% no-repeat;
+  -webkit-mask: url('/assets/stitch_1.png') center / 100% 100% no-repeat;
+}
+
+.tracker-stitch-cross-stitch {
+  mask: url('/assets/stitch_2.png') center / 100% 100% no-repeat;
+  -webkit-mask: url('/assets/stitch_2.png') center / 100% 100% no-repeat;
+}
+
+.tracker-stitch::after {
+  content: '';
+  inset: 0;
+  mix-blend-mode: multiply;
+  position: absolute;
+}
+
+.tracker-stitch-knit::after {
+  background: url('/assets/stitch_1.png') center / 100% 100% no-repeat;
+}
+
+.tracker-stitch-cross-stitch::after {
+  background: url('/assets/stitch_2.png') center / 100% 100% no-repeat;
+}
+</style>

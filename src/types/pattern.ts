@@ -1,6 +1,7 @@
 export type PatternGrid = string[][]
 export type DrawingTool = 'pencil' | 'eraser' | 'fill' | 'eyedropper' | 'select' | 'wand' | 'move'
 export type PreviewStitch = 'knit' | 'cross-stitch'
+export type PatternDisplay = 'canvas' | PreviewStitch
 export type PrintMode = 'color' | 'symbols'
 
 export const MAX_REPEAT_COUNT = 100
