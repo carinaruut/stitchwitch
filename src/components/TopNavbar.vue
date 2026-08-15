@@ -26,7 +26,7 @@ function requestPrint(mode: PrintMode, event: MouseEvent) {
     <nav class="navbar-center hidden gap-1 lg:flex" :aria-label="t('editor.nav.projectActions')">
       <button class="btn btn-ghost btn-sm" type="button" @click="$emit('new')"><span class="mdi mdi-file-plus-outline text-lg" aria-hidden="true"></span>{{ t('editor.nav.new') }}</button>
       <button class="btn btn-ghost btn-sm" type="button" @click="$emit('open')"><span class="mdi mdi-folder-open-outline text-lg" aria-hidden="true"></span>{{ t('editor.nav.open') }}</button>
-      <button class="btn btn-ghost btn-sm" type="button" @click="$emit('save')"><span class="mdi mdi-content-save-outline text-lg" aria-hidden="true"></span>{{ t('editor.nav.save') }}</button>
+      <button class="btn btn-ghost btn-sm" type="button" aria-keyshortcuts="Control+S Meta+S" @click="$emit('save')"><span class="mdi mdi-content-save-outline text-lg" aria-hidden="true"></span>{{ t('editor.nav.save') }}</button>
       <details class="dropdown dropdown-end">
         <summary class="btn btn-ghost btn-sm"><span class="mdi mdi-printer-outline text-lg" aria-hidden="true"></span>{{ t('editor.nav.print') }}<span class="mdi mdi-chevron-down" aria-hidden="true"></span></summary>
         <ul class="menu dropdown-content z-50 mt-2 w-48 rounded-box border border-base-300 bg-base-100 p-2 shadow-lg">
@@ -45,7 +45,7 @@ function requestPrint(mode: PrintMode, event: MouseEvent) {
         <ul tabindex="0" class="menu dropdown-content z-50 mt-2 w-44 rounded-box border border-base-300 bg-base-100 p-2">
           <li><button type="button" @click="$emit('new')"><span class="mdi mdi-file-plus-outline" aria-hidden="true"></span>{{ t('editor.nav.newProject') }}</button></li>
           <li><button type="button" @click="$emit('open')"><span class="mdi mdi-folder-open-outline" aria-hidden="true"></span>{{ t('editor.nav.openProject') }}</button></li>
-          <li><button type="button" @click="$emit('save')"><span class="mdi mdi-content-save-outline" aria-hidden="true"></span>{{ t('editor.nav.saveProject') }}</button></li>
+          <li><button type="button" aria-keyshortcuts="Control+S Meta+S" @click="$emit('save')"><span class="mdi mdi-content-save-outline" aria-hidden="true"></span>{{ t('editor.nav.saveProject') }}</button></li>
           <li class="menu-title">{{ t('editor.nav.printOrPdf') }}</li>
           <li><button type="button" @click="requestPrint('color', $event)"><span class="mdi mdi-palette-outline" aria-hidden="true"></span>{{ t('editor.print.colorChart') }}</button></li>
           <li><button type="button" @click="requestPrint('symbols', $event)"><span class="mdi mdi-shape-outline" aria-hidden="true"></span>{{ t('editor.print.symbolChart') }}</button></li>

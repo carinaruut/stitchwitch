@@ -255,6 +255,13 @@ function moveSelectionDirectly(row: number, column: number) {
 }
 
 function handleKeyboardShortcuts(event: KeyboardEvent) {
+  if ((event.metaKey || event.ctrlKey) && !event.altKey && event.key.toLowerCase() === 's') {
+    event.preventDefault()
+    if (newModalOpen.value || clearModalOpen.value || importModalOpen.value || guideOpen.value) return
+    savePatternName()
+    saveProject()
+    return
+  }
   const target = event.target as HTMLElement | null
   if (target?.closest('input, textarea, select, [contenteditable="true"]')) return
   if (newModalOpen.value || clearModalOpen.value || importModalOpen.value || guideOpen.value) return
