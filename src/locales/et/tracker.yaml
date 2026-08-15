@@ -1,0 +1,119 @@
+tracker:
+  brand: Stitch Witch
+  name: Tööjärg
+  actions:
+    label: Tööjärje toimingud
+    editor: Redaktor
+    open: Ava
+    save: Salvesta tööjärg
+    openEditor: Ava redaktor
+    openDesignOrTracker: Ava kavand või tööjärg
+    saveAria: Salvesta tööjärg
+    reset: Lähtesta edenemine
+    close: Sulge tööjärg
+  empty:
+    title: Hoia tööjärge piste piste haaval
+    description: Alustamiseks ava salvestatud kavand või jätka poolelijäänud tööd tööjärjefailist.
+  progress:
+    heading: Töö edenemine
+    completed: '{completed} pistet {total}-st tehtud'
+    percentComplete: '{percentage} tehtud'
+    updated: Uuendatud {date}
+  autosave:
+    failed: Automaatne salvestamine nurjus
+    saving: Salvestamine brauserisse
+    saved: Brauserisse salvestatud
+    changed: Pärast allalaadimist muudetud
+  warnings:
+    localOnly: Kuni tööjärjefaili allalaadimiseni saab edenemist taastada ainult selles brauseris.
+    recovery: Brauseri taastekoopia võib kaduda, kui saidiandmed kustutatakse või vahetad brauserit või seadet. Laadi tööjärjefail korrapäraselt alla.
+    beforeUnload: Enne lahkumist laadi tööjärjefail alla.
+  order:
+    startRow: Algusrida
+    top: Ülemine
+    bottom: Alumine
+    firstRowDirection: Esimese rea suund
+    leftToRight: Vasakult paremale
+    rightToLeft: Paremalt vasakule
+    alternate: Vaheta suunda igal real
+  controls:
+    display: Vaade
+    displayAria: Tööjärje pistete vaade
+    canvas: Ruudustik
+    knit: Kude
+    crossStitch: Ristpiste
+    cellSize: Ruudu suurus
+  instructions:
+    resetOrder: Jälgimisjärjekorra muutmiseks lähtesta edenemine.
+    usage: Kõigi pistete märkimiseks kuni valitud pisteni klõpsa pistet. Kogu rea lõpetamiseks või taasavamiseks klõpsa rea numbrit.
+  notifications:
+    trackerOpened: Tööjärg avatud.
+    designOpened: Kavand avatud. Enne alustamist vali jälgimisjärjekord.
+    saved: Tööjärg salvestati allalaadimiste kausta.
+    reset: Töö edenemine lähtestati.
+    removed: Kohalik tööjärg eemaldati.
+    removeFailed: Brauseri taastekoopiat ei saanud eemaldada.
+    autosaveFailed: Automaatne salvestamine brauserisse nurjus. Edenemise kaotsimineku vältimiseks laadi tööjärg kohe alla.
+    recovered: Tööjärg taastati sellest brauserist.
+    close: Sulge
+    dismissAria: 'Sulge teade: {message}'
+  confirm:
+    cancel: Loobu
+    closeDialog: Sulge dialoog
+    closeBackdrop: sulge
+    leave: Edenemine on salvestatud ainult sellesse brauserisse. Kas lahkuda tööjärjefaili alla laadimata?
+    replace:
+      title: Kas asendada see tööjärg?
+      message: Praegust edenemist on pärast tööjärjefaili viimast allalaadimist muudetud. Kui soovid selle alles hoida, salvesta see esmalt.
+      action: Asenda tööjärg
+    reset:
+      title: Kas lähtestada kogu edenemine?
+      message: Kõik tehtud pisted märgitakse uuesti tegemata. Kavand ise ei muutu.
+      action: Lähtesta edenemine
+    close:
+      title: Kas sulgeda see tööjärg?
+      message: See eemaldab brauseri taastekoopia. Kui soovid hiljem jätkata, laadi esmalt tööjärjefail alla.
+      action: Sulge tööjärg
+  grid:
+    label: Mustri edenemise jälgija
+    reopenRow: Ava rida {row} uuesti
+    completeThroughRow: Märgi kuni reani {row} tehtuks
+    cell: 'Rida {row}, veerg {column}, {status}'
+    completed: tehtud
+    nextStitch: järgmine piste
+    notCompleted: tegemata
+  errors:
+    open: Valitud faili ei saanud avada.
+    save: Tööjärge ei saanud salvestada.
+    fileTooLarge: Valitud fail on liiga suur.
+    invalidJson: Valitud fail ei sisalda korrektset JSON-i.
+    notTracker: Fail ei sisalda tööjärje projekti.
+    unsupportedTracker: See tööjärjefail ei ole toetatud.
+    missingProgress: Tööjärje edenemisandmed puuduvad.
+    invalidCompletedCount: Tehtud pistete arv ei ole korrektne.
+    invalidStartRow: Tööjärje algusrida ei ole korrektne.
+    invalidDirection: Tööjärje rea suund ei ole korrektne.
+    invalidAlternation: Tööjärje ridade suunavahetuse säte ei ole korrektne.
+    invalidUpdateTime: Tööjärje uuendamisaeg ei ole korrektne.
+    notPattern: Fail ei sisalda projekti.
+    unsupportedPattern: See mustrifail ei ole toetatud.
+    missingName: Projekti nimi puudub.
+    wholeNumber: '{field} peab olema täisarv vahemikus {minimum} kuni {maximum}.'
+    invalidBackground: Taustavärv ei ole korrektne.
+    invalidPreviewStitch: Eelvaate piste ei ole korrektne.
+    invalidRows: Pisteread ei vasta projekti mõõtmetele.
+    invalidCells: Pistevärvid või veerud ei ole korrektsed.
+    invalidRecentColors: Hiljuti kasutatud värvid ei ole korrektsed.
+    invalidRepeatBoxes: Kordusalad ei ole korrektsed.
+    duplicateRepeatId: Igal kordusalal peab olema kordumatu ID.
+    invalidRepeatSettings: Kordusala sätted ei ole korrektsed.
+    repeatOutsidePattern: Kordusala ulatub mustrist välja.
+    unevenRepeatSections: Kordusala ei jagune osadeks võrdselt.
+    overlappingRepeats: Kordusalad kattuvad.
+    oversized: Kordustega kavand sisaldab {total} pistet ja on tööjärje jaoks liiga suur. Vähenda redaktoris kogu mustri korduste arvu.
+    fields:
+      rows: Ridade arv
+      columns: Veergude arv
+      cellSize: Ruudu suurus
+      horizontalRepeats: Horisontaalsete korduste arv
+      verticalRepeats: Vertikaalsete korduste arv

@@ -1,0 +1,134 @@
+guide:
+  title: Kasutusjuhend
+  subtitle: Kujunda, korda, eelvaata ja salvesta värvilisi mustriskeeme täielikult oma brauseris.
+  close: Sulge kasutusjuhend
+  sectionsLabel: Kasutusjuhendi jaotised
+  nav:
+    start: Alustamine
+    tools: Tööriistad
+    selection: Valimine
+    mirrors: Peegeldus
+    repeats: Kordused
+    canvas: Ruudustik
+    tracker: Edenemine
+    saving: Salvestamine
+    output: Väljund
+  start:
+    title: Kiire alustamine
+    intro: Loo skeem ja lisa esimesed värvid nelja sammuga.
+    newTitle: 1. Uus
+    newText: Vali projekti nimi, ridade ja veergude arv, ruudu suurus ning taust.
+    colorTitle: 2. Värv
+    colorText: Vali vasakult paneelilt värv või sisesta selle kuueteistkümnendkood.
+    drawTitle: 3. Joonista
+    drawText: Kasuta ruudustikul pliiatsit, täitmist või reaalajas peegeldusjooni.
+    exportTitle: 4. Ekspordi
+    exportText: Laadi projekt alla või prindi eelvaade ja skeem PDF-faili.
+  tools:
+    title: Joonistamine ja värvid
+    colorTitle: Värvivalikud
+    colorText: Brauseri värvivalija avamiseks klõpsa värvinäidist. Võid sisestada ka värvi kuueteistkümnendkoodi, kasutada hiljutist värvi või valida pipeti ja võtta värvi mõnest ruudust. Pliiatsi ja täitmisega kasutatud värvid lisatakse hiljutiste värvide hulka.
+    pencilTitle: Pliiats ja kustutuskumm
+    pencilName: Pliiats
+    eraserName: Kustutuskumm
+    pencilBeforeEraser: joonistab valitud värviga.
+    pencilAfterEraser: taastab projekti tausta. Pideva joone tõmbamiseks vajuta ruudul ja lohista üle ruutude; kogu tõmme on üks tagasivõetav toiming.
+    fillTitle: Täitmine
+    fillText: Täitmine muudab omavahel ühendatud sama värvi ala. Kui valikut pole, võib täitmine levida üle kogu ruudustiku. Valiku korral klõpsa selle sees, et piirata täitmine valitud alaga, või väljaspool, et valitud ala säilitada ja täita selle ümbrus.
+    otherTitle: Pipett, nihutamine ja puhastamine
+    otherText: Pipett võtab värvi ühest ruudust ja aktiveerib uuesti pliiatsi. Nihutamisega saad vaadet lohistada ruute muutmata. Puhastamine taastab pärast kinnitamist kõigis ruutudes tausta ning selle toimingu saab tagasi võtta.
+    shortcutsLead: "Tööriistade kiirklahvid:"
+    shortcutPencil: pliiats
+    shortcutEraser: kustutuskumm
+    shortcutFill: täitmine
+    shortcutEyedropper: pipett
+    shortcutSelect: valimine
+    shortcutWand: võlukepp
+    shortcutPan: nihutamine
+    editingLead: "Muutmise kiirklahvid:"
+    undo: võta tagasi
+    redo: tee uuesti
+  selection:
+    title: Valikutööriistad
+    intro: Vali valikutööriist ja lohista ristkülik või kasuta võlukeppi, et valida ühise servaga ühendatud sama värvi ruudud. Liigutamise, kopeerimise, kleepimise, pööramise, täitmise ja kustutamise toimingud leiad valiku sees paremklõpsates. Valikut saab ka otse liigutada, alustades lohistamist selle seest. Valikutööriistaga väljaspool valikut klõpsamine tühistab valiku.
+    copyTitle: Kopeeri
+    copyText: Talletab valitud ruudud sisemisele lõikelauale.
+    pasteTitle: Kleebi
+    pasteText: Paigutab lõikelaua sisu valiku vasakust ülaruudust alates ja suurendab vajaduse korral ruudustikku.
+    flipHorizontalTitle: Pööra rõhtsuunas
+    flipHorizontalText: Pöörab valiku vasakult paremale ümber.
+    flipVerticalTitle: Pööra püstsuunas
+    flipVerticalText: Pöörab valiku ülevalt alla ümber.
+    note: Kopeerimine, kleepimine, liigutamine ja pööramine arvestavad kordusalade lähteruutudega. Kleepida ja liigutada saab kuni 500 rea või veeru piires.
+  mirrors:
+    title: Reaalajas peegeldusjooned
+    verticalTitle: Püstjoon
+    verticalText: Peegeldab iga pliiatsi-, kustutuskummi- või täitmistoimingu vasaku ja parema poole vahel. Aktiivne keskjoon on ruudustikul nähtav.
+    horizontalTitle: Rõhtjoon
+    horizontalText: Peegeldab toimingud ülemise ja alumise poole vahel. Neljasuunalise sümmeetria saamiseks luba mõlemad jooned. Need valikud peegeldavad uut joonistust, kuid ei pööra olemasolevat tööd ümber.
+  repeats:
+    title: Kordusalad
+    introBeforeAcross: Kordusala jagab ühe ristkülikukujulise ala võrdseteks osadeks. Esimene osa on lähteosa; mis tahes kuvatud koopia muutmine uuendab kõiki osi. Kõrvuti osade jaoks vali
+    across: Risti
+    introBetween: ja üksteise all olevate osade jaoks
+    down: Alla
+    introAfterDown: .
+    countTitle: Osade arv
+    countText: Sisesta ühe osa laius või kõrgus ja osade arv. Lõpp-piir arvutatakse automaatselt.
+    boundaryTitle: Lõpp-piir
+    boundaryText: Sisesta korduse lõppkoht ning ühe osa laius või kõrgus. Osade arv arvutatakse automaatselt ja vorm annab teada, kui osa suurus ei mahu vahemikku täpselt.
+    exampleBefore: "Näide: read 5-10, algusveeruks 10, lõpp enne veergu 20 ja osa laiuseks 2 loob automaatselt viis osa:"
+    exampleRange: "10-11 {'|'} 12-13 {'|'} 14-15 {'|'} 16-17 {'|'} 18-19"
+    note: Ruudustik suureneb automaatselt, kui ala ulatub sellest väljapoole. Salvestatud alasid saab muuta, keelata, uuesti lubada või kustutada. Sobivad mittekattuvad alad võivad koos kasutusel olla. Kogu mustri varuvalik kordab tervet skeemi ainult siis, kui kordusalasid pole.
+  canvas:
+    title: Ruudustiku ülesehitus
+    rowsTitle: Read ja veerud
+    rowsTextBefore: Ridade ja veergude tööriistadega saab aktiivset elementi täita, kustutada, selle ümber uusi elemente lisada või selle eemaldada. Eemaldamise väljale võib sisestada ka mitu elementi, näiteks
+    rowsExampleOne: 1;2;3
+    rowsTextBetween: või
+    rowsExampleTwo: 1-3;6
+    rowsTextAfter: . Numbriga päise valimiseks klõpsa seda ja valiku tühistamiseks klõpsa uuesti; rea valimine tühistab veeruvaliku ja vastupidi. Tõstuklahvi all hoides klõpsamine laiendab valiku katkematuks vahemikuks. Struktuurimuudatused säilitavad muudetud alast väljapoole jäävad kordusalad.
+    displayTitle: Kuvamine ja ajalugu
+    displayText: Ruudustiku seaded muudavad kuvatava ruudu suurust ilma mustrit muutmata. Tagasivõtmine ja uuestitegemine taastavad joonistuse, struktuurimuudatused ning kordusalade muudatused.
+  tracker:
+    title: Edenemise jälgija
+    intro: Ava ülamenüüst jälgija ja seejärel salvestatud kavand või jälgijafail. Enne alustamist vali algusrida ja pistete tegemise suund. Pistelt klõpsamine märgib lõpetatuks kõik varasemad read ja pisted kuni valitud kohani; reanumbril klõpsamine lõpetab või taasavab terve rea.
+    recoveryBefore: Edenemine taastatakse selles brauseris, kuid brauseri andmed võidakse kustutada. Laadi korrapäraselt alla
+    recoveryAfter: fail, et jätkata teises brauseris või seadmes.
+  saving:
+    title: Salvestamine ja taastamine
+    autosaveTitle: Kohalik automaatsalvestus
+    autosaveText: Muudatused salvestatakse selles brauseris ja taastatakse rakenduse uuesti avamisel.
+    saveTitle: Salvesta
+    saveBefore: Laadib alla
+    saveAfter: varukoopia. Hoia allalaaditud varukoopiad alles, sest brauseri andmed võidakse kustutada.
+    openTitle: Ava
+    openText: Kontrollib allalaaditud projekti, küsib enne aktiivse töö asendamist kinnitust ning lähtestab seejärel imporditud kavandi tagasivõtmisajaloo.
+  output:
+    title: Eelvaade, printimine ja PDF
+    intro: Terve mustri eelvaates kuvatakse valmis skeem koos kogu mustri korduste või aktiivsete kordusaladega. Ava printimine või PDF-failina salvestamine ja vali värviline skeem või mustvalged sümbolid. Sümbolitega PDF sisaldab värvilegendit. Mõlemad valikud loovad nummerdatud ülevaate, suurte skeemide detaillehed ja lubatud kordusalade lähteosade skeemid.
+    themeNote: Hele või tume kujundus muudab ainult redaktorit ega mõjuta prinditavat väljundit.
+  accessibility:
+    title: Klaviatuur ja hõlbustus
+    copy: Kopeeri valik
+    paste: Kleebi valik
+    escape: Tühista liigutatava valiku paigutamine või sulge juhend
+    activate: Aktiveeri fookuses ruut või päis
+print:
+  dimensions: "Veerge: {columns} · ridu: {rows}"
+  fullChart: Kogu pisteskeem
+  fullChartDetail: Kogu pisteskeemi detailvaade
+  overlapDescription: Kõrvutised leheküljed kattuvad ühe piste võrra
+  partTitle: "{title} · Osa {part}/{total}"
+  tileDescription: "{description} · Skeemi read {firstRow}-{lastRow}, veerud {firstColumn}-{lastColumn}"
+  repeatSourceTitle: "Korduse {number} lähteosa"
+  repeatSourceDescription: "Read {firstRow}-{lastRow}, veerud {firstColumn}-{lastColumn} · {direction}"
+  direction:
+    across: Risti
+    down: Alla
+  overviewLabel:
+    symbols: Nummerdatud mustvalgete sümbolitega skeemi ülevaade
+    color: Nummerdatud täieliku pisteskeemi ülevaade
+  symbolKeyTitle: "Sümbolite legend · Lehekülg {page}/{total}"
+  symbolKeyDescription: Iga sümbol tähistab kõigil skeemilehtedel sama värvi.
+  repeatChartsTitle: "Korduste lähteosade skeemid · Lehekülg {page}/{total}"

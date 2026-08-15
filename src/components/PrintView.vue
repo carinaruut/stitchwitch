@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, type CSSProperties } from 'vue'
+import { useI18n } from 'vue-i18n'
 import type { PatternGrid, PatternProject, PrintMode } from '../types/pattern'
 import { findUsedColors, renderGrid } from '../utils/grid'
 import PrintChart from './PrintChart.vue'
@@ -47,6 +48,7 @@ interface RepeatPage {
 }
 
 const props = defineProps<{ project: PatternProject; mode: PrintMode }>()
+const { t } = useI18n({ useScope: 'global' })
 const renderedPattern = computed(() => renderGrid(props.project.cells, props.project.horizontalRepeats, props.project.verticalRepeats, props.project.repeatBoxes))
 const pattern = computed(() => renderedPattern.value.cells)
 const columns = computed(() => pattern.value[0].length)
@@ -120,8 +122,14 @@ function tileChart(
     const right = Math.min(columnHeaders.length, coreLeft + TILE_COLUMNS)
     return makeChart(
       `${id}-${tileNumber}`,
-      `${title} · Part ${tileNumber} of ${total}`,
-      `${description} · Chart rows ${top + 1}-${bottom}, columns ${left + 1}-${right}`,
+      t('print.partTitle', { title, part: tileNumber, total }),
+      t('print.tileDescription', {
+        description,
+        firstRow: top + 1,
+        lastRow: bottom,
+        firstColumn: left + 1,
+        lastColumn: right,
+      }),
       cells.slice(top, bottom).map((row) => row.slice(left, right)),
       rowHeaders.slice(top, bottom),
       columnHeaders.slice(left, right),
@@ -134,8 +142,8 @@ const detailCharts = computed(() => {
   if (chartCellSize.value >= READABLE_CELL_MM) return []
   return tileChart(
     'full-chart',
-    'Full stitch chart detail',
-    'Adjacent pages overlap by one stitch',
+    t('print.fullChartDetail'),
+    t('print.overlapDescription'),
     pattern.value,
     renderedPattern.value.rowHeaders,
     renderedPattern.value.columnHeaders,
@@ -152,8 +160,14 @@ const repeatCharts = computed(() => props.project.repeatBoxes
     const cells = renderedPattern.value.cells.slice(top, bottom).map((row) => row.slice(left, right))
     const rowHeaders = Array.from({ length: bottom - top }, (_, row) => top + row)
     const columnHeaders = Array.from({ length: right - left }, (_, column) => left + column)
-    const title = `Repeat ${index + 1} source section`
-    const description = `Rows ${top + 1}-${bottom}, columns ${left + 1}-${right} · ${box.direction === 'across' ? 'Across' : 'Down'}`
+    const title = t('print.repeatSourceTitle', { number: index + 1 })
+    const description = t('print.repeatSourceDescription', {
+      firstRow: top + 1,
+      lastRow: bottom,
+      firstColumn: left + 1,
+      lastColumn: right,
+      direction: t(`print.direction.${box.direction}`),
+    })
     const fittedCellSize = Math.min(MAX_CELL_MM, CHART_WIDTH_MM / (columnHeaders.length + 1), REPEAT_CHART_HEIGHT_MM / (rowHeaders.length + 1))
 
     if (fittedCellSize < READABLE_CELL_MM) {
@@ -198,24 +212,24 @@ const repeatPages = computed(() => {
   <article class="print-only">
     <header class="print-header">
       <h1>{{ project.name }}</h1>
-      <p>{{ columns }} columns by {{ rows }} rows</p>
+      <p>{{ t('print.dimensions', { columns, rows }) }}</p>
     </header>
 
     <section class="print-chart-page">
-      <h2>Full stitch chart</h2>
+      <h2>{{ t('print.fullChart') }}</h2>
       <PrintChart
         :cells="pattern"
         :row-headers="renderedPattern.rowHeaders"
         :column-headers="renderedPattern.columnHeaders"
         :chart-style="chartStyle"
-        :label="mode === 'symbols' ? 'Numbered black and white symbol chart overview' : 'Numbered full stitch chart overview'"
+        :label="t(`print.overviewLabel.${mode === 'symbols' ? 'symbols' : 'color'}`)"
         :symbols="symbolMap"
       />
     </section>
 
     <section v-for="(entries, pageIndex) in symbolKeyPages" :key="pageIndex" class="print-symbol-key-page">
-      <h2>Symbol key · Page {{ pageIndex + 1 }} of {{ symbolKeyPages.length }}</h2>
-      <p>Each symbol represents the same color on every chart page.</p>
+      <h2>{{ t('print.symbolKeyTitle', { page: pageIndex + 1, total: symbolKeyPages.length }) }}</h2>
+      <p>{{ t('print.symbolKeyDescription') }}</p>
       <div class="print-symbol-key">
         <div v-for="entry in entries" :key="entry.color" class="print-symbol-key-entry">
           <span class="print-symbol-key-mark">{{ entry.symbol }}</span>
@@ -238,7 +252,7 @@ const repeatPages = computed(() => {
     </section>
 
     <section v-for="(page, pageIndex) in repeatPages" :key="pageIndex" class="print-repeat-page">
-      <h2>Repeat source charts · Page {{ pageIndex + 1 }} of {{ repeatPages.length }}</h2>
+      <h2>{{ t('print.repeatChartsTitle', { page: pageIndex + 1, total: repeatPages.length }) }}</h2>
       <div v-for="(row, rowIndex) in page.rows" :key="rowIndex" class="print-repeat-row">
         <article v-for="repeat in row.charts" :key="repeat.id" class="print-repeat-chart" :style="{ width: `${repeat.width}mm` }">
           <h3>{{ repeat.title }}</h3>

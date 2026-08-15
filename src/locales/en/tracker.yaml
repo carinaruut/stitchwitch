@@ -1,0 +1,119 @@
+tracker:
+  brand: Stitch Witch
+  name: Tracker
+  actions:
+    label: Tracker actions
+    editor: Editor
+    open: Open
+    save: Save Tracker
+    openEditor: Open editor
+    openDesignOrTracker: Open design or tracker
+    saveAria: Save tracker
+    reset: Reset progress
+    close: Close tracker
+  empty:
+    title: Keep your place, stitch by stitch
+    description: Open a saved design to begin, or open a tracker file to continue where you stopped.
+  progress:
+    heading: Tracking progress
+    completed: '{completed} of {total} stitches completed'
+    percentComplete: '{percentage} complete'
+    updated: Updated {date}
+  autosave:
+    failed: Autosave failed
+    saving: Saving in browser
+    saved: Saved in browser
+    changed: Changes since download
+  warnings:
+    localOnly: Progress is recovered only in this browser until you download a tracker file.
+    recovery: Browser recovery can be lost if site data is cleared or you change browser or device. Download a tracker file regularly.
+    beforeUnload: Download a tracker file before leaving.
+  order:
+    startRow: Start row
+    top: Top
+    bottom: Bottom
+    firstRowDirection: First row direction
+    leftToRight: Left to right
+    rightToLeft: Right to left
+    alternate: Alternate direction each row
+  controls:
+    display: Display
+    displayAria: Tracker stitch display
+    canvas: Canvas
+    knit: Knit
+    crossStitch: Cross stitch
+    cellSize: Cell size
+  instructions:
+    resetOrder: Reset progress to change the tracking order.
+    usage: Click a stitch to complete everything through it. Click a row number to complete or reopen that entire row.
+  notifications:
+    trackerOpened: Tracker progress opened.
+    designOpened: Design opened. Choose the tracking order before starting.
+    saved: Tracker saved to your downloads.
+    reset: Tracker progress reset.
+    removed: Local tracker removed.
+    removeFailed: The browser recovery copy could not be removed.
+    autosaveFailed: Browser autosave failed. Download the tracker now to avoid losing progress.
+    recovered: Recovered your tracker from this browser.
+    close: Close
+    dismissAria: 'Dismiss notification: {message}'
+  confirm:
+    cancel: Cancel
+    closeDialog: Close dialog
+    closeBackdrop: close
+    leave: Your progress is saved only in this browser. Leave without downloading a tracker file?
+    replace:
+      title: Replace this tracker?
+      message: Your current progress has changes since its last downloaded tracker file. Save it first if you want to keep it.
+      action: Replace tracker
+    reset:
+      title: Reset all progress?
+      message: Every completed stitch will be reopened. The design itself will not change.
+      action: Reset progress
+    close:
+      title: Close this tracker?
+      message: This removes its browser recovery copy. Download a tracker file first if you want to continue later.
+      action: Close tracker
+  grid:
+    label: Pattern progress tracker
+    reopenRow: Reopen row {row}
+    completeThroughRow: Complete through row {row}
+    cell: 'Row {row}, column {column}, {status}'
+    completed: completed
+    nextStitch: next stitch
+    notCompleted: not completed
+  errors:
+    open: The selected file could not be opened.
+    save: The tracker could not be saved.
+    fileTooLarge: The selected file is too large.
+    invalidJson: The selected file is not valid JSON.
+    notTracker: The file does not contain a tracker project.
+    unsupportedTracker: This is not a supported stitch-tracker file.
+    missingProgress: The tracker progress is missing.
+    invalidCompletedCount: The completed stitch count is invalid.
+    invalidStartRow: The tracker start row is invalid.
+    invalidDirection: The tracker row direction is invalid.
+    invalidAlternation: The tracker row alternation setting is invalid.
+    invalidUpdateTime: The tracker update time is invalid.
+    notPattern: The file does not contain a project object.
+    unsupportedPattern: This is not a supported stitch-pattern file.
+    missingName: The project name is missing.
+    wholeNumber: '{field} must be a whole number from {minimum} to {maximum}.'
+    invalidBackground: The background color is invalid.
+    invalidPreviewStitch: The preview stitch is invalid.
+    invalidRows: The cell rows do not match the project dimensions.
+    invalidCells: The cell colors or columns are invalid.
+    invalidRecentColors: The recent colors are invalid.
+    invalidRepeatBoxes: The repeat boxes are invalid.
+    duplicateRepeatId: Each repeat box must have a unique ID.
+    invalidRepeatSettings: A repeat box has invalid settings.
+    repeatOutsidePattern: A repeat box is outside the pattern.
+    unevenRepeatSections: A repeat box does not divide evenly into sections.
+    overlappingRepeats: Repeat boxes overlap.
+    oversized: This repeated design expands to {total} stitches, which is too large for the tracker. Reduce its whole-pattern repeats in the editor.
+    fields:
+      rows: Rows
+      columns: Columns
+      cellSize: Cell size
+      horizontalRepeats: Horizontal repeats
+      verticalRepeats: Vertical repeats

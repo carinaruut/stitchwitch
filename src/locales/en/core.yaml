@@ -1,0 +1,27 @@
+meta:
+  title: Stitch Witch
+  description: Design colorwork and cross-stitch patterns in your browser.
+language:
+  label: Language
+  current: 'Language: {language}'
+common:
+  cancel: Cancel
+  close: Close
+  continue: Continue
+  delete: Delete
+  edit: Edit
+  open: Open
+  save: Save
+  enabled: Enabled
+  row: Row | Rows
+  column: Column | Columns
+  stitch: Stitch | Stitches
+  section: Section | Sections
+  page: Page | Pages
+  across: Across
+  down: Down
+  horizontal: Horizontal
+  vertical: Vertical
+  canvas: Canvas
+  knit: Knit
+  crossStitch: Cross stitch

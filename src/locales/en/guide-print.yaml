@@ -1,0 +1,134 @@
+guide:
+  title: User guide
+  subtitle: Design, repeat, preview, and save color charts entirely in your browser.
+  close: Close user guide
+  sectionsLabel: User guide sections
+  nav:
+    start: Start
+    tools: Tools
+    selection: Selection
+    mirrors: Mirrors
+    repeats: Repeats
+    canvas: Canvas
+    tracker: Tracker
+    saving: Saving
+    output: Output
+  start:
+    title: Quick start
+    intro: Create a chart and place your first colors in four steps.
+    newTitle: 1. New
+    newText: Choose a project name, rows, columns, cell size, and background.
+    colorTitle: 2. Color
+    colorText: Pick a color in the left panel or enter its hex value.
+    drawTitle: 3. Draw
+    drawText: Use Pencil, Fill, or the live mirror lines on the canvas.
+    exportTitle: 4. Export
+    exportText: Download the project, or print the preview and chart as PDF.
+  tools:
+    title: Drawing and colors
+    colorTitle: Color controls
+    colorText: Click the color swatch to open the browser picker. You can also enter a hex color, reuse a recent color, or choose Eyedropper and sample a cell. Colors used by Pencil and Fill are added to Recent colors.
+    pencilTitle: Pencil and Eraser
+    pencilName: Pencil
+    eraserName: Eraser
+    pencilBeforeEraser: paints the selected color.
+    pencilAfterEraser: restores the project background. Press and drag across cells for a continuous stroke; the whole stroke is one undo action.
+    fillTitle: Fill
+    fillText: Fill changes a connected area of matching color. With no selection, it can flow through the full canvas. With a selection, click inside to restrict fill inside it, or click outside to preserve the selected area and fill outside.
+    otherTitle: Eyedropper, Pan, and Clear
+    otherText: Eyedropper samples one cell and returns to Pencil. Pan lets you drag the viewport without changing cells. Clear returns every cell to the background after confirmation and can be undone.
+    shortcutsLead: "Tool shortcuts:"
+    shortcutPencil: Pencil
+    shortcutEraser: Eraser
+    shortcutFill: Fill
+    shortcutEyedropper: Eyedropper
+    shortcutSelect: Select
+    shortcutWand: Magic wand
+    shortcutPan: Pan
+    editingLead: "Editing shortcuts:"
+    undo: Undo
+    redo: Redo
+  selection:
+    title: Selection tools
+    intro: Choose Select and drag a rectangle, or use Magic wand to select matching-color cells connected by shared edges. Right-click inside the selection for move, copy, paste, flip, fill, and erase actions. You can also drag from inside a selection to move it directly. Clicking outside with Select cancels the selection.
+    copyTitle: Copy
+    copyText: Stores the selected cells in the internal clipboard.
+    pasteTitle: Paste
+    pasteText: Places the clipboard at the selection's top-left cell and expands the canvas if needed.
+    flipHorizontalTitle: Flip horizontally
+    flipHorizontalText: Reverses the selection left to right.
+    flipVerticalTitle: Flip vertically
+    flipVerticalText: Reverses the selection top to bottom.
+    note: Copy, paste, move, and flip respect repeat-box source cells. Paste and move are limited to 500 rows or columns.
+  mirrors:
+    title: Live mirror lines
+    verticalTitle: Vertical line
+    verticalText: Reflects each Pencil, Eraser, or Fill action between the left and right sides. The active center line appears on the canvas.
+    horizontalTitle: Horizontal line
+    horizontalText: Reflects actions between the top and bottom. Enable both lines for four-way symmetry. These controls mirror new drawing; they do not flip existing work.
+  repeats:
+    title: Repeat boxes
+    introBeforeAcross: A repeat box divides one rectangular area into equal sections. The first section is the source; editing any displayed copy updates every section. Choose
+    across: Across
+    introBetween: for side-by-side sections or
+    down: Down
+    introAfterDown: for stacked sections.
+    countTitle: Section count
+    countText: Provide one section's width or height and the number of sections. The ending boundary is calculated automatically.
+    boundaryTitle: End boundary
+    boundaryText: Provide where repetition stops and one section's width or height. The section count is calculated automatically, and the form reports when the section size does not fit the range exactly.
+    exampleBefore: "Example: rows 5-10, start column 10, end before column 20, and section width 2 automatically creates 5 sections:"
+    exampleRange: "10-11 {'|'} 12-13 {'|'} 14-15 {'|'} 16-17 {'|'} 18-19"
+    note: The canvas grows automatically when a box extends beyond it. Saved boxes can be edited, disabled, re-enabled, or deleted. Compatible non-overlapping boxes can coexist. The Whole-pattern fallback repeats the complete chart only when no repeat boxes exist.
+  canvas:
+    title: Canvas structure
+    rowsTitle: Rows and columns
+    rowsTextBefore: The Rows and Columns tools fill, erase, insert around, or delete the current item. Their deletion sections also accept multiple items such as
+    rowsExampleOne: 1;2;3
+    rowsTextBetween: or
+    rowsExampleTwo: 1-3;6
+    rowsTextAfter: . Click a numbered header to select it and click it again to deselect it; selecting a row clears the column selection and vice versa. Shift-click extends the selection to a contiguous range. Structural changes preserve repeat boxes outside the edited area.
+    displayTitle: Display and history
+    displayText: Grid settings change the displayed cell size without changing the pattern. Undo and Redo restore drawing, structural edits, and repeat-box changes.
+  tracker:
+    title: Progress tracker
+    intro: Open Tracker from the top menu, then open a saved design or tracker file. Choose the starting row and stitch direction before beginning. Clicking a stitch completes every earlier row and each stitch through that point; clicking a row number completes or reopens the whole row.
+    recoveryBefore: Progress is recovered in the current browser, but browser data can be cleared. Download a
+    recoveryAfter: file regularly and use it to continue on another browser or device.
+  saving:
+    title: Saving and recovery
+    autosaveTitle: Local autosave
+    autosaveText: Changes are saved in this browser and restored when you reopen the app.
+    saveTitle: Save
+    saveBefore: Downloads a
+    saveAfter: backup. Keep downloaded backups because browser data can be cleared.
+    openTitle: Open
+    openText: Validates a downloaded project, asks before replacing current work, and then resets undo history for the imported design.
+  output:
+    title: Preview, printing, and PDF
+    intro: Complete pattern preview shows the rendered chart, including whole-pattern repeats or active repeat boxes. Open Print or Save as PDF and choose a Color chart or B&W symbols. Symbol PDFs include a color key. Either option creates a numbered overview, detail pages for large charts, and source charts for enabled repeat boxes.
+    themeNote: The light/dark theme changes the editor only and does not affect printed output.
+  accessibility:
+    title: Keyboard and accessibility
+    copy: Copy selection
+    paste: Paste selection
+    escape: Cancel move placement or close this guide
+    activate: Activate a focused grid cell or header
+print:
+  dimensions: "{columns} columns by {rows} rows"
+  fullChart: Full stitch chart
+  fullChartDetail: Full stitch chart detail
+  overlapDescription: Adjacent pages overlap by one stitch
+  partTitle: "{title} · Part {part} of {total}"
+  tileDescription: "{description} · Chart rows {firstRow}-{lastRow}, columns {firstColumn}-{lastColumn}"
+  repeatSourceTitle: "Repeat {number} source section"
+  repeatSourceDescription: "Rows {firstRow}-{lastRow}, columns {firstColumn}-{lastColumn} · {direction}"
+  direction:
+    across: Across
+    down: Down
+  overviewLabel:
+    symbols: Numbered black and white symbol chart overview
+    color: Numbered full stitch chart overview
+  symbolKeyTitle: "Symbol key · Page {page} of {total}"
+  symbolKeyDescription: Each symbol represents the same color on every chart page.
+  repeatChartsTitle: "Repeat source charts · Page {page} of {total}"

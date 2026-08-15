@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { MAX_REPEAT_COUNT, type RepeatBox, type RepeatBoxInput, type RepeatDirection } from '../types/pattern'
 
 const props = defineProps<{
@@ -19,6 +20,7 @@ const emit = defineEmits<{
   toggle: [id: string, enabled: boolean]
   remove: [id: string]
 }>()
+const { t } = useI18n({ useScope: 'global' })
 
 type SizingMode = 'boundary' | 'sections'
 
@@ -79,25 +81,25 @@ const validationMessage = computed(() => {
   coordinates.push(sizingMode.value === 'boundary' ? value.ending : value.sections)
 
   if (!coordinates.every((item) => Number.isInteger(item) && item > 0)) {
-    return 'Coordinates and sizes must be positive whole numbers.'
+    return t('controls.repeat.validation.positiveIntegers')
   }
   if (value.lastCross < value.firstCross) {
     return direction.value === 'across'
-      ? 'Bottom row must be at or below the top row.'
-      : 'Right column must be at or after the left column.'
+      ? t('controls.repeat.validation.bottomAfterTop')
+      : t('controls.repeat.validation.rightAfterLeft')
   }
 
   if (value.lastCross > 500 || value.start > 500) {
-    return 'Repeat boxes cannot extend beyond 500 rows or columns.'
+    return t('controls.repeat.validation.extent')
   }
   if (totalLength.value <= 0 || value.start - 1 + totalLength.value > 500) {
-    return 'The repeat box must end after its start and stay within 500 rows or columns.'
+    return t('controls.repeat.validation.ending')
   }
   if (sizingMode.value === 'boundary' && !Number.isInteger(sectionCount.value)) {
-    return 'The repeat length must divide evenly by the section size.'
+    return t('controls.repeat.validation.evenlyDivisible')
   }
   if (sectionCount.value < 2 || sectionCount.value > MAX_REPEAT_COUNT) {
-    return `The repeat must contain from 2 to ${MAX_REPEAT_COUNT} sections.`
+    return t('controls.repeat.validation.sectionRange', { max: MAX_REPEAT_COUNT })
   }
   return ''
 })
@@ -135,16 +137,19 @@ const input = computed<RepeatBoxInput | null>(() => {
 })
 
 function summaryRange(box: RepeatBoxInput) {
-  return `Rows ${box.top + 1}-${box.bottom} · Columns ${box.left + 1}-${box.right}`
+  return t('controls.repeat.range', { top: box.top + 1, bottom: box.bottom, left: box.left + 1, right: box.right })
 }
 
 function summarySections(box: RepeatBoxInput) {
   const sectionLength = box.direction === 'across'
     ? (box.right - box.left) / box.sections
     : (box.bottom - box.top) / box.sections
-  const unit = box.direction === 'across' ? 'columns' : 'rows'
-  const sectionUnit = sectionLength === 1 ? unit.slice(0, -1) : unit
-  return `${box.sections} sections · ${sectionLength} ${sectionUnit} each`
+  const unitKey = box.direction === 'across' ? 'controls.repeat.sectionUnitColumn' : 'controls.repeat.sectionUnitRow'
+  return t('controls.repeat.sectionSummary', {
+    sections: box.sections,
+    length: sectionLength,
+    unit: t(unitKey, { count: sectionLength }, sectionLength),
+  }, box.sections)
 }
 
 function summary(box: RepeatBoxInput) {
@@ -154,7 +159,10 @@ function summary(box: RepeatBoxInput) {
 function sourceSize(box: RepeatBox) {
   const rows = box.direction === 'down' ? (box.bottom - box.top) / box.sections : box.bottom - box.top
   const columns = box.direction === 'across' ? (box.right - box.left) / box.sections : box.right - box.left
-  return `${rows} ${rows === 1 ? 'row' : 'rows'} x ${columns} ${columns === 1 ? 'column' : 'columns'}`
+  const key = rows === 1
+    ? (columns === 1 ? 'controls.repeat.sourceSizeBothOne' : 'controls.repeat.sourceSizeOneRow')
+    : (columns === 1 ? 'controls.repeat.sourceSizeOneColumn' : 'controls.repeat.sourceSize')
+  return t(key, { rows, columns })
 }
 
 function submit() {
@@ -206,65 +214,65 @@ function updateFallback(event: Event, eventName: 'horizontal' | 'vertical') {
   <section class="card border border-base-300 bg-base-100">
     <div class="card-body gap-3 p-3">
       <div>
-        <h2 class="card-title text-base">Repeat boxes</h2>
+        <h2 class="card-title text-base">{{ t('controls.repeat.title') }}</h2>
         <p class="mt-1 text-xs leading-relaxed text-base-content/60">
-          The first section is the source. Editing any copy updates them all.
+          {{ t('controls.repeat.description') }}
         </p>
       </div>
 
       <form class="space-y-2.5" novalidate @submit.prevent="submit">
         <fieldset class="grid grid-cols-2 gap-1 rounded-box bg-base-200 p-1">
-          <legend class="sr-only">Repeat direction</legend>
+          <legend class="sr-only">{{ t('controls.repeat.direction') }}</legend>
           <label v-for="option in (['across', 'down'] as RepeatDirection[])" :key="option" class="cursor-pointer">
             <input v-model="direction" class="peer sr-only" type="radio" name="repeat-direction" :value="option" />
-            <span class="btn btn-sm w-full border-0 peer-checked:btn-primary">{{ option === 'across' ? 'Across' : 'Down' }}</span>
+            <span class="btn btn-sm w-full border-0 peer-checked:btn-primary">{{ t(`controls.repeat.${option}`) }}</span>
           </label>
         </fieldset>
 
         <fieldset class="grid grid-cols-2 gap-1 rounded-box bg-base-200 p-1">
-          <legend class="sr-only">Repeat sizing method</legend>
+          <legend class="sr-only">{{ t('controls.repeat.sizingMethod') }}</legend>
           <label class="cursor-pointer">
             <input v-model="sizingMode" class="peer sr-only" type="radio" name="repeat-sizing" value="sections" />
-            <span class="btn btn-xs h-8 w-full border-0 peer-checked:btn-primary">Section count</span>
+            <span class="btn btn-xs h-8 w-full border-0 peer-checked:btn-primary">{{ t('controls.repeat.sectionCount') }}</span>
           </label>
           <label class="cursor-pointer">
             <input v-model="sizingMode" class="peer sr-only" type="radio" name="repeat-sizing" value="boundary" />
-            <span class="btn btn-xs h-8 w-full border-0 peer-checked:btn-primary">End boundary</span>
+            <span class="btn btn-xs h-8 w-full border-0 peer-checked:btn-primary">{{ t('controls.repeat.endBoundary') }}</span>
           </label>
         </fieldset>
 
         <div class="grid grid-cols-2 gap-2">
           <label class="grid gap-1">
-            <span class="text-xs font-medium">{{ direction === 'across' ? 'Top row' : 'Left column' }}</span>
+            <span class="text-xs font-medium">{{ t(direction === 'across' ? 'controls.repeat.topRow' : 'controls.repeat.leftColumn') }}</span>
             <input v-model.number="firstCross" class="input input-bordered input-sm min-w-0 w-full" type="number" min="1" max="500" />
           </label>
           <label class="grid gap-1">
-            <span class="text-xs font-medium">{{ direction === 'across' ? 'Bottom row' : 'Right column' }}</span>
+            <span class="text-xs font-medium">{{ t(direction === 'across' ? 'controls.repeat.bottomRow' : 'controls.repeat.rightColumn') }}</span>
             <input v-model.number="lastCross" class="input input-bordered input-sm min-w-0 w-full" type="number" min="1" max="500" />
           </label>
           <label class="grid gap-1">
-            <span class="text-xs font-medium">{{ direction === 'across' ? 'Start column' : 'Start row' }}</span>
+            <span class="text-xs font-medium">{{ t(direction === 'across' ? 'controls.repeat.startColumn' : 'controls.repeat.startRow') }}</span>
             <input v-model.number="start" class="input input-bordered input-sm min-w-0 w-full" type="number" min="1" max="500" />
           </label>
           <label class="grid gap-1">
             <template v-if="sizingMode === 'boundary'">
-              <span class="text-xs font-medium">End before {{ direction === 'across' ? 'column' : 'row' }}</span>
+              <span class="text-xs font-medium">{{ t(direction === 'across' ? 'controls.repeat.endBeforeColumn' : 'controls.repeat.endBeforeRow') }}</span>
               <input v-model.number="ending" class="input input-bordered input-sm min-w-0 w-full" type="number" min="2" max="501" />
             </template>
             <template v-else>
-              <span class="text-xs font-medium">Sections</span>
+              <span class="text-xs font-medium">{{ t('controls.repeat.sections') }}</span>
               <input v-model.number="sections" class="input input-bordered input-sm min-w-0 w-full" type="number" min="2" :max="MAX_REPEAT_COUNT" />
             </template>
           </label>
           <label class="col-span-2 grid gap-1">
-            <span class="text-xs font-medium">Section {{ direction === 'across' ? 'width' : 'height' }}</span>
+            <span class="text-xs font-medium">{{ t(direction === 'across' ? 'controls.repeat.sectionWidth' : 'controls.repeat.sectionHeight') }}</span>
             <input v-model.number="sectionSize" class="input input-bordered input-sm w-full" type="number" min="1" max="500" />
           </label>
         </div>
         <p class="text-[11px] text-base-content/50">
-          Bottom/right is included.
-          <template v-if="sizingMode === 'boundary'">The end boundary is excluded; repeat count is calculated from section size.</template>
-          <template v-else>The ending boundary is calculated from section size and count.</template>
+          {{ t('controls.repeat.includedBoundary') }}
+          <template v-if="sizingMode === 'boundary'">{{ t('controls.repeat.excludedBoundaryHelp') }}</template>
+          <template v-else>{{ t('controls.repeat.calculatedBoundaryHelp') }}</template>
         </p>
 
         <p v-if="displayedError" class="text-xs text-error" role="alert">{{ displayedError }}</p>
@@ -276,9 +284,9 @@ function updateFallback(event: Event, eventName: 'horizontal' | 'vertical') {
         <div class="flex gap-2">
           <button class="btn btn-primary btn-sm min-w-0 flex-1" type="submit" :disabled="!!validationMessage">
             <span class="mdi mdi-repeat" aria-hidden="true"></span>
-            {{ editingId ? 'Save changes' : 'Add repeat box' }}
+            {{ t(editingId ? 'controls.repeat.saveChanges' : 'controls.repeat.addBox') }}
           </button>
-          <button v-if="editingId" class="btn btn-ghost btn-sm" type="button" @click="cancelEdit">Cancel</button>
+          <button v-if="editingId" class="btn btn-ghost btn-sm" type="button" @click="cancelEdit">{{ t('controls.common.cancel') }}</button>
         </div>
       </form>
 
@@ -288,36 +296,36 @@ function updateFallback(event: Event, eventName: 'horizontal' | 'vertical') {
             <div class="min-w-0">
                <p class="text-xs font-medium leading-relaxed">{{ summaryRange(box) }}</p>
                <p class="mt-0.5 text-[11px] text-base-content/60">{{ summarySections(box) }}</p>
-               <p class="mt-1 text-[11px] text-base-content/60">Source: {{ sourceSize(box) }}</p>
+                <p class="mt-1 text-[11px] text-base-content/60">{{ t('controls.repeat.source', { size: sourceSize(box) }) }}</p>
             </div>
             <label class="flex shrink-0 cursor-pointer items-center">
-               <span class="sr-only">Enable {{ summary(box) }}</span>
+                <span class="sr-only">{{ t('controls.repeat.enable', { summary: summary(box) }) }}</span>
               <input class="toggle toggle-primary toggle-sm" type="checkbox" :checked="box.enabled" @change="$emit('toggle', box.id, ($event.target as HTMLInputElement).checked)" />
             </label>
           </div>
           <div class="mt-2 flex justify-end gap-1">
             <button class="btn btn-ghost btn-xs" type="button" @click="edit(box)">
-              <span class="mdi mdi-pencil-outline" aria-hidden="true"></span>Edit
+              <span class="mdi mdi-pencil-outline" aria-hidden="true"></span>{{ t('controls.common.edit') }}
             </button>
             <button class="btn btn-ghost btn-xs text-error" type="button" @click="$emit('remove', box.id)">
-              <span class="mdi mdi-delete-outline" aria-hidden="true"></span>Delete
+              <span class="mdi mdi-delete-outline" aria-hidden="true"></span>{{ t('controls.common.delete') }}
             </button>
           </div>
         </article>
       </div>
-      <p v-else class="border-t border-base-300 pt-3 text-xs text-base-content/55">No repeat boxes yet.</p>
+      <p v-else class="border-t border-base-300 pt-3 text-xs text-base-content/55">{{ t('controls.repeat.none') }}</p>
 
       <details class="collapse-arrow collapse border border-base-300 bg-base-100">
-        <summary class="collapse-title min-h-0 py-3 text-sm font-medium">Whole-pattern fallback</summary>
+        <summary class="collapse-title min-h-0 py-3 text-sm font-medium">{{ t('controls.repeat.fallbackTitle') }}</summary>
         <div class="collapse-content">
-          <p class="mb-2 text-xs text-base-content/60">Used only when no repeat boxes exist.</p>
+          <p class="mb-2 text-xs text-base-content/60">{{ t('controls.repeat.fallbackHelp') }}</p>
           <div class="grid grid-cols-2 gap-2">
             <label class="form-control">
-              <span class="label-text mb-1 text-xs">Across</span>
+              <span class="label-text mb-1 text-xs">{{ t('controls.repeat.across') }}</span>
               <input class="input input-bordered input-sm min-w-0 w-full" type="number" min="1" :max="MAX_REPEAT_COUNT" :value="horizontal" @change="updateFallback($event, 'horizontal')" />
             </label>
             <label class="form-control">
-              <span class="label-text mb-1 text-xs">Down</span>
+              <span class="label-text mb-1 text-xs">{{ t('controls.repeat.down') }}</span>
               <input class="input input-bordered input-sm min-w-0 w-full" type="number" min="1" :max="MAX_REPEAT_COUNT" :value="vertical" @change="updateFallback($event, 'vertical')" />
             </label>
           </div>

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { onBeforeRouteLeave, RouterLink } from 'vue-router'
-import ConfirmModal from '../components/ConfirmModal.vue'
-import NotificationToast from '../components/NotificationToast.vue'
+import LanguageSwitcher from '../components/LanguageSwitcher.vue'
 import ThemeToggle from '../components/ThemeToggle.vue'
 import TrackerGrid from '../components/TrackerGrid.vue'
 import { useNotifications } from '../composables/useNotifications'
@@ -11,10 +11,12 @@ import { useTracker } from '../composables/useTracker'
 import { downloadTracker, readTrackerInput } from '../composables/useTrackerFiles'
 import type { PatternDisplay, PatternProject } from '../types/pattern'
 import type { TrackerDirection, TrackerProject, TrackerStartRow } from '../types/tracker'
+import { localizedErrorMessage } from '../utils/appError'
 import { renderGrid } from '../utils/grid'
 import { MAX_TRACKER_STITCHES, renderedDimensions } from '../utils/tracker'
 
 const state = useTracker()
+const { d, n, t } = useI18n({ useScope: 'global' })
 const { theme, toggleTheme } = useTheme()
 const { notifications, notify, dismiss } = useNotifications()
 const fileInput = ref<HTMLInputElement | null>(null)
@@ -33,6 +35,23 @@ const renderedPattern = computed(() => {
   return renderGrid(pattern.cells, pattern.horizontalRepeats, pattern.verticalRepeats, pattern.repeatBoxes)
 })
 const percentage = computed(() => state.totalCount.value === 0 ? 0 : Math.round((state.completedCount.value / state.totalCount.value) * 100))
+const alertClasses = {
+  success: 'alert-success',
+  error: 'alert-error',
+  info: 'alert-info',
+  warning: 'alert-warning',
+} as const
+
+const confirmation = computed(() => {
+  if (replaceModalOpen.value) return { title: t('tracker.confirm.replace.title'), message: t('tracker.confirm.replace.message'), label: t('tracker.confirm.replace.action') }
+  if (resetModalOpen.value) return { title: t('tracker.confirm.reset.title'), message: t('tracker.confirm.reset.message'), label: t('tracker.confirm.reset.action') }
+  if (clearModalOpen.value) return { title: t('tracker.confirm.close.title'), message: t('tracker.confirm.close.message'), label: t('tracker.confirm.close.action') }
+  return null
+})
+
+function localizedFileError(error: unknown, fallback = 'open') {
+  return localizedErrorMessage(error, t) ?? t(`tracker.errors.${fallback}`)
+}
 
 async function selectFile(event: Event) {
   const input = event.target as HTMLInputElement
@@ -48,7 +67,7 @@ async function selectFile(event: Event) {
       applyInput(result)
     }
   } catch (error) {
-    notify(error instanceof Error ? error.message : 'The selected file could not be opened.', 'error', 7000)
+    notify(localizedFileError(error), 'error', 7000)
   }
 }
 
@@ -58,7 +77,7 @@ function applyInput(input: { tracker?: TrackerProject; pattern?: PatternProject 
   cellSize.value = Math.min(40, Math.max(18, state.tracker.value?.pattern.cellSize ?? 24))
   pendingInput.value = null
   replaceModalOpen.value = false
-  notify(input.tracker ? 'Tracker progress opened.' : 'Design opened. Choose the tracking order before starting.', 'success')
+  notify(input.tracker ? t('tracker.notifications.trackerOpened') : t('tracker.notifications.designOpened'), 'success')
 }
 
 function cancelReplacement() {
@@ -71,9 +90,9 @@ function saveTracker() {
   try {
     downloadTracker(state.tracker.value)
     state.markDownloaded()
-    notify('Tracker saved to your downloads.', 'success')
+    notify(t('tracker.notifications.saved'), 'success')
   } catch (error) {
-    notify(error instanceof Error ? error.message : 'The tracker could not be saved.', 'error')
+    notify(localizedFileError(error, 'save'), 'error')
   }
 }
 
@@ -100,15 +119,15 @@ function selectStitch(row: number, column: number) {
 function confirmReset() {
   state.resetProgress()
   resetModalOpen.value = false
-  notify('Tracker progress reset.', 'success')
+  notify(t('tracker.notifications.reset'), 'success')
 }
 
 function confirmClear() {
   if (state.clearTracker()) {
     clearModalOpen.value = false
-    notify('Local tracker removed.', 'success')
+    notify(t('tracker.notifications.removed'), 'success')
   } else {
-    notify('The browser recovery copy could not be removed.', 'error')
+    notify(t('tracker.notifications.removeFailed'), 'error')
   }
 }
 
@@ -116,7 +135,7 @@ function warnBeforeUnload(event: BeforeUnloadEvent) {
   state.flushAutosave()
   if (!state.backupNeeded.value) return
   event.preventDefault()
-  event.returnValue = 'Download a tracker file before leaving.'
+  event.returnValue = t('tracker.warnings.beforeUnload')
 }
 
 function flushHiddenTracker() {
@@ -126,14 +145,14 @@ function flushHiddenTracker() {
 onBeforeRouteLeave(() => {
   state.flushAutosave()
   if (!state.backupNeeded.value) return true
-  return window.confirm('Your progress is saved only in this browser. Leave without downloading a tracker file?')
+  return window.confirm(t('tracker.confirm.leave'))
 })
 
 let autosaveErrorNotified = false
 watch(state.autosaveStatus, (status) => {
   if (status === 'error' && !autosaveErrorNotified) {
     autosaveErrorNotified = true
-    notify('Browser autosave failed. Download the tracker now to avoid losing progress.', 'error', 8000)
+    notify(t('tracker.notifications.autosaveFailed'), 'error', 8000)
   }
 })
 
@@ -141,7 +160,7 @@ onMounted(() => {
   window.addEventListener('beforeunload', warnBeforeUnload)
   window.addEventListener('pagehide', state.flushAutosave)
   document.addEventListener('visibilitychange', flushHiddenTracker)
-  if (state.restoredAutosave.value) notify('Recovered your tracker from this browser.', 'success')
+  if (state.restoredAutosave.value) notify(t('tracker.notifications.recovered'), 'success')
 })
 
 onBeforeUnmount(() => {
@@ -150,24 +169,41 @@ onBeforeUnmount(() => {
   window.removeEventListener('pagehide', state.flushAutosave)
   document.removeEventListener('visibilitychange', flushHiddenTracker)
 })
+
+function confirmActiveModal() {
+  if (replaceModalOpen.value) {
+    if (pendingInput.value) applyInput(pendingInput.value)
+  } else if (resetModalOpen.value) {
+    confirmReset()
+  } else if (clearModalOpen.value) {
+    confirmClear()
+  }
+}
+
+function cancelActiveModal() {
+  if (replaceModalOpen.value) cancelReplacement()
+  else if (resetModalOpen.value) resetModalOpen.value = false
+  else if (clearModalOpen.value) clearModalOpen.value = false
+}
 </script>
 
 <template>
   <div class="min-h-screen bg-base-200 text-base-content">
     <header class="navbar min-h-14 border-b border-base-300 bg-base-100 px-2 sm:px-4">
       <div class="navbar-start gap-2">
-        <span class="text-lg font-semibold tracking-tight">Stitch Witch</span>
-        <span class="badge badge-primary badge-outline">Tracker</span>
+        <span class="text-lg font-semibold tracking-tight">{{ t('tracker.brand') }}</span>
+        <span class="badge badge-primary badge-outline">{{ t('tracker.name') }}</span>
       </div>
-      <nav class="navbar-center hidden gap-1 sm:flex" aria-label="Tracker actions">
-        <RouterLink class="btn btn-ghost btn-sm" to="/"><span class="mdi mdi-pencil-ruler text-lg" aria-hidden="true"></span>Editor</RouterLink>
-        <button class="btn btn-ghost btn-sm" type="button" @click="fileInput?.click()"><span class="mdi mdi-folder-open-outline text-lg" aria-hidden="true"></span>Open</button>
-        <button class="btn btn-ghost btn-sm" type="button" :disabled="!state.tracker.value" @click="saveTracker"><span class="mdi mdi-content-save-outline text-lg" aria-hidden="true"></span>Save Tracker</button>
+      <nav class="navbar-center hidden gap-1 sm:flex" :aria-label="t('tracker.actions.label')">
+        <RouterLink class="btn btn-ghost btn-sm" to="/"><span class="mdi mdi-pencil-ruler text-lg" aria-hidden="true"></span>{{ t('tracker.actions.editor') }}</RouterLink>
+        <button class="btn btn-ghost btn-sm" type="button" @click="fileInput?.click()"><span class="mdi mdi-folder-open-outline text-lg" aria-hidden="true"></span>{{ t('tracker.actions.open') }}</button>
+        <button class="btn btn-ghost btn-sm" type="button" :disabled="!state.tracker.value" @click="saveTracker"><span class="mdi mdi-content-save-outline text-lg" aria-hidden="true"></span>{{ t('tracker.actions.save') }}</button>
       </nav>
       <div class="navbar-end gap-1">
-        <RouterLink class="btn btn-ghost btn-square btn-sm sm:hidden" to="/" aria-label="Open editor"><span class="mdi mdi-pencil-ruler text-lg" aria-hidden="true"></span></RouterLink>
-        <button class="btn btn-ghost btn-square btn-sm sm:hidden" type="button" aria-label="Open design or tracker" @click="fileInput?.click()"><span class="mdi mdi-folder-open-outline text-lg" aria-hidden="true"></span></button>
-        <button class="btn btn-primary btn-square btn-sm sm:hidden" type="button" :disabled="!state.tracker.value" aria-label="Save tracker" @click="saveTracker"><span class="mdi mdi-content-save-outline text-lg" aria-hidden="true"></span></button>
+        <RouterLink class="btn btn-ghost btn-square btn-sm sm:hidden" to="/" :aria-label="t('tracker.actions.openEditor')"><span class="mdi mdi-pencil-ruler text-lg" aria-hidden="true"></span></RouterLink>
+        <button class="btn btn-ghost btn-square btn-sm sm:hidden" type="button" :aria-label="t('tracker.actions.openDesignOrTracker')" @click="fileInput?.click()"><span class="mdi mdi-folder-open-outline text-lg" aria-hidden="true"></span></button>
+        <button class="btn btn-primary btn-square btn-sm sm:hidden" type="button" :disabled="!state.tracker.value" :aria-label="t('tracker.actions.saveAria')" @click="saveTracker"><span class="mdi mdi-content-save-outline text-lg" aria-hidden="true"></span></button>
+        <LanguageSwitcher />
         <ThemeToggle :theme="theme" @toggle="toggleTheme" />
       </div>
     </header>
@@ -179,13 +215,13 @@ onBeforeUnmount(() => {
           <div class="card-body items-start gap-5 p-6 sm:p-10">
             <div class="grid size-14 place-items-center rounded-2xl bg-primary/10 text-primary"><span class="mdi mdi-progress-check text-3xl" aria-hidden="true"></span></div>
             <div>
-              <h1 class="text-3xl font-bold tracking-tight">Keep your place, stitch by stitch</h1>
-              <p class="mt-2 max-w-xl text-base-content/70">Open a saved design to begin, or open a tracker file to continue where you stopped.</p>
+              <h1 class="text-3xl font-bold tracking-tight">{{ t('tracker.empty.title') }}</h1>
+              <p class="mt-2 max-w-xl text-base-content/70">{{ t('tracker.empty.description') }}</p>
             </div>
-            <button class="btn btn-primary" type="button" @click="fileInput?.click()"><span class="mdi mdi-folder-open-outline text-lg" aria-hidden="true"></span>Open design or tracker</button>
+            <button class="btn btn-primary" type="button" @click="fileInput?.click()"><span class="mdi mdi-folder-open-outline text-lg" aria-hidden="true"></span>{{ t('tracker.actions.openDesignOrTracker') }}</button>
             <div class="alert alert-warning text-sm">
               <span class="mdi mdi-alert-outline text-xl" aria-hidden="true"></span>
-              <span>Progress is recovered only in this browser until you download a tracker file.</span>
+              <span>{{ t('tracker.warnings.localOnly') }}</span>
             </div>
           </div>
         </div>
@@ -196,24 +232,24 @@ onBeforeUnmount(() => {
           <div class="card-body gap-4 p-4 sm:p-5">
             <div class="flex flex-wrap items-start justify-between gap-4">
               <div>
-                <p class="text-xs font-semibold uppercase tracking-widest text-primary">Tracking progress</p>
+                <p class="text-xs font-semibold uppercase tracking-widest text-primary">{{ t('tracker.progress.heading') }}</p>
                 <h1 class="mt-1 text-2xl font-bold">{{ state.tracker.value.pattern.name }}</h1>
-                <p class="mt-1 text-sm text-base-content/65">{{ state.completedCount.value.toLocaleString() }} of {{ state.totalCount.value.toLocaleString() }} stitches completed</p>
+                <p class="mt-1 text-sm text-base-content/65">{{ t('tracker.progress.completed', { completed: n(state.completedCount.value, 'integer'), total: n(state.totalCount.value, 'integer') }) }}</p>
               </div>
               <div class="flex flex-wrap items-center justify-end gap-2">
                 <span class="badge" :class="state.autosaveStatus.value === 'error' ? 'badge-error' : state.autosaveStatus.value === 'saving' ? 'badge-ghost' : 'badge-success badge-outline'">
                   <span class="mdi" :class="state.autosaveStatus.value === 'error' ? 'mdi-alert-circle-outline' : state.autosaveStatus.value === 'saving' ? 'mdi-loading mdi-spin' : 'mdi-content-save-check-outline'" aria-hidden="true"></span>
-                  {{ state.autosaveStatus.value === 'error' ? 'Autosave failed' : state.autosaveStatus.value === 'saving' ? 'Saving in browser' : 'Saved in browser' }}
+                  {{ state.autosaveStatus.value === 'error' ? t('tracker.autosave.failed') : state.autosaveStatus.value === 'saving' ? t('tracker.autosave.saving') : t('tracker.autosave.saved') }}
                 </span>
-                <span v-if="state.backupNeeded.value" class="badge badge-warning badge-outline">Changes since download</span>
-                <button class="btn btn-primary btn-sm" type="button" @click="saveTracker"><span class="mdi mdi-download text-base" aria-hidden="true"></span>Save Tracker</button>
+                <span v-if="state.backupNeeded.value" class="badge badge-warning badge-outline">{{ t('tracker.autosave.changed') }}</span>
+                <button class="btn btn-primary btn-sm" type="button" @click="saveTracker"><span class="mdi mdi-download text-base" aria-hidden="true"></span>{{ t('tracker.actions.save') }}</button>
               </div>
             </div>
             <progress class="progress progress-primary w-full" :value="state.completedCount.value" :max="state.totalCount.value"></progress>
-            <div class="flex items-center justify-between text-xs text-base-content/60"><span>{{ percentage }}% complete</span><span>Updated {{ new Date(state.tracker.value.progress.updatedAt).toLocaleString() }}</span></div>
+            <div class="flex items-center justify-between text-xs text-base-content/60"><span>{{ t('tracker.progress.percentComplete', { percentage: n(percentage / 100, 'percent') }) }}</span><span>{{ t('tracker.progress.updated', { date: d(new Date(state.tracker.value.progress.updatedAt), 'short') }) }}</span></div>
             <div class="alert alert-warning py-3 text-sm">
               <span class="mdi mdi-shield-download-outline text-xl" aria-hidden="true"></span>
-              <span>Browser recovery can be lost if site data is cleared or you change browser or device. Download a tracker file regularly.</span>
+              <span>{{ t('tracker.warnings.recovery') }}</span>
             </div>
           </div>
         </section>
@@ -223,41 +259,41 @@ onBeforeUnmount(() => {
             <div class="flex flex-wrap items-end justify-between gap-3">
               <div class="flex flex-wrap items-end gap-3">
                 <label class="form-control w-40">
-                  <span class="label py-1 text-xs font-semibold">Start row</span>
+                  <span class="label py-1 text-xs font-semibold">{{ t('tracker.order.startRow') }}</span>
                   <select class="select select-bordered select-sm" :value="state.tracker.value.progress.startRow" :disabled="state.completedCount.value > 0" @change="changeStartRow">
-                    <option value="top">Top</option><option value="bottom">Bottom</option>
+                    <option value="top">{{ t('tracker.order.top') }}</option><option value="bottom">{{ t('tracker.order.bottom') }}</option>
                   </select>
                 </label>
                 <label class="form-control w-44">
-                  <span class="label py-1 text-xs font-semibold">First row direction</span>
+                  <span class="label py-1 text-xs font-semibold">{{ t('tracker.order.firstRowDirection') }}</span>
                   <select class="select select-bordered select-sm" :value="state.tracker.value.progress.firstRowDirection" :disabled="state.completedCount.value > 0" @change="changeDirection">
-                    <option value="left-to-right">Left to right</option><option value="right-to-left">Right to left</option>
+                    <option value="left-to-right">{{ t('tracker.order.leftToRight') }}</option><option value="right-to-left">{{ t('tracker.order.rightToLeft') }}</option>
                   </select>
                 </label>
                 <label class="flex h-8 items-center gap-2 pb-1 text-sm">
-                  <input class="checkbox checkbox-primary checkbox-sm" type="checkbox" :checked="state.tracker.value.progress.alternateRows" :disabled="state.completedCount.value > 0" @change="changeAlternation" />Alternate direction each row
+                  <input class="checkbox checkbox-primary checkbox-sm" type="checkbox" :checked="state.tracker.value.progress.alternateRows" :disabled="state.completedCount.value > 0" @change="changeAlternation" />{{ t('tracker.order.alternate') }}
                 </label>
               </div>
               <div class="flex flex-wrap items-center gap-2">
                 <label class="flex items-center gap-2 text-xs">
-                  Display
-                  <select v-model="display" class="select select-bordered select-sm" aria-label="Tracker stitch display">
-                    <option value="canvas">Canvas</option>
-                    <option value="knit">Knit</option>
-                    <option value="cross-stitch">Cross stitch</option>
+                  {{ t('tracker.controls.display') }}
+                  <select v-model="display" class="select select-bordered select-sm" :aria-label="t('tracker.controls.displayAria')">
+                    <option value="canvas">{{ t('tracker.controls.canvas') }}</option>
+                    <option value="knit">{{ t('tracker.controls.knit') }}</option>
+                    <option value="cross-stitch">{{ t('tracker.controls.crossStitch') }}</option>
                   </select>
                 </label>
-                <label class="flex items-center gap-2 text-xs">Cell size <input v-model.number="cellSize" class="range range-xs w-24" type="range" min="16" max="48" /></label>
-                <button class="btn btn-ghost btn-sm text-error" type="button" :disabled="state.completedCount.value === 0" @click="resetModalOpen = true">Reset progress</button>
-                <button class="btn btn-ghost btn-sm" type="button" @click="clearModalOpen = true">Close tracker</button>
+                <label class="flex items-center gap-2 text-xs">{{ t('tracker.controls.cellSize') }} <input v-model.number="cellSize" class="range range-xs w-24" type="range" min="16" max="48" :aria-label="t('tracker.controls.cellSize')" /></label>
+                <button class="btn btn-ghost btn-sm text-error" type="button" :disabled="state.completedCount.value === 0" @click="resetModalOpen = true">{{ t('tracker.actions.reset') }}</button>
+                <button class="btn btn-ghost btn-sm" type="button" @click="clearModalOpen = true">{{ t('tracker.actions.close') }}</button>
               </div>
             </div>
-            <p v-if="state.completedCount.value > 0" class="text-xs text-base-content/55">Reset progress to change the tracking order.</p>
-            <p class="text-sm text-base-content/65">Click a stitch to complete everything through it. Click a row number to complete or reopen that entire row.</p>
+            <p v-if="state.completedCount.value > 0" class="text-xs text-base-content/55">{{ t('tracker.instructions.resetOrder') }}</p>
+            <p class="text-sm text-base-content/65">{{ t('tracker.instructions.usage') }}</p>
 
             <div v-if="tooLarge" class="alert alert-error">
               <span class="mdi mdi-grid-off text-xl" aria-hidden="true"></span>
-              <span>This repeated design expands to {{ state.totalCount.value.toLocaleString() }} stitches, which is too large for the tracker. Reduce its whole-pattern repeats in the editor.</span>
+              <span>{{ t('tracker.errors.oversized', { total: n(state.totalCount.value, 'integer') }) }}</span>
             </div>
             <TrackerGrid
               v-else-if="renderedPattern"
@@ -278,32 +314,21 @@ onBeforeUnmount(() => {
     </main>
   </div>
 
-  <ConfirmModal
-    :open="replaceModalOpen"
-    title="Replace this tracker?"
-    message="Your current progress has changes since its last downloaded tracker file. Save it first if you want to keep it."
-    confirm-label="Replace tracker"
-    destructive
-    @confirm="pendingInput && applyInput(pendingInput)"
-    @cancel="cancelReplacement"
-  />
-  <ConfirmModal
-    :open="resetModalOpen"
-    title="Reset all progress?"
-    message="Every completed stitch will be reopened. The design itself will not change."
-    confirm-label="Reset progress"
-    destructive
-    @confirm="confirmReset"
-    @cancel="resetModalOpen = false"
-  />
-  <ConfirmModal
-    :open="clearModalOpen"
-    title="Close this tracker?"
-    message="This removes its browser recovery copy. Download a tracker file first if you want to continue later."
-    confirm-label="Close tracker"
-    destructive
-    @confirm="confirmClear"
-    @cancel="clearModalOpen = false"
-  />
-  <NotificationToast :notifications="notifications" @dismiss="dismiss" />
+  <div v-if="confirmation" class="modal modal-open" role="dialog" aria-modal="true" :aria-label="confirmation.title" @keydown.esc="cancelActiveModal">
+    <div class="modal-box">
+      <h2 class="text-lg font-bold">{{ confirmation.title }}</h2>
+      <p class="py-4">{{ confirmation.message }}</p>
+      <div class="modal-action">
+        <button class="btn" type="button" @click="cancelActiveModal">{{ t('tracker.confirm.cancel') }}</button>
+        <button class="btn btn-error" type="button" autofocus @click="confirmActiveModal">{{ confirmation.label }}</button>
+      </div>
+    </div>
+    <button class="modal-backdrop" type="button" :aria-label="t('tracker.confirm.closeDialog')" @click="cancelActiveModal">{{ t('tracker.confirm.closeBackdrop') }}</button>
+  </div>
+  <div class="toast toast-end toast-top z-[100] mt-14" aria-live="polite">
+    <div v-for="item in notifications" :key="item.id" class="alert max-w-sm" :class="alertClasses[item.kind]">
+      <span>{{ item.message }}</span>
+      <button class="btn btn-ghost btn-xs" type="button" :aria-label="t('tracker.notifications.dismissAria', { message: item.message })" @click="dismiss(item.id)">{{ t('tracker.notifications.close') }}</button>
+    </div>
+  </div>
 </template>

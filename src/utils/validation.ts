@@ -1,10 +1,11 @@
 import { MAX_REPEAT_COUNT, type PatternGrid, type PatternProject, type RepeatBox } from '../types/pattern'
 import { boxesOverlap } from './grid'
 import { isHexColor } from './colors'
+import { appError, type AppError } from './appError'
 
 export interface ValidationResult {
   valid: boolean
-  error?: string
+  error?: AppError
 }
 
 interface LegacyRepeatRange {
@@ -21,10 +22,10 @@ function repeatBoxesConflict(first: RepeatBox, second: RepeatBox): boolean {
 }
 
 export function validateProject(value: unknown): ValidationResult {
-  if (!value || typeof value !== 'object') return { valid: false, error: 'The file does not contain a project object.' }
+  if (!value || typeof value !== 'object') return { valid: false, error: appError('validation.projectObject') }
   const project = value as Record<string, unknown>
-  if (project.format !== 'stitch-pattern' || project.version !== 1) return { valid: false, error: 'This is not a supported stitch-pattern file.' }
-  if (typeof project.name !== 'string' || !project.name.trim()) return { valid: false, error: 'The project name is missing.' }
+  if (project.format !== 'stitch-pattern' || project.version !== 1) return { valid: false, error: appError('validation.unsupportedPattern') }
+  if (typeof project.name !== 'string' || !project.name.trim()) return { valid: false, error: appError('validation.projectNameMissing') }
 
   const integers: Array<[string, number, number]> = [
     ['rows', 1, 500],
@@ -36,42 +37,42 @@ export function validateProject(value: unknown): ValidationResult {
   for (const [key, minimum, maximum] of integers) {
     const number = project[key]
     if (!Number.isInteger(number) || (number as number) < minimum || (number as number) > maximum) {
-      return { valid: false, error: `${key} must be a whole number from ${minimum} to ${maximum}.` }
+      return { valid: false, error: appError('validation.integerRange', { fieldKey: `errors.validation.fields.${key}`, minimum, maximum }) }
     }
   }
-  if (!isHexColor(project.backgroundColor)) return { valid: false, error: 'The background color is invalid.' }
+  if (!isHexColor(project.backgroundColor)) return { valid: false, error: appError('validation.backgroundColor') }
   if (project.previewStitch !== undefined && project.previewStitch !== 'knit' && project.previewStitch !== 'cross-stitch') {
-    return { valid: false, error: 'The preview stitch is invalid.' }
+    return { valid: false, error: appError('validation.previewStitch') }
   }
-  if (!Array.isArray(project.cells) || project.cells.length !== project.rows) return { valid: false, error: 'The cell rows do not match the project dimensions.' }
+  if (!Array.isArray(project.cells) || project.cells.length !== project.rows) return { valid: false, error: appError('validation.cellRows') }
   const columns = project.columns as number
   if (!project.cells.every((row) => Array.isArray(row) && row.length === columns && row.every(isHexColor))) {
-    return { valid: false, error: 'The cell colors or columns are invalid.' }
+    return { valid: false, error: appError('validation.cellColors') }
   }
   if (project.recentColors !== undefined && (!Array.isArray(project.recentColors) || project.recentColors.length > 20 || !project.recentColors.every(isHexColor))) {
-    return { valid: false, error: 'The recent colors are invalid.' }
+    return { valid: false, error: appError('validation.recentColors') }
   }
 
   if (project.repeatBoxes !== undefined) {
-    if (!Array.isArray(project.repeatBoxes) || project.repeatBoxes.length > 100) return { valid: false, error: 'The repeat boxes are invalid.' }
+    if (!Array.isArray(project.repeatBoxes) || project.repeatBoxes.length > 100) return { valid: false, error: appError('validation.repeatBoxes') }
     const boxes = project.repeatBoxes as RepeatBox[]
     const ids = new Set<string>()
     for (const box of boxes) {
-      if (typeof box.id !== 'string' || !box.id || ids.has(box.id)) return { valid: false, error: 'Each repeat box must have a unique ID.' }
+      if (typeof box.id !== 'string' || !box.id || ids.has(box.id)) return { valid: false, error: appError('validation.repeatBoxId') }
       ids.add(box.id)
       const coordinates = [box.top, box.bottom, box.left, box.right, box.sections]
       if ((box.direction !== 'across' && box.direction !== 'down') || !coordinates.every(Number.isInteger) || typeof box.enabled !== 'boolean') {
-        return { valid: false, error: 'A repeat box has invalid settings.' }
+        return { valid: false, error: appError('validation.repeatBoxSettings') }
       }
       if (box.top < 0 || box.left < 0 || box.bottom <= box.top || box.right <= box.left || box.bottom > (project.rows as number) || box.right > columns || box.sections < 2 || box.sections > MAX_REPEAT_COUNT) {
-        return { valid: false, error: 'A repeat box is outside the pattern.' }
+        return { valid: false, error: appError('validation.repeatBoxBounds') }
       }
       const length = box.direction === 'across' ? box.right - box.left : box.bottom - box.top
-      if (length % box.sections !== 0) return { valid: false, error: 'A repeat box does not divide evenly into sections.' }
+      if (length % box.sections !== 0) return { valid: false, error: appError('validation.repeatBoxSections') }
     }
     for (let index = 0; index < boxes.length; index += 1) {
       if (boxes.slice(index + 1).some((box) => repeatBoxesConflict(boxes[index], box))) {
-        return { valid: false, error: 'Repeat boxes overlap.' }
+        return { valid: false, error: appError('validation.repeatBoxOverlap') }
       }
     }
   }
@@ -106,7 +107,7 @@ function flattenLegacyRepeats(project: Record<string, unknown>, cells: PatternGr
 
 export function asPatternProject(value: unknown): PatternProject {
   const result = validateProject(value)
-  if (!result.valid) throw new Error(result.error)
+  if (!result.valid) throw result.error
   const source = value as Record<string, unknown>
   const originalCells = source.cells as PatternGrid
   const cells = source.repeatBoxes === undefined ? flattenLegacyRepeats(source, originalCells) : originalCells.map((row) => [...row])

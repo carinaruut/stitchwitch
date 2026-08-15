@@ -1,0 +1,175 @@
+controls:
+  common:
+    cancel: Cancel
+    delete: Delete
+    edit: Edit
+  drawing:
+    regionLabel: Editor tools
+    title: Tools
+    selectionLabel: Drawing tool selection
+    toolTooltip: "{label} ({shortcut})"
+    tools:
+      pencil: Pencil
+      eraser: Eraser
+      fill: Fill
+      eyedropper: Eyedropper
+      select: Select area
+      wand: Magic wand
+      move: Pan canvas
+    clearGrid: Clear grid
+    mirrorLines: Live canvas mirror lines
+    verticalMirrorTooltip: "Vertical mirror line: draw left and right"
+    toggleVerticalMirror: Toggle vertical mirror line
+    vertical: Vertical
+    horizontalMirrorTooltip: "Horizontal mirror line: draw top and bottom"
+    toggleHorizontalMirror: Toggle horizontal mirror line
+    horizontal: Horizontal
+    chooseDestination: Choose destination
+    patternSettings: Pattern settings
+  axis:
+    rows: Rows
+    columns: Columns
+    rowPosition: Row {current} of {count}
+    columnPosition: Column {current} of {count}
+    addBefore: Add before
+    addAfter: Add after
+    addAtStart: Add at start
+    addAtEnd: Add at end
+    fillCurrent: Fill current
+    eraseCurrent: Erase current
+    deleteCurrentRow: Delete current row {number}
+    deleteCurrentColumn: Delete current column {number}
+    deleteMultipleRows: Delete multiple rows
+    deleteMultipleColumns: Delete multiple columns
+    delete: Delete
+    rowsInvalid: Use rows from 1 to {count}, for example 1-3;6.
+    columnsInvalid: Use columns from 1 to {count}, for example 1-3;6.
+    rowsHelp: Separate rows with ; and use - for ranges.
+    columnsHelp: Separate columns with ; and use - for ranges.
+  color:
+    title: Color
+    controls: Color controls
+    choose: Choose pattern color
+    eyedropper: Eyedropper
+    hex: Hex color
+    invalid: Enter a color such as #7c3aed.
+    recent: Recent colors
+    selectRecent: Select recent color {color}
+  gridSettings:
+    title: Grid settings
+    controls: Grid controls
+    menuTitle: Grid
+    visibleCellSize: Visible cell size
+    pixels: "{size} px"
+  preview:
+    title: Complete pattern preview
+    stitch: Stitch
+    stitchLabel: Preview stitch
+    knit: Knit
+    crossStitch: Cross stitch
+    columns: "{count} column | {count} columns"
+    rows: "{count} row | {count} rows"
+    ariaLabel: Repeated stitch pattern preview
+  newProject:
+    defaultName: My pattern
+    title: Create a new pattern
+    projectName: Project name
+    rows: Rows
+    columns: Columns
+    cellSize: "Cell size: {size} px"
+    horizontalRepeats: Horizontal repeats
+    verticalRepeats: Vertical repeats
+    create: Create pattern
+    close: Close dialog
+    nameRequired: Enter a project name.
+    dimensionsInvalid: Rows and columns must be whole numbers from 1 to 200.
+    repeatsInvalid: Repeats must be whole numbers from 1 to {max}.
+  repeat:
+    title: Repeat boxes
+    controls: Repeat controls
+    menuTitle: Repeats
+    description: The first section is the source. Editing any copy updates them all.
+    direction: Repeat direction
+    across: Across
+    down: Down
+    sizingMethod: Repeat sizing method
+    sectionCount: Section count
+    endBoundary: End boundary
+    topRow: Top row
+    leftColumn: Left column
+    bottomRow: Bottom row
+    rightColumn: Right column
+    startColumn: Start column
+    startRow: Start row
+    endBeforeColumn: End before column
+    endBeforeRow: End before row
+    sections: Sections
+    sectionWidth: Section width
+    sectionHeight: Section height
+    includedBoundary: Bottom/right is included.
+    excludedBoundaryHelp: The end boundary is excluded; repeat count is calculated from section size.
+    calculatedBoundaryHelp: The ending boundary is calculated from section size and count.
+    saveChanges: Save changes
+    addBox: Add repeat box
+    enable: Enable {summary}
+    source: "Source: {size}"
+    none: No repeat boxes yet.
+    fallbackTitle: Whole-pattern fallback
+    fallbackHelp: Used only when no repeat boxes exist.
+    range: Rows {top}-{bottom} · Columns {left}-{right}
+    sectionSummary: "{sections} section · {length} {unit} each | {sections} sections · {length} {unit} each"
+    sectionUnitColumn: column | columns
+    sectionUnitRow: row | rows
+    sourceSize: "{rows} rows × {columns} columns"
+    sourceSizeBothOne: "{rows} row × {columns} column"
+    sourceSizeOneRow: "{rows} row × {columns} columns"
+    sourceSizeOneColumn: "{rows} rows × {columns} column"
+    validation:
+      positiveIntegers: Coordinates and sizes must be positive whole numbers.
+      bottomAfterTop: Bottom row must be at or below the top row.
+      rightAfterLeft: Right column must be at or after the left column.
+      extent: Repeat boxes cannot extend beyond 500 rows or columns.
+      ending: The repeat box must end after its start and stay within 500 rows or columns.
+      evenlyDivisible: The repeat length must divide evenly by the section size.
+      sectionRange: The repeat must contain from 2 to {max} sections.
+  patternGrid:
+    label: Editable pattern grid
+    columnHeader: "Column {number}. Open column actions. Shift-click to select a range."
+    repeatedColumnHeader: "Column {number}, repeated copy. Open column actions. Shift-click to select a range."
+    rowHeader: "Row {number}. Open row actions. Shift-click to select a range."
+    repeatedRowHeader: "Row {number}, repeated copy. Open row actions. Shift-click to select a range."
+    cell: "Row {row}, column {column}, color {color}"
+    repeatedCell: "Row {row}, column {column}, color {color}, repeated copy"
+    selectionActions: Selection actions
+    moveSelection: Move selection
+    copySelection: Copy selection
+    pasteSelection: Paste into selection
+    flipHorizontal: Flip horizontally
+    flipVertical: Flip vertically
+    fillSelection: Fill selection
+    eraseSelection: Erase selection
+    rowActions: Actions for row {number}
+    selectedRowActions: "Actions for {count} selected row | Actions for {count} selected rows"
+    rowHeading: ROW {number}
+    rowsSelected: "{count} ROW SELECTED | {count} ROWS SELECTED"
+    addRowAbove: Add row above
+    addRowBelow: Add row below
+    addRows: Add rows
+    addMultipleRows: Add multiple rows below
+    fillRows: Fill selected row | Fill selected rows
+    eraseRows: Erase selected row | Erase selected rows
+    deleteRows: Delete selected row | Delete selected rows
+    columnActions: Actions for column {number}
+    selectedColumnActions: "Actions for {count} selected column | Actions for {count} selected columns"
+    columnHeading: COLUMN {number}
+    columnsSelected: "{count} COLUMN SELECTED | {count} COLUMNS SELECTED"
+    addColumnBefore: Add column before
+    addColumnAfter: Add column after
+    addColumns: Add columns
+    addMultipleColumns: Add multiple columns after
+    fillColumns: Fill selected column | Fill selected columns
+    eraseColumns: Erase selected column | Erase selected columns
+    deleteColumns: Delete selected column | Delete selected columns
+  menus:
+    rowControls: Row controls
+    columnControls: Column controls

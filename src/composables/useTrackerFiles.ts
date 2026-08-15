@@ -2,6 +2,7 @@ import type { PatternProject } from '../types/pattern'
 import type { TrackerProject } from '../types/tracker'
 import { asTrackerProject } from '../utils/tracker'
 import { asPatternProject } from '../utils/validation'
+import { appError } from '../utils/appError'
 
 function trackerFilename(name: string) {
   const safe = name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
@@ -22,12 +23,12 @@ export function downloadTracker(tracker: TrackerProject) {
 }
 
 export async function readTrackerInput(file: File): Promise<{ tracker?: TrackerProject; pattern?: PatternProject }> {
-  if (file.size > 10_000_000) throw new Error('The selected file is too large.')
+  if (file.size > 10_000_000) throw appError('files.selectedTooLarge')
   let value: unknown
   try {
     value = JSON.parse(await file.text())
   } catch {
-    throw new Error('The selected file is not valid JSON.')
+    throw appError('files.invalidJson')
   }
   if (value && typeof value === 'object' && (value as Record<string, unknown>).format === 'stitch-tracker') {
     return { tracker: asTrackerProject(value) }

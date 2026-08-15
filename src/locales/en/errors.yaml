@@ -1,0 +1,42 @@
+validation:
+  projectObject: The file does not contain a project object.
+  unsupportedPattern: This is not a supported stitch-pattern file.
+  projectNameMissing: The project name is missing.
+  integerRange: "{field} must be a whole number from {minimum} to {maximum}."
+  fields:
+    rows: Rows
+    columns: Columns
+    cellSize: Cell size
+    horizontalRepeats: Horizontal repeats
+    verticalRepeats: Vertical repeats
+  backgroundColor: The background color is invalid.
+  previewStitch: The preview stitch is invalid.
+  cellRows: The cell rows do not match the project dimensions.
+  cellColors: The cell colors or columns are invalid.
+  recentColors: The recent colors are invalid.
+  repeatBoxes: The repeat boxes are invalid.
+  repeatBoxId: Each repeat box must have a unique ID.
+  repeatBoxSettings: A repeat box has invalid settings.
+  repeatBoxBounds: A repeat box is outside the pattern.
+  repeatBoxSections: A repeat box does not divide evenly into sections.
+  repeatBoxOverlap: Repeat boxes overlap.
+tracker:
+  projectObject: The file does not contain a tracker project.
+  unsupportedFile: This is not a supported stitch-tracker file.
+  progressMissing: The tracker progress is missing.
+  completedCount: The completed stitch count is invalid.
+  startRow: The tracker start row is invalid.
+  rowDirection: The tracker row direction is invalid.
+  alternateRows: The tracker row alternation setting is invalid.
+  updatedAt: The tracker update time is invalid.
+files:
+  projectTooLarge: The project file is too large.
+  selectedTooLarge: The selected file is too large.
+  invalidJson: The selected file is not valid JSON.
+defaults:
+  projectName: My pattern
+repeatSave:
+  settings: The repeat box settings are invalid.
+  bounds: Repeat boxes cannot extend beyond 500 rows or columns.
+  sections: The repeat length must divide evenly into its sections.
+  overlap: Repeat boxes cannot overlap.

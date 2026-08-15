@@ -3,6 +3,9 @@
   "private": true,
   "version": "1.0.0",
   "packageManager": "pnpm@11.17.0",
+  "engines": {
+    "node": ">=22.13"
+  },
   "type": "module",
   "license": "MIT",
   "scripts": {
@@ -13,11 +16,15 @@
   },
   "dependencies": {
     "@mdi/font": "^7.4.47",
+    "flag-icons": "^7.5.0",
     "vue": "^3.5.0",
+    "vue-i18n": "^11.4.8",
     "vue-router": "^4.6.4"
   },
   "devDependencies": {
+    "@intlify/unplugin-vue-i18n": "^11.2.5",
     "@tailwindcss/vite": "^4.1.0",
+    "@types/node": "^26.2.0",
     "@vitejs/plugin-vue": "^6.0.0",
     "daisyui": "^5.0.0",
     "tailwindcss": "^4.1.0",

@@ -1,0 +1,96 @@
+editor:
+  description: Muuda tervet mustrit. Kordustes tehtud muudatused rakenduvad ka lähteruutudele.
+  directions:
+    horizontal: horisontaalselt
+    vertical: vertikaalselt
+  status:
+    error: Varundamine nurjus
+    saving: Salvestamine brauserisse
+    saved: Brauserisse salvestatud
+    notDownloaded: Viimaseid muudatusi pole alla laaditud
+    oneColumn: '{count} veerg'
+    columns: '{count} veergu'
+    oneRow: '{count} rida'
+    rows: '{count} rida'
+  print:
+    button: Prindi või salvesta PDF-ina
+    colorChart: Värviline skeem
+    colorDescription: Prindi pistete värvidega
+    symbolChart: Mustvalged sümbolid
+    symbolDescription: Prindi koos sümbolite legendiga
+  nav:
+    projectActions: Projekti toimingud
+    new: Uus
+    open: Ava
+    save: Salvesta
+    print: Prindi
+    tracker: Jälgija
+    undo: Võta tagasi
+    redo: Tee uuesti
+    openGuide: Ava kasutusjuhend
+    userGuide: Kasutusjuhend
+    moreActions: Rohkem projekti toiminguid
+    newProject: Uus projekt
+    openProject: Ava projekt
+    saveProject: Salvesta projekt
+    printOrPdf: Prindi või salvesta PDF-ina
+    openTracker: Ava jälgija
+  modal:
+    cancel: Loobu
+    continue: Jätka
+    close: sulge
+    closeDialog: Sulge dialoog
+  theme:
+    switchToDark: Lülita tumedale kujundusele
+    switchToLight: Lülita heledale kujundusele
+  notifications:
+    patternCreated: Uus muster on loodud.
+    gridAlreadyClear: Ruudustik on juba tühi.
+    gridCleared: Ruudustik on tühjendatud.
+    projectSaved: Projekt on allalaadimiste kausta salvestatud.
+    importCancelled: Importimine katkestati.
+    projectImported: Projekt imporditi edukalt.
+    repeatBoxUpdated: Kordusala on uuendatud.
+    repeatBoxAdded: Kordusala on lisatud.
+    selectionCopied: Valik on kopeeritud.
+    selectionPasted: Valik on kleebitud.
+    selectionFlipped: Valik peegeldati {direction}.
+    selectionMoved: Valik on teisaldatud.
+    backupFailed: Kohalik varundamine nurjus. Muudatuste kaotsimineku vältimiseks laadi projekt alla.
+    patternRecovered: Brauserisse salvestatud muster taastati.
+    dismiss: 'Sulge teade: {message}'
+    close: Sulge
+  confirmations:
+    beforeUnload: Enne lahkumist laadi projekti varukoopia nupuga Salvesta alla.
+    leavePage: Muster on salvestatud ainult sellesse brauserisse. Kas lahkuda projekti faili alla laadimata?
+    clearTitle: Kas tühjendada ruudustik?
+    clearMessage: Kõik värvitud ruudud muutuvad taas taustavärvi. Selle toimingu saab tagasi võtta.
+    clearConfirm: Tühjenda ruudustik
+    importTitle: Kas asendada praegune projekt?
+    importMessage: Selle faili avamine asendab redaktoris oleva mustri. Kui soovid praeguse mustri alles hoida, salvesta see esmalt.
+    importConfirm: Ava projekt
+  errors:
+    saveFailed: Projekti ei õnnestunud salvestada.
+    invalidProjectFile: Projekti fail ei ole kehtiv.
+    fileTooLarge: Projekti fail on liiga suur.
+    invalidJson: Valitud fail ei ole korrektne JSON.
+    missingProject: Fail ei sisalda projekti objekti.
+    unsupportedFile: See stitch-pattern-fail ei ole toetatud.
+    missingName: Projekti nimi puudub.
+    wholeNumberRange: '{field} peab olema täisarv vahemikus {minimum} kuni {maximum}.'
+    invalidBackground: Taustavärv ei ole kehtiv.
+    invalidPreviewStitch: Eelvaate pistetüüp ei ole kehtiv.
+    rowDimensions: Ruudustiku read ei vasta projekti mõõtmetele.
+    invalidCells: Ruutude värvid või veerud ei ole kehtivad.
+    invalidRecentColors: Viimati kasutatud värvid ei ole kehtivad.
+    invalidRepeatBoxes: Kordusalad ei ole kehtivad.
+    repeatBoxUniqueId: Igal kordusalal peab olema kordumatu ID.
+    invalidRepeatBox: Kordusala seaded ei ole kehtivad.
+    repeatBoxOutside: Kordusala jääb mustrist väljapoole.
+    repeatBoxUneven: Kordusala ei jagune võrdseteks osadeks.
+    repeatBoxesOverlap: Kordusalad kattuvad.
+    repeatBoxSettings: Kordusala seaded ei ole kehtivad.
+    repeatBoxLimit: Kordusala ei tohi ulatuda üle 500 rea ega veeru.
+    repeatLengthUneven: Korduse pikkus peab jagunema osade vahel võrdselt.
+    repeatBoxesCannotOverlap: Kordusalad ei tohi kattuda.
+    selectionLimit: Valik ei tohi ulatuda üle 500 rea ega veeru.

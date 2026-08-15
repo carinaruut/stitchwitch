@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { nextTick, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import type { PatternDisplay, PatternGrid } from '../types/pattern'
 import type { TrackerProgress } from '../types/tracker'
 import { followsCenterBoundary, isCenterHeader, repeatOutlineColor, REPEAT_COPY } from '../utils/grid'
@@ -15,6 +16,8 @@ const props = defineProps<{
   display: PatternDisplay
   progress: TrackerProgress
 }>()
+
+const { t } = useI18n({ useScope: 'global' })
 
 defineEmits<{
   stitch: [row: number, column: number]
@@ -69,7 +72,7 @@ function moveRowHeader(row: number, event: KeyboardEvent) {
 </script>
 
 <template>
-  <div ref="viewport" class="h-[calc(100dvh-21rem)] min-h-96 w-full min-w-0 overflow-auto rounded-box border border-base-300/70 bg-base-100 p-3" aria-label="Pattern progress tracker">
+  <div ref="viewport" class="h-[calc(100dvh-21rem)] min-h-96 w-full min-w-0 overflow-auto rounded-box border border-base-300/70 bg-base-100 p-3" :aria-label="t('tracker.grid.label')">
     <div
       class="grid w-max border border-base-300/70 bg-base-100"
       :style="{ gridTemplateColumns: `32px repeat(${cells[0].length}, ${cellSize}px)`, gridTemplateRows: `32px repeat(${cells.length}, ${cellSize}px)` }"
@@ -103,7 +106,7 @@ function moveRowHeader(row: number, event: KeyboardEvent) {
           role="rowheader"
           aria-colindex="1"
           :tabindex="activeRowHeader === rowIndex ? 0 : -1"
-          :aria-label="`${rowComplete(rowIndex) ? 'Reopen' : 'Complete through'} row ${rowHeaders[rowIndex] + 1}`"
+          :aria-label="rowComplete(rowIndex) ? t('tracker.grid.reopenRow', { row: rowHeaders[rowIndex] + 1 }) : t('tracker.grid.completeThroughRow', { row: rowHeaders[rowIndex] + 1 })"
           @focus="activeRowHeader = rowIndex"
           @click="$emit('row', rowIndex)"
           @keydown="moveRowHeader(rowIndex, $event)"
@@ -129,7 +132,7 @@ function moveRowHeader(row: number, event: KeyboardEvent) {
           :aria-colindex="columnIndex + 2"
           :tabindex="activeCell.row === rowIndex && activeCell.column === columnIndex ? 0 : -1"
           :aria-selected="ordinal(rowIndex, columnIndex) < progress.completedCount"
-          :aria-label="`Row ${rowHeaders[rowIndex] + 1}, column ${columnHeaders[columnIndex] + 1}, ${ordinal(rowIndex, columnIndex) < progress.completedCount ? 'completed' : ordinal(rowIndex, columnIndex) === progress.completedCount ? 'next stitch' : 'not completed'}`"
+          :aria-label="t('tracker.grid.cell', { row: rowHeaders[rowIndex] + 1, column: columnHeaders[columnIndex] + 1, status: ordinal(rowIndex, columnIndex) < progress.completedCount ? t('tracker.grid.completed') : ordinal(rowIndex, columnIndex) === progress.completedCount ? t('tracker.grid.nextStitch') : t('tracker.grid.notCompleted') })"
           @focus="activeCell = { row: rowIndex, column: columnIndex }"
           @click="$emit('stitch', rowIndex, columnIndex)"
           @keydown="moveCell(rowIndex, columnIndex, $event)"

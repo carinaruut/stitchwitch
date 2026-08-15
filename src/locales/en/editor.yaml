@@ -1,0 +1,96 @@
+editor:
+  description: Edit the complete pattern. Repeated copies update their source cells.
+  directions:
+    horizontal: horizontally
+    vertical: vertically
+  status:
+    error: Backup failed
+    saving: Saving locally
+    saved: Saved locally
+    notDownloaded: Latest changes not downloaded
+    oneColumn: '{count} column'
+    columns: '{count} columns'
+    oneRow: '{count} row'
+    rows: '{count} rows'
+  print:
+    button: Print or Save as PDF
+    colorChart: Color chart
+    colorDescription: Print using stitch colors
+    symbolChart: B&W symbols
+    symbolDescription: Print with a symbol key
+  nav:
+    projectActions: Project actions
+    new: New
+    open: Open
+    save: Save
+    print: Print
+    tracker: Tracker
+    undo: Undo
+    redo: Redo
+    openGuide: Open user guide
+    userGuide: User guide
+    moreActions: More project actions
+    newProject: New project
+    openProject: Open project
+    saveProject: Save project
+    printOrPdf: Print or PDF
+    openTracker: Open tracker
+  modal:
+    cancel: Cancel
+    continue: Continue
+    close: close
+    closeDialog: Close dialog
+  theme:
+    switchToDark: Switch to dark theme
+    switchToLight: Switch to light theme
+  notifications:
+    patternCreated: New pattern created.
+    gridAlreadyClear: The grid is already clear.
+    gridCleared: Grid cleared.
+    projectSaved: Project saved to your downloads.
+    importCancelled: Import cancelled.
+    projectImported: Project imported successfully.
+    repeatBoxUpdated: Repeat box updated.
+    repeatBoxAdded: Repeat box added.
+    selectionCopied: Selection copied.
+    selectionPasted: Selection pasted.
+    selectionFlipped: Selection flipped {direction}.
+    selectionMoved: Selection moved.
+    backupFailed: Local backup failed. Download the project to avoid losing changes.
+    patternRecovered: Recovered your locally saved pattern.
+    dismiss: Dismiss {message}
+    close: Close
+  confirmations:
+    beforeUnload: Download a project backup with Save before leaving.
+    leavePage: Your pattern is saved only in this browser. Leave without downloading a project file?
+    clearTitle: Clear the grid?
+    clearMessage: All colored cells will return to the background color. You can undo this action.
+    clearConfirm: Clear grid
+    importTitle: Replace the current project?
+    importMessage: Opening this file will replace the pattern currently in the editor. Save it first if you want to keep it.
+    importConfirm: Open project
+  errors:
+    saveFailed: The project could not be saved.
+    invalidProjectFile: The project file is invalid.
+    fileTooLarge: The project file is too large.
+    invalidJson: The selected file is not valid JSON.
+    missingProject: The file does not contain a project object.
+    unsupportedFile: This is not a supported stitch-pattern file.
+    missingName: The project name is missing.
+    wholeNumberRange: '{field} must be a whole number from {minimum} to {maximum}.'
+    invalidBackground: The background color is invalid.
+    invalidPreviewStitch: The preview stitch is invalid.
+    rowDimensions: The cell rows do not match the project dimensions.
+    invalidCells: The cell colors or columns are invalid.
+    invalidRecentColors: The recent colors are invalid.
+    invalidRepeatBoxes: The repeat boxes are invalid.
+    repeatBoxUniqueId: Each repeat box must have a unique ID.
+    invalidRepeatBox: A repeat box has invalid settings.
+    repeatBoxOutside: A repeat box is outside the pattern.
+    repeatBoxUneven: A repeat box does not divide evenly into sections.
+    repeatBoxesOverlap: Repeat boxes overlap.
+    repeatBoxSettings: The repeat box settings are invalid.
+    repeatBoxLimit: Repeat boxes cannot extend beyond 500 rows or columns.
+    repeatLengthUneven: The repeat length must divide evenly into its sections.
+    repeatBoxesCannotOverlap: Repeat boxes cannot overlap.
+    selectionLimit: The selection cannot extend beyond 500 rows or columns.

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { onBeforeRouteLeave } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import TopNavbar from '../components/TopNavbar.vue'
 import DrawingTools from '../components/DrawingTools.vue'
 import ColorMenu from '../components/ColorMenu.vue'
@@ -20,9 +21,11 @@ import { useTheme } from '../composables/useTheme'
 import { useNotifications } from '../composables/useNotifications'
 import { downloadProject, readProjectFile } from '../composables/useProjectFiles'
 import type { DrawingTool, NewPatternProject, PatternProject, PrintMode, RepeatBoxInput } from '../types/pattern'
+import { localizedErrorMessage } from '../utils/appError'
 import { renderGrid } from '../utils/grid'
 
 const pattern = usePattern()
+const { t } = useI18n({ useScope: 'global' })
 const { theme, toggleTheme } = useTheme()
 const { notifications, notify, dismiss } = useNotifications()
 const newModalOpen = ref(false)
@@ -51,15 +54,19 @@ const renderedPattern = computed(() => renderGrid(
   pattern.project.value.repeatBoxes,
 ))
 
+function localizeProjectError(error: unknown, fallbackKey: string) {
+  return localizedErrorMessage(error, t) ?? t(fallbackKey)
+}
+
 function createProject(project: NewPatternProject) {
   pattern.createProject(project)
   newModalOpen.value = false
-  notify('New pattern created.', 'success')
+  notify(t('editor.notifications.patternCreated'), 'success')
 }
 
 function requestClear() {
   if (!pattern.hasColoredCells.value) {
-    notify('The grid is already clear.', 'info')
+    notify(t('editor.notifications.gridAlreadyClear'), 'info')
     return
   }
   clearModalOpen.value = true
@@ -68,7 +75,7 @@ function requestClear() {
 function confirmClear() {
   pattern.clearGrid()
   clearModalOpen.value = false
-  notify('Grid cleared.', 'success')
+  notify(t('editor.notifications.gridCleared'), 'success')
 }
 
 function saveProject() {
@@ -76,9 +83,9 @@ function saveProject() {
     downloadProject(pattern.project.value)
     downloadBackupNeeded.value = false
     void nextTick(() => { downloadBackupNeeded.value = false })
-    notify('Project saved to your downloads.', 'success')
+    notify(t('editor.notifications.projectSaved'), 'success')
   } catch (error) {
-    notify(error instanceof Error ? error.message : 'The project could not be saved.', 'error')
+    notify(localizeProjectError(error, 'editor.errors.saveFailed'), 'error')
   }
 }
 
@@ -87,14 +94,14 @@ async function selectFile(event: Event) {
   const file = input.files?.[0]
   input.value = ''
   if (!file) {
-    notify('Import cancelled.', 'info')
+    notify(t('editor.notifications.importCancelled'), 'info')
     return
   }
   try {
     pendingImport.value = await readProjectFile(file)
     importModalOpen.value = true
   } catch (error) {
-    notify(error instanceof Error ? error.message : 'The project file is invalid.', 'error', 6000)
+    notify(localizeProjectError(error, 'editor.errors.invalidProjectFile'), 'error', 6000)
   }
 }
 
@@ -105,13 +112,13 @@ function confirmImport() {
   void nextTick(() => { downloadBackupNeeded.value = false })
   pendingImport.value = null
   importModalOpen.value = false
-  notify('Project imported successfully.', 'success')
+  notify(t('editor.notifications.projectImported'), 'success')
 }
 
 function cancelImport() {
   pendingImport.value = null
   importModalOpen.value = false
-  notify('Import cancelled.', 'info')
+  notify(t('editor.notifications.importCancelled'), 'info')
 }
 
 function beginStroke() {
@@ -180,7 +187,7 @@ async function printPattern(mode: PrintMode = printMode.value) {
 function saveRepeatBox(input: RepeatBoxInput, id: string | null, complete: (error: string | null) => void) {
   const error = pattern.saveRepeatBox(input, id)
   complete(error)
-  if (!error) notify(id ? 'Repeat box updated.' : 'Repeat box added.', 'success')
+  if (!error) notify(t(id ? 'editor.notifications.repeatBoxUpdated' : 'editor.notifications.repeatBoxAdded'), 'success')
 }
 
 function selectTool(tool: typeof pattern.tool.value) {
@@ -190,12 +197,12 @@ function selectTool(tool: typeof pattern.tool.value) {
 }
 
 function copySelection() {
-  if (pattern.copySelection()) notify('Selection copied.', 'success')
+  if (pattern.copySelection()) notify(t('editor.notifications.selectionCopied'), 'success')
 }
 
 function pasteSelection() {
-  if (pattern.pasteSelection()) notify('Selection pasted.', 'success')
-  else notify('The selection cannot extend beyond 500 rows or columns.', 'error')
+  if (pattern.pasteSelection()) notify(t('editor.notifications.selectionPasted'), 'success')
+  else notify(t('editor.errors.selectionLimit'), 'error')
 }
 
 function startMoveSelection() {
@@ -203,7 +210,7 @@ function startMoveSelection() {
 }
 
 function mirrorSelection(direction: 'horizontal' | 'vertical') {
-  if (pattern.mirrorSelection(direction)) notify(`Selection flipped ${direction === 'horizontal' ? 'horizontally' : 'vertically'}.`, 'success')
+  if (pattern.mirrorSelection(direction)) notify(t('editor.notifications.selectionFlipped', { direction: t(`editor.directions.${direction}`) }), 'success')
 }
 
 function toggleMirror(direction: 'horizontal' | 'vertical') {
@@ -213,14 +220,14 @@ function toggleMirror(direction: 'horizontal' | 'vertical') {
 
 function placeSelection(row: number, column: number) {
   if (!placingSelection.value) return
-  if (pattern.moveSelectionTo(row, column)) notify('Selection moved.', 'success')
-  else notify('The selection cannot extend beyond 500 rows or columns.', 'error')
+  if (pattern.moveSelectionTo(row, column)) notify(t('editor.notifications.selectionMoved'), 'success')
+  else notify(t('editor.errors.selectionLimit'), 'error')
   placingSelection.value = false
 }
 
 function moveSelectionDirectly(row: number, column: number) {
-  if (pattern.moveSelectionTo(row, column)) notify('Selection moved.', 'success')
-  else notify('The selection cannot extend beyond 500 rows or columns.', 'error')
+  if (pattern.moveSelectionTo(row, column)) notify(t('editor.notifications.selectionMoved'), 'success')
+  else notify(t('editor.errors.selectionLimit'), 'error')
 }
 
 function handleKeyboardShortcuts(event: KeyboardEvent) {
@@ -272,14 +279,14 @@ function warnBeforeUnload(event: BeforeUnloadEvent) {
   pattern.flushAutosave()
   if (!downloadBackupNeeded.value) return
   event.preventDefault()
-  event.returnValue = 'Download a project backup with Save before leaving.'
+  event.returnValue = t('editor.confirmations.beforeUnload')
 }
 
 let autosaveErrorNotified = false
 watch(pattern.autosaveStatus, (status) => {
   if (status === 'error' && !autosaveErrorNotified) {
     autosaveErrorNotified = true
-    notify('Local backup failed. Download the project to avoid losing changes.', 'error', 7000)
+    notify(t('editor.notifications.backupFailed'), 'error', 7000)
   }
 })
 watch(pattern.project, () => {
@@ -289,7 +296,7 @@ watch(pattern.project, () => {
 onBeforeRouteLeave(() => {
   pattern.flushAutosave()
   if (!downloadBackupNeeded.value) return true
-  return window.confirm('Your pattern is saved only in this browser. Leave without downloading a project file?')
+  return window.confirm(t('editor.confirmations.leavePage'))
 })
 
 onMounted(() => {
@@ -297,7 +304,7 @@ onMounted(() => {
   window.addEventListener('beforeunload', warnBeforeUnload)
   window.addEventListener('pagehide', pattern.flushAutosave)
   document.addEventListener('visibilitychange', flushHiddenProject)
-  if (pattern.restoredAutosave.value) notify('Recovered your locally saved pattern.', 'success')
+  if (pattern.restoredAutosave.value) notify(t('editor.notifications.patternRecovered'), 'success')
 })
 onBeforeUnmount(() => {
   pattern.flushAutosave()
@@ -332,39 +339,39 @@ onBeforeUnmount(() => {
               <div class="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <h1 class="text-xl font-bold">{{ pattern.project.value.name }}</h1>
-                  <p class="text-sm text-base-content/65">Edit the complete pattern. Repeated copies update their source cells.</p>
+                  <p class="text-sm text-base-content/65">{{ t('editor.description') }}</p>
                 </div>
                 <div class="flex w-full flex-col items-stretch gap-2 sm:w-auto sm:items-end">
                   <div class="flex flex-wrap items-center gap-2 sm:justify-end">
                     <span class="badge badge-xs" :class="pattern.autosaveStatus.value === 'error' ? 'badge-error' : pattern.autosaveStatus.value === 'saving' ? 'badge-ghost' : 'badge-success badge-outline'">
                       <span class="mdi" :class="pattern.autosaveStatus.value === 'error' ? 'mdi-alert-circle-outline' : pattern.autosaveStatus.value === 'saving' ? 'mdi-loading mdi-spin' : 'mdi-content-save-check-outline'" aria-hidden="true"></span>
-                      {{ pattern.autosaveStatus.value === 'error' ? 'Backup failed' : pattern.autosaveStatus.value === 'saving' ? 'Saving locally' : 'Saved locally' }}
+                      {{ t(`editor.status.${pattern.autosaveStatus.value}`) }}
                     </span>
                     <span v-if="downloadBackupNeeded" class="badge badge-xs badge-warning badge-outline">
                       <span class="mdi mdi-download-alert-outline" aria-hidden="true"></span>
-                      Latest changes not downloaded
+                      {{ t('editor.status.notDownloaded') }}
                     </span>
-                    <span class="badge badge-primary">{{ renderedPattern.cells[0].length }} columns</span>
-                    <span class="badge badge-secondary">{{ renderedPattern.cells.length }} rows</span>
+                    <span class="badge badge-primary">{{ t(renderedPattern.cells[0].length === 1 ? 'editor.status.oneColumn' : 'editor.status.columns', { count: renderedPattern.cells[0].length }) }}</span>
+                    <span class="badge badge-secondary">{{ t(renderedPattern.cells.length === 1 ? 'editor.status.oneRow' : 'editor.status.rows', { count: renderedPattern.cells.length }) }}</span>
                   </div>
                   <details ref="printMenu" class="dropdown dropdown-end">
                     <summary class="btn btn-primary btn-sm">
                       <span class="mdi mdi-printer-outline text-base" aria-hidden="true"></span>
-                      Print or Save as PDF
+                      {{ t('editor.print.button') }}
                       <span class="mdi mdi-chevron-down" aria-hidden="true"></span>
                     </summary>
                     <ul class="menu dropdown-content z-50 mt-2 w-64 rounded-box border border-base-300 bg-base-100 p-2 shadow-lg">
                       <li>
                         <button type="button" @click="printPattern('color')">
                           <span class="mdi mdi-palette-outline text-lg" aria-hidden="true"></span>
-                          <span><strong class="block">Color chart</strong><span class="text-xs text-base-content/60">Print using stitch colors</span></span>
+                          <span><strong class="block">{{ t('editor.print.colorChart') }}</strong><span class="text-xs text-base-content/60">{{ t('editor.print.colorDescription') }}</span></span>
                           <span v-if="printMode === 'color'" class="mdi mdi-check ml-auto text-success" aria-hidden="true"></span>
                         </button>
                       </li>
                       <li>
                         <button type="button" @click="printPattern('symbols')">
                           <span class="mdi mdi-shape-outline text-lg" aria-hidden="true"></span>
-                          <span><strong class="block">B&amp;W symbols</strong><span class="text-xs text-base-content/60">Print with a symbol key</span></span>
+                          <span><strong class="block">{{ t('editor.print.symbolChart') }}</strong><span class="text-xs text-base-content/60">{{ t('editor.print.symbolDescription') }}</span></span>
                           <span v-if="printMode === 'symbols'" class="mdi mdi-check ml-auto text-success" aria-hidden="true"></span>
                         </button>
                       </li>
@@ -479,18 +486,18 @@ onBeforeUnmount(() => {
   <UserGuideModal :open="guideOpen" @close="guideOpen = false" />
   <ConfirmModal
     :open="clearModalOpen"
-    title="Clear the grid?"
-    message="All colored cells will return to the background color. You can undo this action."
-    confirm-label="Clear grid"
+    :title="t('editor.confirmations.clearTitle')"
+    :message="t('editor.confirmations.clearMessage')"
+    :confirm-label="t('editor.confirmations.clearConfirm')"
     destructive
     @confirm="confirmClear"
     @cancel="clearModalOpen = false"
   />
   <ConfirmModal
     :open="importModalOpen"
-    title="Replace the current project?"
-    message="Opening this file will replace the pattern currently in the editor. Save it first if you want to keep it."
-    confirm-label="Open project"
+    :title="t('editor.confirmations.importTitle')"
+    :message="t('editor.confirmations.importMessage')"
+    :confirm-label="t('editor.confirmations.importConfirm')"
     @confirm="confirmImport"
     @cancel="cancelImport"
   />

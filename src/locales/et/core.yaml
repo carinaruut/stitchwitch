@@ -1,0 +1,27 @@
+meta:
+  title: Stitch Witch
+  description: Loo brauseris kirjatud kudumi- ja ristpistemustreid.
+language:
+  label: Keel
+  current: 'Keel: {language}'
+common:
+  cancel: Loobu
+  close: Sulge
+  continue: Jätka
+  delete: Kustuta
+  edit: Muuda
+  open: Ava
+  save: Salvesta
+  enabled: Lubatud
+  row: Rida | Read
+  column: Veerg | Veerud
+  stitch: Piste | Pisted
+  section: Osa | Osad
+  page: Lehekülg | Leheküljed
+  across: Risti
+  down: Alla
+  horizontal: Horisontaalne
+  vertical: Vertikaalne
+  canvas: Ruudustik
+  knit: Kude
+  crossStitch: Ristpiste

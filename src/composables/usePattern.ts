@@ -4,6 +4,7 @@ import { addColumn, addRow, boxesOverlap, cloneGrid, createGrid, ensureGridSize,
 import { normalizeColor } from '../utils/colors'
 import { parseAxisSelection } from '../utils/axisSelection'
 import { asPatternProject } from '../utils/validation'
+import { translateError } from '../utils/localizedErrors'
 import { useHistory } from './useHistory'
 
 const AUTOSAVE_KEY = 'stitch-project-autosave'
@@ -16,7 +17,7 @@ interface SelectionClipboard {
 const DEFAULT_PROJECT: PatternProject = {
   format: 'stitch-pattern',
   version: 1,
-  name: 'My pattern',
+  name: translateError('defaults.projectName'),
   rows: 20,
   columns: 20,
   cellSize: 24,
@@ -400,12 +401,12 @@ export function usePattern() {
     const candidate: RepeatBox = { ...input, id: id ?? crypto.randomUUID() }
     const values = [candidate.top, candidate.bottom, candidate.left, candidate.right, candidate.sections]
     if (!values.every(Number.isInteger) || candidate.top < 0 || candidate.left < 0 || candidate.bottom <= candidate.top || candidate.right <= candidate.left || candidate.sections < 2 || candidate.sections > MAX_REPEAT_COUNT) {
-      return 'The repeat box settings are invalid.'
+      return translateError('repeatSave.settings')
     }
-    if (candidate.bottom > 500 || candidate.right > 500) return 'Repeat boxes cannot extend beyond 500 rows or columns.'
+    if (candidate.bottom > 500 || candidate.right > 500) return translateError('repeatSave.bounds')
     const length = candidate.direction === 'across' ? candidate.right - candidate.left : candidate.bottom - candidate.top
-    if (length % candidate.sections !== 0) return 'The repeat length must divide evenly into its sections.'
-    if (repeatBoxesConflict(candidate)) return 'Repeat boxes cannot overlap.'
+    if (length % candidate.sections !== 0) return translateError('repeatSave.sections')
+    if (repeatBoxesConflict(candidate)) return translateError('repeatSave.overlap')
 
     beginGridChange()
     const existingIndex = project.value.repeatBoxes.findIndex((box) => box.id === candidate.id)

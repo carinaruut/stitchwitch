@@ -1,0 +1,175 @@
+controls:
+  common:
+    cancel: Loobu
+    delete: Kustuta
+    edit: Muuda
+  drawing:
+    regionLabel: Redaktori tööriistad
+    title: Tööriistad
+    selectionLabel: Joonistustööriista valik
+    toolTooltip: "{label} ({shortcut})"
+    tools:
+      pencil: Pliiats
+      eraser: Kustutuskumm
+      fill: Täida
+      eyedropper: Pipett
+      select: Vali ala
+      wand: Võlukepp
+      move: Nihuta lõuendit
+    clearGrid: Tühjenda ruudustik
+    mirrorLines: Lõuendi peegeldusteljed
+    verticalMirrorTooltip: "Vertikaalne peegeldustelg: joonista vasakule ja paremale"
+    toggleVerticalMirror: Lülita vertikaalne peegeldustelg sisse või välja
+    vertical: Vertikaalne
+    horizontalMirrorTooltip: "Horisontaalne peegeldustelg: joonista üles ja alla"
+    toggleHorizontalMirror: Lülita horisontaalne peegeldustelg sisse või välja
+    horizontal: Horisontaalne
+    chooseDestination: Vali sihtkoht
+    patternSettings: Mustri sätted
+  axis:
+    rows: Read
+    columns: Veerud
+    rowPosition: Rida {current}/{count}
+    columnPosition: Veerg {current}/{count}
+    addBefore: Lisa ette
+    addAfter: Lisa järele
+    addAtStart: Lisa algusse
+    addAtEnd: Lisa lõppu
+    fillCurrent: Täida praegune
+    eraseCurrent: Kustuta praegune
+    deleteCurrentRow: Kustuta praegune rida {number}
+    deleteCurrentColumn: Kustuta praegune veerg {number}
+    deleteMultipleRows: Kustuta mitu rida
+    deleteMultipleColumns: Kustuta mitu veergu
+    delete: Kustuta
+    rowsInvalid: Sisesta read vahemikust 1 kuni {count}, näiteks 1-3;6.
+    columnsInvalid: Sisesta veerud vahemikust 1 kuni {count}, näiteks 1-3;6.
+    rowsHelp: Eralda read semikooloniga ; ja tähista vahemikud sidekriipsuga -.
+    columnsHelp: Eralda veerud semikooloniga ; ja tähista vahemikud sidekriipsuga -.
+  color:
+    title: Värv
+    controls: Värvivalik
+    choose: Vali mustri värv
+    eyedropper: Pipett
+    hex: Värvi kuueteistkümnendkood
+    invalid: Sisesta värv kujul #7c3aed.
+    recent: Hiljutised värvid
+    selectRecent: Vali hiljutine värv {color}
+  gridSettings:
+    title: Ruudustiku sätted
+    controls: Ruudustiku sätted
+    menuTitle: Ruudustik
+    visibleCellSize: Ruudu nähtav suurus
+    pixels: "{size} px"
+  preview:
+    title: Terve mustri eelvaade
+    stitch: Piste
+    stitchLabel: Eelvaate piste
+    knit: Silmus
+    crossStitch: Ristpiste
+    columns: "{count} veerg | {count} veergu"
+    rows: "{count} rida | {count} rida"
+    ariaLabel: Korduva pistemustri eelvaade
+  newProject:
+    defaultName: Minu muster
+    title: Loo uus muster
+    projectName: Projekti nimi
+    rows: Read
+    columns: Veerud
+    cellSize: "Ruudu suurus: {size} px"
+    horizontalRepeats: Horisontaalsed kordused
+    verticalRepeats: Vertikaalsed kordused
+    create: Loo muster
+    close: Sulge dialoog
+    nameRequired: Sisesta projekti nimi.
+    dimensionsInvalid: Ridade ja veergude arv peab olema täisarv 1 kuni 200.
+    repeatsInvalid: Korduste arv peab olema täisarv 1 kuni {max}.
+  repeat:
+    title: Kordusalad
+    controls: Korduste sätted
+    menuTitle: Kordused
+    description: Esimene osa on lähteala. Ühe koopia muutmisel uuenevad kõik koopiad.
+    direction: Korduse suund
+    across: Risti
+    down: Alla
+    sizingMethod: Korduse mõõtmisviis
+    sectionCount: Osade arv
+    endBoundary: Lõpupiir
+    topRow: Ülemine rida
+    leftColumn: Vasak veerg
+    bottomRow: Alumine rida
+    rightColumn: Parem veerg
+    startColumn: Algusveerg
+    startRow: Algusrida
+    endBeforeColumn: Lõpp enne veergu
+    endBeforeRow: Lõpp enne rida
+    sections: Osad
+    sectionWidth: Osa laius
+    sectionHeight: Osa kõrgus
+    includedBoundary: Alumine ja parem piir kuuluvad alasse.
+    excludedBoundaryHelp: Lõpupiir ei kuulu alasse; korduste arv arvutatakse osa suuruse järgi.
+    calculatedBoundaryHelp: Lõpupiir arvutatakse osa suuruse ja arvu järgi.
+    saveChanges: Salvesta muudatused
+    addBox: Lisa kordusala
+    enable: Luba {summary}
+    source: "Lähteala: {size}"
+    none: Kordusalasid pole veel.
+    fallbackTitle: Terve mustri varuvalik
+    fallbackHelp: Seda kasutatakse ainult siis, kui kordusalasid pole.
+    range: Read {top}–{bottom} · veerud {left}–{right}
+    sectionSummary: "{sections} osa · igaüks {length} {unit} | {sections} osa · igaüks {length} {unit}"
+    sectionUnitColumn: veeru laiune | veeru laiune
+    sectionUnitRow: rea kõrgune | rea kõrgune
+    sourceSize: "{rows} rida × {columns} veergu"
+    sourceSizeBothOne: "{rows} rida × {columns} veerg"
+    sourceSizeOneRow: "{rows} rida × {columns} veergu"
+    sourceSizeOneColumn: "{rows} rida × {columns} veerg"
+    validation:
+      positiveIntegers: Koordinaadid ja suurused peavad olema positiivsed täisarvud.
+      bottomAfterTop: Alumine rida peab olema ülemise reaga sama või sellest allpool.
+      rightAfterLeft: Parem veerg peab olema vasaku veeruga sama või sellest paremal.
+      extent: Kordusalad ei tohi ulatuda 500. reast ega veerust kaugemale.
+      ending: Kordusala peab lõppema pärast algust ja jääma esimese 500 rea ning veeru piiresse.
+      evenlyDivisible: Korduse pikkus peab jaguma osa suurusega täpselt.
+      sectionRange: Korduses peab olema 2 kuni {max} osa.
+  patternGrid:
+    label: Muudetav mustriruudustik
+    columnHeader: "Veerg {number}. Ava veerutoimingud. Vahemiku valimiseks vajuta tõstuklahvi ja klõpsa."
+    repeatedColumnHeader: "Veerg {number}, korduse koopia. Ava veerutoimingud. Vahemiku valimiseks vajuta tõstuklahvi ja klõpsa."
+    rowHeader: "Rida {number}. Ava reatoimingud. Vahemiku valimiseks vajuta tõstuklahvi ja klõpsa."
+    repeatedRowHeader: "Rida {number}, korduse koopia. Ava reatoimingud. Vahemiku valimiseks vajuta tõstuklahvi ja klõpsa."
+    cell: "Rida {row}, veerg {column}, värv {color}"
+    repeatedCell: "Rida {row}, veerg {column}, värv {color}, korduse koopia"
+    selectionActions: Valikutoimingud
+    moveSelection: Teisalda valik
+    copySelection: Kopeeri valik
+    pasteSelection: Kleebi valikusse
+    flipHorizontal: Peegelda horisontaalselt
+    flipVertical: Peegelda vertikaalselt
+    fillSelection: Täida valik
+    eraseSelection: Kustuta valik
+    rowActions: Rea {number} toimingud
+    selectedRowActions: "{count} valitud rea toimingud | {count} valitud rea toimingud"
+    rowHeading: RIDA {number}
+    rowsSelected: "VALITUD {count} RIDA | VALITUD {count} RIDA"
+    addRowAbove: Lisa rida ülespoole
+    addRowBelow: Lisa rida allapoole
+    addRows: Lisa ridu
+    addMultipleRows: Lisa mitu rida allapoole
+    fillRows: Täida valitud rida | Täida valitud read
+    eraseRows: Kustuta valitud rida | Kustuta valitud read
+    deleteRows: Kustuta valitud rida | Kustuta valitud read
+    columnActions: Veeru {number} toimingud
+    selectedColumnActions: "{count} valitud veeru toimingud | {count} valitud veeru toimingud"
+    columnHeading: VEERG {number}
+    columnsSelected: "VALITUD {count} VEERG | VALITUD {count} VEERGU"
+    addColumnBefore: Lisa veerg vasakule
+    addColumnAfter: Lisa veerg paremale
+    addColumns: Lisa veerge
+    addMultipleColumns: Lisa mitu veergu paremale
+    fillColumns: Täida valitud veerg | Täida valitud veerud
+    eraseColumns: Kustuta valitud veerg | Kustuta valitud veerud
+    deleteColumns: Kustuta valitud veerg | Kustuta valitud veerud
+  menus:
+    rowControls: Ridade sätted
+    columnControls: Veergude sätted

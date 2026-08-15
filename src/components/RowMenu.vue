@@ -1,17 +1,19 @@
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import ClickPopover from './ClickPopover.vue'
 import RowControls from './RowControls.vue'
 
 defineProps<{ selected: number; count: number }>()
 defineEmits<{ before: []; after: []; beginning: []; end: []; fill: []; erase: []; removeCurrent: []; removeRows: [value: string] }>()
+const { t } = useI18n({ useScope: 'global' })
 </script>
 
 <template>
-  <ClickPopover label="Row controls" align="right">
+  <ClickPopover :label="t('controls.menus.rowControls')" align="right">
     <template #trigger="{ open, panelId }">
-      <button class="btn btn-sm gap-1.5" :class="open ? 'btn-primary' : 'btn-ghost'" type="button" aria-label="Row controls" aria-haspopup="true" :aria-controls="panelId" :aria-expanded="open">
+      <button class="btn btn-sm gap-1.5" :class="open ? 'btn-primary' : 'btn-ghost'" type="button" :aria-label="t('controls.menus.rowControls')" aria-haspopup="true" :aria-controls="panelId" :aria-expanded="open">
         <span class="mdi mdi-table-row-plus-before text-lg" aria-hidden="true"></span>
-        <span class="hidden 2xl:inline">Rows</span>
+        <span class="hidden 2xl:inline">{{ t('controls.axis.rows') }}</span>
         <span class="badge badge-sm hidden sm:inline-flex" :class="open ? 'badge-primary-content' : 'badge-ghost'">{{ selected + 1 }}</span>
       </button>
     </template>

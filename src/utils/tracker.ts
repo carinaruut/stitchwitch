@@ -1,6 +1,7 @@
 import type { PatternProject } from '../types/pattern'
 import type { TrackerDirection, TrackerProgress, TrackerProject, TrackerStartRow } from '../types/tracker'
 import { asPatternProject } from './validation'
+import { appError } from './appError'
 
 export const MAX_TRACKER_STITCHES = 50_000
 
@@ -33,22 +34,22 @@ export function createTracker(pattern: PatternProject): TrackerProject {
 }
 
 export function asTrackerProject(value: unknown): TrackerProject {
-  if (!value || typeof value !== 'object') throw new Error('The file does not contain a tracker project.')
+  if (!value || typeof value !== 'object') throw appError('tracker.projectObject')
   const source = value as Record<string, unknown>
-  if (source.format !== 'stitch-tracker' || source.version !== 1) throw new Error('This is not a supported stitch-tracker file.')
+  if (source.format !== 'stitch-tracker' || source.version !== 1) throw appError('tracker.unsupportedFile')
   const pattern = asPatternProject(source.pattern)
-  if (!source.progress || typeof source.progress !== 'object') throw new Error('The tracker progress is missing.')
+  if (!source.progress || typeof source.progress !== 'object') throw appError('tracker.progressMissing')
   const progress = source.progress as Record<string, unknown>
   const total = trackerTotal(pattern)
   if (!Number.isInteger(progress.completedCount) || (progress.completedCount as number) < 0 || (progress.completedCount as number) > total) {
-    throw new Error('The completed stitch count is invalid.')
+    throw appError('tracker.completedCount')
   }
-  if (progress.startRow !== 'top' && progress.startRow !== 'bottom') throw new Error('The tracker start row is invalid.')
+  if (progress.startRow !== 'top' && progress.startRow !== 'bottom') throw appError('tracker.startRow')
   if (progress.firstRowDirection !== 'left-to-right' && progress.firstRowDirection !== 'right-to-left') {
-    throw new Error('The tracker row direction is invalid.')
+    throw appError('tracker.rowDirection')
   }
-  if (typeof progress.alternateRows !== 'boolean') throw new Error('The tracker row alternation setting is invalid.')
-  if (typeof progress.updatedAt !== 'string' || Number.isNaN(Date.parse(progress.updatedAt))) throw new Error('The tracker update time is invalid.')
+  if (typeof progress.alternateRows !== 'boolean') throw appError('tracker.alternateRows')
+  if (typeof progress.updatedAt !== 'string' || Number.isNaN(Date.parse(progress.updatedAt))) throw appError('tracker.updatedAt')
   return {
     format: 'stitch-tracker',
     version: 1,

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import type { DrawingTool, GridSelection, PatternGrid } from '../types/pattern'
 import { followsCenterBoundary, isCenterHeader, repeatOutlineColor, REPEAT_BOTTOM, REPEAT_COPY, REPEAT_LEFT, REPEAT_RIGHT, REPEAT_TOP } from '../utils/grid'
 
@@ -44,6 +45,7 @@ const emit = defineEmits<{
   placeSelection: [row: number, column: number]
   moveSelection: [row: number, column: number]
 }>()
+const { t } = useI18n({ useScope: 'global' })
 const viewport = ref<HTMLElement | null>(null)
 const drawing = ref(false)
 const panning = ref(false)
@@ -346,7 +348,7 @@ onBeforeUnmount(() => {
     ref="viewport"
     class="h-[calc(100dvh-16rem)] min-h-80 w-full min-w-0 overflow-auto border border-base-300/70 bg-base-100 p-3"
     :class="tool === 'move' ? (panning ? 'cursor-grabbing touch-none' : 'cursor-grab touch-none') : tool === 'select' ? (placingSelection ? 'cursor-copy' : 'cursor-crosshair') : tool === 'wand' ? 'cursor-crosshair' : ''"
-    aria-label="Editable pattern grid"
+    :aria-label="t('controls.patternGrid.label')"
     @pointerdown.self="startViewportAction"
     @pointermove="pan"
     @pointerup="stop"
@@ -369,7 +371,7 @@ onBeforeUnmount(() => {
         role="columnheader"
         tabindex="0"
         :aria-selected="tool !== 'move' && selectedColumns.includes(columnHeaders[column - 1])"
-        :aria-label="`Column ${columnHeaders[column - 1] + 1}${columnCopies[column - 1] > 0 ? ', repeated copy' : ''}. Open column actions. Shift-click to select a range.`"
+        :aria-label="t(columnCopies[column - 1] > 0 ? 'controls.patternGrid.repeatedColumnHeader' : 'controls.patternGrid.columnHeader', { number: columnHeaders[column - 1] + 1 })"
         @pointerdown="tool === 'move' && startPan($event)"
         @click="openColumnMenu(columnHeaders[column - 1], $event)"
         @contextmenu="openColumnMenu(columnHeaders[column - 1], $event)"
@@ -383,7 +385,7 @@ onBeforeUnmount(() => {
           role="rowheader"
           tabindex="0"
           :aria-selected="tool !== 'move' && selectedRows.includes(rowHeaders[rowIndex])"
-          :aria-label="`Row ${rowHeaders[rowIndex] + 1}${rowCopies[rowIndex] > 0 ? ', repeated copy' : ''}. Open row actions. Shift-click to select a range.`"
+          :aria-label="t(rowCopies[rowIndex] > 0 ? 'controls.patternGrid.repeatedRowHeader' : 'controls.patternGrid.rowHeader', { number: rowHeaders[rowIndex] + 1 })"
           @pointerdown="tool === 'move' && startPan($event)"
           @click="openRowMenu(rowHeaders[rowIndex], $event)"
           @contextmenu="openRowMenu(rowHeaders[rowIndex], $event)"
@@ -421,7 +423,7 @@ onBeforeUnmount(() => {
           :style="{ backgroundColor: color, '--repeat-color': repeatOutlineColor(repeatColorIndices[rowIndex][columnIndex]) }"
           role="gridcell"
           tabindex="0"
-          :aria-label="`Row ${rowHeaders[rowIndex] + 1}, column ${columnHeaders[columnIndex] + 1}, color ${color}${(repeatFlags[rowIndex][columnIndex] & REPEAT_COPY) !== 0 || rowCopies[rowIndex] > 0 || columnCopies[columnIndex] > 0 ? ', repeated copy' : ''}`"
+          :aria-label="t((repeatFlags[rowIndex][columnIndex] & REPEAT_COPY) !== 0 || rowCopies[rowIndex] > 0 || columnCopies[columnIndex] > 0 ? 'controls.patternGrid.repeatedCell' : 'controls.patternGrid.cell', { row: rowHeaders[rowIndex] + 1, column: columnHeaders[columnIndex] + 1, color })"
           @pointerdown="start(cellSourceRows[rowIndex][columnIndex], cellSourceColumns[rowIndex][columnIndex], rowIndex, columnIndex, $event)"
           @pointerenter="enter(cellSourceRows[rowIndex][columnIndex], cellSourceColumns[rowIndex][columnIndex], rowIndex, columnIndex, $event)"
           @contextmenu="openSelectionMenu(rowHeaders[rowIndex], columnHeaders[columnIndex], $event)"
@@ -437,18 +439,18 @@ onBeforeUnmount(() => {
     class="fixed z-[80] w-52 rounded-box border border-base-300 bg-base-100 p-2 shadow-lg"
     :style="{ left: `${selectionMenu.x}px`, top: `${selectionMenu.y}px` }"
     role="menu"
-    aria-label="Selection actions"
+    :aria-label="t('controls.patternGrid.selectionActions')"
     @click.stop
   >
     <ul class="menu menu-sm w-full p-0">
-      <li><button type="button" role="menuitem" @click="runSelectionAction('move')"><span class="mdi mdi-cursor-move" aria-hidden="true"></span>Move selection</button></li>
-      <li><button type="button" role="menuitem" @click="runSelectionAction('copy')"><span class="mdi mdi-content-copy" aria-hidden="true"></span>Copy selection</button></li>
-      <li><button type="button" role="menuitem" :disabled="!canPaste" @click="runSelectionAction('paste')"><span class="mdi mdi-content-paste" aria-hidden="true"></span>Paste into selection</button></li>
-      <li><button type="button" role="menuitem" @click="runSelectionAction('flip-horizontal')"><span class="mdi mdi-flip-horizontal" aria-hidden="true"></span>Flip horizontally</button></li>
-      <li><button type="button" role="menuitem" @click="runSelectionAction('flip-vertical')"><span class="mdi mdi-flip-vertical" aria-hidden="true"></span>Flip vertically</button></li>
+      <li><button type="button" role="menuitem" @click="runSelectionAction('move')"><span class="mdi mdi-cursor-move" aria-hidden="true"></span>{{ t('controls.patternGrid.moveSelection') }}</button></li>
+      <li><button type="button" role="menuitem" @click="runSelectionAction('copy')"><span class="mdi mdi-content-copy" aria-hidden="true"></span>{{ t('controls.patternGrid.copySelection') }}</button></li>
+      <li><button type="button" role="menuitem" :disabled="!canPaste" @click="runSelectionAction('paste')"><span class="mdi mdi-content-paste" aria-hidden="true"></span>{{ t('controls.patternGrid.pasteSelection') }}</button></li>
+      <li><button type="button" role="menuitem" @click="runSelectionAction('flip-horizontal')"><span class="mdi mdi-flip-horizontal" aria-hidden="true"></span>{{ t('controls.patternGrid.flipHorizontal') }}</button></li>
+      <li><button type="button" role="menuitem" @click="runSelectionAction('flip-vertical')"><span class="mdi mdi-flip-vertical" aria-hidden="true"></span>{{ t('controls.patternGrid.flipVertical') }}</button></li>
       <li class="my-1 border-t border-base-300"></li>
-      <li><button type="button" role="menuitem" @click="runSelectionAction('fill')"><span class="mdi mdi-format-color-fill" aria-hidden="true"></span>Fill selection</button></li>
-      <li><button type="button" role="menuitem" @click="runSelectionAction('erase')"><span class="mdi mdi-eraser" aria-hidden="true"></span>Erase selection</button></li>
+      <li><button type="button" role="menuitem" @click="runSelectionAction('fill')"><span class="mdi mdi-format-color-fill" aria-hidden="true"></span>{{ t('controls.patternGrid.fillSelection') }}</button></li>
+      <li><button type="button" role="menuitem" @click="runSelectionAction('erase')"><span class="mdi mdi-eraser" aria-hidden="true"></span>{{ t('controls.patternGrid.eraseSelection') }}</button></li>
     </ul>
   </div>
 
@@ -457,23 +459,23 @@ onBeforeUnmount(() => {
     class="fixed z-[80] w-56 rounded-box border border-base-300 bg-base-100 p-2"
     :style="{ left: `${rowMenu.x}px`, top: `${rowMenu.y}px` }"
     role="menu"
-    :aria-label="`Actions for ${selectedRows.length === 1 ? `row ${rowMenu.row + 1}` : `${selectedRows.length} selected rows`}`"
+    :aria-label="selectedRows.length === 1 ? t('controls.patternGrid.rowActions', { number: rowMenu.row + 1 }) : t('controls.patternGrid.selectedRowActions', selectedRows.length)"
     @click.stop
   >
-    <p class="px-3 py-2 text-xs font-semibold text-base-content/60">{{ selectedRows.length === 1 ? `ROW ${rowMenu.row + 1}` : `${selectedRows.length} ROWS SELECTED` }}</p>
+    <p class="px-3 py-2 text-xs font-semibold text-base-content/60">{{ selectedRows.length === 1 ? t('controls.patternGrid.rowHeading', { number: rowMenu.row + 1 }) : t('controls.patternGrid.rowsSelected', selectedRows.length) }}</p>
     <ul class="menu menu-sm w-full p-0">
-      <li><button type="button" role="menuitem" @click="runRowAction('above')"><span class="mdi mdi-arrow-up" aria-hidden="true"></span>Add row above</button></li>
-      <li><button type="button" role="menuitem" @click="runRowAction('below')"><span class="mdi mdi-arrow-down" aria-hidden="true"></span>Add row below</button></li>
+      <li><button type="button" role="menuitem" @click="runRowAction('above')"><span class="mdi mdi-arrow-up" aria-hidden="true"></span>{{ t('controls.patternGrid.addRowAbove') }}</button></li>
+      <li><button type="button" role="menuitem" @click="runRowAction('below')"><span class="mdi mdi-arrow-down" aria-hidden="true"></span>{{ t('controls.patternGrid.addRowBelow') }}</button></li>
     </ul>
     <div class="my-1 flex items-center gap-2 border-y border-base-300 px-3 py-2">
-      <label class="text-xs" for="multiple-rows">Add rows</label>
+      <label class="text-xs" for="multiple-rows">{{ t('controls.patternGrid.addRows') }}</label>
       <input id="multiple-rows" v-model.number="multipleCount" class="input input-bordered input-xs min-w-0 flex-1" type="number" min="1" max="50" />
-      <button class="btn btn-primary btn-xs btn-square" type="button" aria-label="Add multiple rows below" @click="runRowAction('multiple')"><span class="mdi mdi-plus" aria-hidden="true"></span></button>
+      <button class="btn btn-primary btn-xs btn-square" type="button" :aria-label="t('controls.patternGrid.addMultipleRows')" @click="runRowAction('multiple')"><span class="mdi mdi-plus" aria-hidden="true"></span></button>
     </div>
     <ul class="menu menu-sm w-full p-0">
-      <li><button type="button" role="menuitem" @click="runRowAction('fill')"><span class="mdi mdi-format-color-fill" aria-hidden="true"></span>Fill selected {{ selectedRows.length === 1 ? 'row' : 'rows' }}</button></li>
-      <li><button type="button" role="menuitem" @click="runRowAction('erase')"><span class="mdi mdi-eraser" aria-hidden="true"></span>Erase selected {{ selectedRows.length === 1 ? 'row' : 'rows' }}</button></li>
-      <li><button class="text-error" type="button" role="menuitem" :disabled="sourceRows <= 1" @click="runRowAction('delete')"><span class="mdi mdi-delete-outline" aria-hidden="true"></span>Delete selected {{ selectedRows.length === 1 ? 'row' : 'rows' }}</button></li>
+      <li><button type="button" role="menuitem" @click="runRowAction('fill')"><span class="mdi mdi-format-color-fill" aria-hidden="true"></span>{{ t('controls.patternGrid.fillRows', selectedRows.length) }}</button></li>
+      <li><button type="button" role="menuitem" @click="runRowAction('erase')"><span class="mdi mdi-eraser" aria-hidden="true"></span>{{ t('controls.patternGrid.eraseRows', selectedRows.length) }}</button></li>
+      <li><button class="text-error" type="button" role="menuitem" :disabled="sourceRows <= 1" @click="runRowAction('delete')"><span class="mdi mdi-delete-outline" aria-hidden="true"></span>{{ t('controls.patternGrid.deleteRows', selectedRows.length) }}</button></li>
     </ul>
   </div>
 
@@ -482,23 +484,23 @@ onBeforeUnmount(() => {
     class="fixed z-[80] w-56 rounded-box border border-base-300 bg-base-100 p-2"
     :style="{ left: `${columnMenu.x}px`, top: `${columnMenu.y}px` }"
     role="menu"
-    :aria-label="`Actions for ${selectedColumns.length === 1 ? `column ${columnMenu.column + 1}` : `${selectedColumns.length} selected columns`}`"
+    :aria-label="selectedColumns.length === 1 ? t('controls.patternGrid.columnActions', { number: columnMenu.column + 1 }) : t('controls.patternGrid.selectedColumnActions', selectedColumns.length)"
     @click.stop
   >
-    <p class="px-3 py-2 text-xs font-semibold text-base-content/60">{{ selectedColumns.length === 1 ? `COLUMN ${columnMenu.column + 1}` : `${selectedColumns.length} COLUMNS SELECTED` }}</p>
+    <p class="px-3 py-2 text-xs font-semibold text-base-content/60">{{ selectedColumns.length === 1 ? t('controls.patternGrid.columnHeading', { number: columnMenu.column + 1 }) : t('controls.patternGrid.columnsSelected', selectedColumns.length) }}</p>
     <ul class="menu menu-sm w-full p-0">
-      <li><button type="button" role="menuitem" @click="runColumnAction('before')"><span class="mdi mdi-arrow-left" aria-hidden="true"></span>Add column before</button></li>
-      <li><button type="button" role="menuitem" @click="runColumnAction('after')"><span class="mdi mdi-arrow-right" aria-hidden="true"></span>Add column after</button></li>
+      <li><button type="button" role="menuitem" @click="runColumnAction('before')"><span class="mdi mdi-arrow-left" aria-hidden="true"></span>{{ t('controls.patternGrid.addColumnBefore') }}</button></li>
+      <li><button type="button" role="menuitem" @click="runColumnAction('after')"><span class="mdi mdi-arrow-right" aria-hidden="true"></span>{{ t('controls.patternGrid.addColumnAfter') }}</button></li>
     </ul>
     <div class="my-1 flex items-center gap-2 border-y border-base-300 px-3 py-2">
-      <label class="text-xs" for="multiple-columns">Add columns</label>
+      <label class="text-xs" for="multiple-columns">{{ t('controls.patternGrid.addColumns') }}</label>
       <input id="multiple-columns" v-model.number="multipleColumnCount" class="input input-bordered input-xs min-w-0 flex-1" type="number" min="1" max="50" />
-      <button class="btn btn-primary btn-xs btn-square" type="button" aria-label="Add multiple columns after" @click="runColumnAction('multiple')"><span class="mdi mdi-plus" aria-hidden="true"></span></button>
+      <button class="btn btn-primary btn-xs btn-square" type="button" :aria-label="t('controls.patternGrid.addMultipleColumns')" @click="runColumnAction('multiple')"><span class="mdi mdi-plus" aria-hidden="true"></span></button>
     </div>
     <ul class="menu menu-sm w-full p-0">
-      <li><button type="button" role="menuitem" @click="runColumnAction('fill')"><span class="mdi mdi-format-color-fill" aria-hidden="true"></span>Fill selected {{ selectedColumns.length === 1 ? 'column' : 'columns' }}</button></li>
-      <li><button type="button" role="menuitem" @click="runColumnAction('erase')"><span class="mdi mdi-eraser" aria-hidden="true"></span>Erase selected {{ selectedColumns.length === 1 ? 'column' : 'columns' }}</button></li>
-      <li><button class="text-error" type="button" role="menuitem" :disabled="sourceColumns <= 1" @click="runColumnAction('delete')"><span class="mdi mdi-delete-outline" aria-hidden="true"></span>Delete selected {{ selectedColumns.length === 1 ? 'column' : 'columns' }}</button></li>
+      <li><button type="button" role="menuitem" @click="runColumnAction('fill')"><span class="mdi mdi-format-color-fill" aria-hidden="true"></span>{{ t('controls.patternGrid.fillColumns', selectedColumns.length) }}</button></li>
+      <li><button type="button" role="menuitem" @click="runColumnAction('erase')"><span class="mdi mdi-eraser" aria-hidden="true"></span>{{ t('controls.patternGrid.eraseColumns', selectedColumns.length) }}</button></li>
+      <li><button class="text-error" type="button" role="menuitem" :disabled="sourceColumns <= 1" @click="runColumnAction('delete')"><span class="mdi mdi-delete-outline" aria-hidden="true"></span>{{ t('controls.patternGrid.deleteColumns', selectedColumns.length) }}</button></li>
     </ul>
   </div>
 </template>
