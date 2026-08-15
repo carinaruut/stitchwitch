@@ -55,11 +55,14 @@ controls:
     recent: Hiljutised värvid
     selectRecent: Vali hiljutine värv {color}
   gridSettings:
+    settings: Seaded
     title: Ruudustiku sätted
     controls: Ruudustiku sätted
     menuTitle: Ruudustik
     visibleCellSize: Ruudu nähtav suurus
     pixels: "{size} px"
+    fullHeight: Näita lõuendit täiskõrguses
+    fullHeightDescription: Kasuta lõuendi sisemise kerimisriba asemel lehe kerimist
   preview:
     title: Terve mustri eelvaade
     fitWidth: Mahuta laiusesse

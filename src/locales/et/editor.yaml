@@ -54,7 +54,7 @@ editor:
     patternCreated: Uus muster on loodud.
     gridAlreadyClear: Ruudustik on juba tühi.
     gridCleared: Ruudustik on tühjendatud.
-    projectSaved: Projekt on allalaadimiste kausta salvestatud.
+    projectSaved: Projekt salvestati brauserisse ja laaditi alla.
     pngDownloaded: Lõuendi PNG-fail on alla laaditud.
     importCancelled: Importimine katkestati.
     projectImported: Projekt imporditi edukalt.

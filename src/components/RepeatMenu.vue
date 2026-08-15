@@ -27,10 +27,8 @@ const { t } = useI18n({ useScope: 'global' })
 <template>
   <ClickPopover :label="t('controls.repeat.controls')" align="right" width="md">
     <template #trigger="{ open, panelId }">
-      <button class="btn btn-sm gap-1.5" :class="open ? 'btn-primary' : 'btn-ghost'" type="button" :aria-label="t('controls.repeat.controls')" aria-haspopup="true" :aria-controls="panelId" :aria-expanded="open">
-        <span class="mdi mdi-repeat text-lg" aria-hidden="true"></span>
-        <span class="hidden xl:inline">{{ t('controls.repeat.menuTitle') }}</span>
-        <span v-if="boxes.length" class="badge badge-sm" :class="open ? 'badge-primary-content' : 'badge-neutral'">{{ boxes.length }}</span>
+      <button class="btn btn-sm" :class="open ? 'btn-primary' : 'btn-ghost'" type="button" :aria-label="t('controls.repeat.controls')" :title="t('controls.repeat.controls')" aria-haspopup="true" :aria-controls="panelId" :aria-expanded="open">
+        <span class="mdi mdi-repeat text-xl" aria-hidden="true"></span>
       </button>
     </template>
     <RepeatSettings

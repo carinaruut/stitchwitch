@@ -55,11 +55,14 @@ controls:
     recent: Recent colors
     selectRecent: Select recent color {color}
   gridSettings:
+    settings: Settings
     title: Grid settings
     controls: Grid controls
     menuTitle: Grid
     visibleCellSize: Visible cell size
     pixels: "{size} px"
+    fullHeight: Show full canvas height
+    fullHeightDescription: Use page scrolling instead of a scrollbar inside the canvas
   preview:
     title: Complete pattern preview
     fitWidth: Fit width

@@ -25,6 +25,16 @@ import type { DrawingTool, NewPatternProject, PatternProject, PrintMode, RepeatB
 import { localizedErrorMessage } from '../utils/appError'
 import { renderGrid } from '../utils/grid'
 
+const CANVAS_FULL_HEIGHT_KEY = 'stitch-canvas-full-height'
+
+function readCanvasFullHeight() {
+  try {
+    return localStorage.getItem(CANVAS_FULL_HEIGHT_KEY) !== 'false'
+  } catch {
+    return true
+  }
+}
+
 const pattern = usePattern()
 const { t } = useI18n({ useScope: 'global' })
 const { theme, toggleTheme } = useTheme()
@@ -38,6 +48,7 @@ const pendingImport = ref<PatternProject | null>(null)
 const placingSelection = ref(false)
 const printMode = ref<PrintMode>('color')
 const printMenu = ref<HTMLDetailsElement | null>(null)
+const canvasFullHeight = ref(readCanvasFullHeight())
 const downloadBackupNeeded = ref(pattern.restoredAutosave.value)
 const patternName = ref(pattern.project.value.name)
 const toolShortcuts: Record<string, DrawingTool> = {
@@ -55,6 +66,14 @@ const renderedPattern = computed(() => renderGrid(
   pattern.project.value.verticalRepeats,
   pattern.project.value.repeatBoxes,
 ))
+
+watch(canvasFullHeight, (value) => {
+  try {
+    localStorage.setItem(CANVAS_FULL_HEIGHT_KEY, String(value))
+  } catch {
+    // The canvas layout still works when browser storage is unavailable.
+  }
+})
 
 function localizeProjectError(error: unknown, fallbackKey: string) {
   return localizedErrorMessage(error, t) ?? t(fallbackKey)
@@ -102,6 +121,7 @@ function confirmClear() {
 
 function saveProject() {
   try {
+    pattern.flushAutosave()
     downloadProject(pattern.project.value)
     downloadBackupNeeded.value = false
     void nextTick(() => { downloadBackupNeeded.value = false })
@@ -459,46 +479,17 @@ onBeforeUnmount(() => {
                 </div>
                 <div class="flex w-full flex-col items-stretch gap-2 sm:w-auto sm:items-end">
                   <div class="flex flex-wrap items-center gap-2 sm:justify-end">
-                    <span class="badge badge-xs" :class="pattern.autosaveStatus.value === 'error' ? 'badge-error' : pattern.autosaveStatus.value === 'saving' ? 'badge-ghost' : 'badge-success badge-outline'">
+                    <span class="badge" :class="pattern.autosaveStatus.value === 'error' ? 'badge-error' : pattern.autosaveStatus.value === 'saving' ? 'badge-ghost' : 'badge-success badge-outline'">
                       <span class="mdi" :class="pattern.autosaveStatus.value === 'error' ? 'mdi-alert-circle-outline' : pattern.autosaveStatus.value === 'saving' ? 'mdi-loading mdi-spin' : 'mdi-content-save-check-outline'" aria-hidden="true"></span>
                       {{ t(`editor.status.${pattern.autosaveStatus.value}`) }}
                     </span>
-                    <span v-if="downloadBackupNeeded" class="badge badge-xs badge-warning badge-outline">
+                    <span v-if="downloadBackupNeeded" class="badge badge-warning badge-outline">
                       <span class="mdi mdi-download-alert-outline" aria-hidden="true"></span>
                       {{ t('editor.status.notDownloaded') }}
                     </span>
                     <span class="badge badge-primary">{{ t(renderedPattern.cells[0].length === 1 ? 'editor.status.oneColumn' : 'editor.status.columns', { count: renderedPattern.cells[0].length }) }}</span>
                     <span class="badge badge-secondary">{{ t(renderedPattern.cells.length === 1 ? 'editor.status.oneRow' : 'editor.status.rows', { count: renderedPattern.cells.length }) }}</span>
                   </div>
-                  <details ref="printMenu" class="dropdown dropdown-end">
-                    <summary class="btn btn-primary btn-sm">
-                      <span class="mdi mdi-download-outline text-base" aria-hidden="true"></span>
-                      {{ t('editor.print.button') }}
-                      <span class="mdi mdi-chevron-down" aria-hidden="true"></span>
-                    </summary>
-                    <ul class="menu dropdown-content z-50 mt-2 w-64 rounded-box border border-base-300 bg-base-100 p-2 shadow-lg">
-                      <li>
-                        <button type="button" @click="downloadCanvasPng">
-                          <span class="mdi mdi-image-outline text-lg" aria-hidden="true"></span>
-                          <span><strong class="block">{{ t('editor.print.canvasPng') }}</strong><span class="text-xs text-base-content/60">{{ t('editor.print.canvasDescription') }}</span></span>
-                        </button>
-                      </li>
-                      <li>
-                        <button type="button" @click="printPattern('color')">
-                          <span class="mdi mdi-palette-outline text-lg" aria-hidden="true"></span>
-                          <span><strong class="block">{{ t('editor.print.colorChart') }}</strong><span class="text-xs text-base-content/60">{{ t('editor.print.colorDescription') }}</span></span>
-                          <span v-if="printMode === 'color'" class="mdi mdi-check ml-auto text-success" aria-hidden="true"></span>
-                        </button>
-                      </li>
-                      <li>
-                        <button type="button" @click="printPattern('symbols')">
-                          <span class="mdi mdi-shape-outline text-lg" aria-hidden="true"></span>
-                          <span><strong class="block">{{ t('editor.print.symbolChart') }}</strong><span class="text-xs text-base-content/60">{{ t('editor.print.symbolDescription') }}</span></span>
-                          <span v-if="printMode === 'symbols'" class="mdi mdi-check ml-auto text-success" aria-hidden="true"></span>
-                        </button>
-                      </li>
-                    </ul>
-                  </details>
                 </div>
               </div>
               <DrawingTools
@@ -511,10 +502,14 @@ onBeforeUnmount(() => {
                 @toggle-mirror-vertical="toggleMirror('vertical')"
                 @cancel-placement="placingSelection = false"
                 @clear="requestClear"
+                @save="saveProject"
+                @png="downloadCanvasPng"
+                @print="printPattern"
               >
-                <template #settings>
+                <template #color>
                   <ColorMenu :color="pattern.selectedColor.value" :recent-colors="pattern.recentColors.value" @select="pattern.chooseColor($event)" @eyedropper="pattern.tool.value = 'eyedropper'" />
-                  <GridMenu :cell-size="pattern.project.value.cellSize" @cell-size="pattern.project.value.cellSize = $event" />
+                </template>
+                <template #controls>
                   <RepeatMenu
                     :horizontal="pattern.project.value.horizontalRepeats"
                     :vertical="pattern.project.value.verticalRepeats"
@@ -554,6 +549,9 @@ onBeforeUnmount(() => {
                     @remove-columns="deleteColumns"
                   />
                 </template>
+                <template #settings>
+                  <GridMenu :cell-size="pattern.project.value.cellSize" :full-height="canvasFullHeight" @cell-size="pattern.project.value.cellSize = $event" @full-height="canvasFullHeight = $event" />
+                </template>
               </DrawingTools>
               <PatternGrid
                 :cells="renderedPattern.cells"
@@ -568,6 +566,7 @@ onBeforeUnmount(() => {
                 :source-rows="pattern.rowCount.value"
                 :source-columns="pattern.columnCount.value"
                 :cell-size="pattern.project.value.cellSize"
+                :full-height="canvasFullHeight"
                 :selected-row="pattern.selectedRow.value"
                 :selected-column="pattern.selectedColumn.value"
                 :selected-rows="pattern.selectedRows.value"

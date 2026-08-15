@@ -54,7 +54,7 @@ editor:
     patternCreated: New pattern created.
     gridAlreadyClear: The grid is already clear.
     gridCleared: Grid cleared.
-    projectSaved: Project saved to your downloads.
+    projectSaved: Project saved locally and downloaded.
     pngDownloaded: Canvas PNG downloaded.
     importCancelled: Import cancelled.
     projectImported: Project imported successfully.

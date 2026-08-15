@@ -19,6 +19,7 @@ const props = defineProps<{
   sourceRows: number
   sourceColumns: number
   cellSize: number
+  fullHeight: boolean
   selectedRow: number
   selectedColumn: number
   selectedRows: number[]
@@ -354,8 +355,8 @@ onBeforeUnmount(() => {
 <template>
   <div
     ref="viewport"
-    class="h-[calc(100dvh-16rem)] min-h-80 w-full min-w-0 overflow-auto border border-base-300/70 bg-base-100 p-3"
-    :class="tool === 'move' ? (panning ? 'cursor-grabbing touch-none' : 'cursor-grab touch-none') : tool === 'select' ? (placingSelection ? 'cursor-copy' : 'cursor-crosshair') : tool === 'wand' ? 'cursor-crosshair' : ''"
+    class="w-full min-w-0 border border-base-300/70 bg-base-100 p-3"
+    :class="[fullHeight ? 'h-auto min-h-0 overflow-x-auto overflow-y-hidden' : 'h-[calc(100dvh-16rem)] min-h-80 overflow-auto', tool === 'move' ? (panning ? 'cursor-grabbing touch-none' : 'cursor-grab touch-none') : tool === 'select' ? (placingSelection ? 'cursor-copy' : 'cursor-crosshair') : tool === 'wand' ? 'cursor-crosshair' : '']"
     :aria-label="t('controls.patternGrid.label')"
     @pointerdown.self="startViewportAction"
     @pointermove="pan"
