@@ -43,6 +43,7 @@ tracker:
     knit: Knit
     crossStitch: Cross stitch
     cellSize: Cell size
+    autoScroll: Auto-scroll
   instructions:
     resetOrder: Reset progress to change the tracking order.
     usage: Click a stitch to complete everything through it. Click a row number to complete or reopen that entire row.

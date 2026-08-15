@@ -15,11 +15,12 @@ const props = defineProps<{
   cellSize: number
   display: PatternDisplay
   progress: TrackerProgress
+  autoScroll: boolean
 }>()
 
 const { t } = useI18n({ useScope: 'global' })
 
-defineEmits<{
+const emit = defineEmits<{
   stitch: [row: number, column: number]
   row: [row: number]
 }>()
@@ -34,6 +35,45 @@ function ordinal(row: number, column: number) {
 
 function rowComplete(row: number) {
   return props.progress.completedCount >= rowCompletionRange(row, props.cells.length, props.cells[0].length, props.progress.startRow).through
+}
+
+function rowDirection(row: number) {
+  const logicalRow = props.progress.startRow === 'top' ? row : props.cells.length - row - 1
+  if (!props.progress.alternateRows || logicalRow % 2 === 0) return props.progress.firstRowDirection
+  return props.progress.firstRowDirection === 'left-to-right' ? 'right-to-left' : 'left-to-right'
+}
+
+function scrollAfterStitch(row: number, column: number) {
+  const container = viewport.value
+  const cell = container?.querySelector<HTMLElement>(`[data-tracker-cell="${row}-${column}"]`)
+  if (!container || !cell) return
+
+  const viewportRect = container.getBoundingClientRect()
+  const cellRect = cell.getBoundingClientRect()
+  const gridHeaderSize = 32
+  const visibleLeft = viewportRect.left + gridHeaderSize
+  const visibleTop = viewportRect.top + gridHeaderSize
+  const horizontalMidpoint = (visibleLeft + viewportRect.right) / 2
+  const verticalMidpoint = (visibleTop + viewportRect.bottom) / 2
+  const cellCenterX = (cellRect.left + cellRect.right) / 2
+  const cellCenterY = (cellRect.top + cellRect.bottom) / 2
+  const keepVisible = props.cellSize * 5
+  const direction = rowDirection(row)
+  let left = 0
+  let top = 0
+
+  if (direction === 'left-to-right' && cellCenterX > horizontalMidpoint) left = cellRect.left - visibleLeft - keepVisible
+  if (direction === 'right-to-left' && cellCenterX < horizontalMidpoint) left = cellRect.right - viewportRect.right + keepVisible
+  if (props.progress.startRow === 'top' && cellCenterY > verticalMidpoint) top = cellRect.top - visibleTop - keepVisible
+  if (props.progress.startRow === 'bottom' && cellCenterY < verticalMidpoint) top = cellRect.bottom - viewportRect.bottom + keepVisible
+
+  if (left || top) container.scrollBy({ left, top, behavior: 'smooth' })
+}
+
+function selectStitch(row: number, column: number) {
+  const movesProgressForward = ordinal(row, column) >= props.progress.completedCount
+  emit('stitch', row, column)
+  if (props.autoScroll && movesProgressForward) void nextTick(() => scrollAfterStitch(row, column))
 }
 
 function focusCell(row: number, column: number) {
@@ -134,7 +174,7 @@ function moveRowHeader(row: number, event: KeyboardEvent) {
           :aria-selected="ordinal(rowIndex, columnIndex) < progress.completedCount"
           :aria-label="t('tracker.grid.cell', { row: rowHeaders[rowIndex] + 1, column: columnHeaders[columnIndex] + 1, status: ordinal(rowIndex, columnIndex) < progress.completedCount ? t('tracker.grid.completed') : ordinal(rowIndex, columnIndex) === progress.completedCount ? t('tracker.grid.nextStitch') : t('tracker.grid.notCompleted') })"
           @focus="activeCell = { row: rowIndex, column: columnIndex }"
-          @click="$emit('stitch', rowIndex, columnIndex)"
+          @click="selectStitch(rowIndex, columnIndex)"
           @keydown="moveCell(rowIndex, columnIndex, $event)"
         >
           <span

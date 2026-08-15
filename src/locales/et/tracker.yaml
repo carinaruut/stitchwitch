@@ -43,6 +43,7 @@ tracker:
     knit: Kude
     crossStitch: Ristpiste
     cellSize: Ruudu suurus
+    autoScroll: Automaatne kerimine
   instructions:
     resetOrder: Jälgimisjärjekorra muutmiseks lähtesta edenemine.
     usage: Kõigi pistete märkimiseks kuni valitud pisteni klõpsa pistet. Kogu rea lõpetamiseks või taasavamiseks klõpsa rea numbrit.

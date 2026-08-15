@@ -26,6 +26,7 @@ const resetModalOpen = ref(false)
 const clearModalOpen = ref(false)
 const cellSize = ref(Math.min(40, Math.max(18, state.tracker.value?.pattern.cellSize ?? 24)))
 const display = ref<PatternDisplay>('canvas')
+const autoScroll = ref(true)
 
 const dimensions = computed(() => state.tracker.value ? renderedDimensions(state.tracker.value.pattern) : null)
 const tooLarge = computed(() => dimensions.value ? dimensions.value.rows * dimensions.value.columns > MAX_TRACKER_STITCHES : false)
@@ -284,8 +285,13 @@ function cancelActiveModal() {
                   </select>
                 </label>
                 <label class="flex items-center gap-2 text-xs">{{ t('tracker.controls.cellSize') }} <input v-model.number="cellSize" class="range range-xs w-24" type="range" min="16" max="48" :aria-label="t('tracker.controls.cellSize')" /></label>
-                <button class="btn btn-ghost btn-sm text-error" type="button" :disabled="state.completedCount.value === 0" @click="resetModalOpen = true">{{ t('tracker.actions.reset') }}</button>
-                <button class="btn btn-ghost btn-sm" type="button" @click="clearModalOpen = true">{{ t('tracker.actions.close') }}</button>
+                <label class="flex items-center gap-2 text-xs"><input v-model="autoScroll" class="toggle toggle-primary toggle-sm" type="checkbox" />{{ t('tracker.controls.autoScroll') }}</label>
+                <div class="tooltip" :data-tip="t('tracker.actions.reset')">
+                  <button class="btn btn-ghost btn-square btn-sm text-error" type="button" :disabled="state.completedCount.value === 0" :aria-label="t('tracker.actions.reset')" @click="resetModalOpen = true"><span class="mdi mdi-restart text-lg" aria-hidden="true"></span></button>
+                </div>
+                <div class="tooltip" :data-tip="t('tracker.actions.close')">
+                  <button class="btn btn-ghost btn-square btn-sm" type="button" :aria-label="t('tracker.actions.close')" @click="clearModalOpen = true"><span class="mdi mdi-close-circle-outline text-lg" aria-hidden="true"></span></button>
+                </div>
               </div>
             </div>
             <p v-if="state.completedCount.value > 0" class="text-xs text-base-content/55">{{ t('tracker.instructions.resetOrder') }}</p>
@@ -305,6 +311,7 @@ function cancelActiveModal() {
               :cell-size="cellSize"
               :display="display"
               :progress="state.tracker.value.progress"
+              :auto-scroll="autoScroll"
               @stitch="selectStitch"
               @row="state.selectRow($event, renderedPattern.cells.length, renderedPattern.cells[0].length)"
             />
