@@ -276,6 +276,25 @@ export function usePattern() {
     selectColumn(column)
   }
 
+  function fillSelection(color: string, rememberColor = true): boolean {
+    if (!selection.value) return false
+    const normalized = normalizeColor(color)
+    if (!normalized) return false
+    beginGridChange()
+    let cells = cloneGrid(project.value.cells)
+    for (const [row, column] of selectionCoordinates(selection.value)) {
+      const [sourceRow, sourceColumn] = sourceCellFor(project.value.repeatBoxes, row, column)
+      cells[sourceRow][sourceColumn] = normalized
+    }
+    project.value.cells = synchronizeEnabledBoxes(cells)
+    if (rememberColor) chooseColor(normalized, true)
+    return true
+  }
+
+  function eraseSelection(): boolean {
+    return fillSelection(project.value.backgroundColor, false)
+  }
+
   function copySelection(): boolean {
     if (!selection.value) return false
     clipboard.value = selectionClipboard(selection.value)
@@ -801,6 +820,8 @@ export function usePattern() {
     flushAutosave,
     setSelection,
     setMagicSelection,
+    fillSelection,
+    eraseSelection,
     selectRow,
     selectColumn,
     selectRows,

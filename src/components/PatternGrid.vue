@@ -35,6 +35,7 @@ const emit = defineEmits<{
   columnAction: [action: 'before' | 'after' | 'multiple' | 'delete' | 'fill' | 'erase', column: number, count?: number]
   selectArea: [top: number, left: number, bottom: number, right: number]
   magicSelect: [row: number, column: number]
+  selectionAction: [action: 'fill' | 'erase']
   clearSelection: []
   placeSelection: [row: number, column: number]
   moveSelection: [row: number, column: number]
@@ -47,6 +48,7 @@ const draggingSelection = ref(false)
 const dragPreview = ref<GridSelection | null>(null)
 const rowMenu = ref<{ row: number; x: number; y: number } | null>(null)
 const columnMenu = ref<{ column: number; x: number; y: number } | null>(null)
+const selectionMenu = ref<{ x: number; y: number } | null>(null)
 const multipleCount = ref(5)
 const multipleColumnCount = ref(5)
 let panStartX = 0
@@ -240,6 +242,7 @@ function openRowMenu(row: number, event: MouseEvent | KeyboardEvent) {
   const toggle = event instanceof MouseEvent && event.type === 'click' && !event.shiftKey && props.selectedRows.length === 1 && props.selectedRows[0] === row
   emit('selectRow', row, event.shiftKey, toggle)
   columnMenu.value = null
+  selectionMenu.value = null
   rowMenu.value = {
     row,
     x: Math.max(8, Math.min(x, window.innerWidth - 240)),
@@ -257,6 +260,7 @@ function openColumnMenu(column: number, event: MouseEvent | KeyboardEvent) {
   const toggle = event instanceof MouseEvent && event.type === 'click' && !event.shiftKey && props.selectedColumns.length === 1 && props.selectedColumns[0] === column
   emit('selectColumn', column, event.shiftKey, toggle)
   rowMenu.value = null
+  selectionMenu.value = null
   columnMenu.value = {
     column,
     x: Math.max(8, Math.min(x, window.innerWidth - 240)),
@@ -276,9 +280,27 @@ function runColumnAction(action: 'before' | 'after' | 'multiple' | 'delete' | 'f
   columnMenu.value = null
 }
 
+function openSelectionMenu(row: number, column: number, event: MouseEvent) {
+  if (!containsSelection(row, column)) return
+  event.preventDefault()
+  event.stopPropagation()
+  rowMenu.value = null
+  columnMenu.value = null
+  selectionMenu.value = {
+    x: Math.max(8, Math.min(event.clientX, window.innerWidth - 176)),
+    y: Math.max(8, Math.min(event.clientY, window.innerHeight - 112)),
+  }
+}
+
+function runSelectionAction(action: 'fill' | 'erase') {
+  emit('selectionAction', action)
+  selectionMenu.value = null
+}
+
 function closeRowMenu() {
   rowMenu.value = null
   columnMenu.value = null
+  selectionMenu.value = null
 }
 
 function handleEscape(event: KeyboardEvent) {
@@ -398,11 +420,26 @@ onBeforeUnmount(() => {
           :aria-label="`Row ${rowHeaders[rowIndex] + 1}, column ${columnHeaders[columnIndex] + 1}, color ${color}${(repeatFlags[rowIndex][columnIndex] & REPEAT_COPY) !== 0 || rowCopies[rowIndex] > 0 || columnCopies[columnIndex] > 0 ? ', repeated copy' : ''}`"
           @pointerdown="start(cellSourceRows[rowIndex][columnIndex], cellSourceColumns[rowIndex][columnIndex], rowIndex, columnIndex, $event)"
           @pointerenter="enter(cellSourceRows[rowIndex][columnIndex], cellSourceColumns[rowIndex][columnIndex], rowIndex, columnIndex, $event)"
+          @contextmenu="openSelectionMenu(rowHeaders[rowIndex], columnHeaders[columnIndex], $event)"
           @keydown.enter.prevent="tool === 'select' || tool === 'wand' ? keyboardSelect(rowIndex, columnIndex) : keyboardPaint(cellSourceRows[rowIndex][columnIndex], cellSourceColumns[rowIndex][columnIndex])"
           @keydown.space.prevent="tool === 'select' || tool === 'wand' ? keyboardSelect(rowIndex, columnIndex) : keyboardPaint(cellSourceRows[rowIndex][columnIndex], cellSourceColumns[rowIndex][columnIndex])"
         ></div>
       </template>
     </div>
+  </div>
+
+  <div
+    v-if="selectionMenu"
+    class="fixed z-[80] w-40 rounded-box border border-base-300 bg-base-100 p-2 shadow-lg"
+    :style="{ left: `${selectionMenu.x}px`, top: `${selectionMenu.y}px` }"
+    role="menu"
+    aria-label="Selection actions"
+    @click.stop
+  >
+    <ul class="menu menu-sm w-full p-0">
+      <li><button type="button" role="menuitem" @click="runSelectionAction('fill')"><span class="mdi mdi-format-color-fill" aria-hidden="true"></span>Fill selection</button></li>
+      <li><button type="button" role="menuitem" @click="runSelectionAction('erase')"><span class="mdi mdi-eraser" aria-hidden="true"></span>Erase selection</button></li>
+    </ul>
   </div>
 
   <div

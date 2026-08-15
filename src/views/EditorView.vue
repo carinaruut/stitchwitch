@@ -145,6 +145,11 @@ function handleColumnAction(action: 'before' | 'after' | 'multiple' | 'delete' |
   if (action === 'erase') pattern.eraseSelectedColumns()
 }
 
+function handleSelectionAction(action: 'fill' | 'erase') {
+  if (action === 'fill') pattern.fillSelection(pattern.selectedColor.value)
+  else pattern.eraseSelection()
+}
+
 function deleteRows(value: string) {
   if (pattern.selectRows(value)) pattern.deleteSelectedRows()
 }
@@ -422,6 +427,7 @@ onBeforeUnmount(() => {
                 @column-action="handleColumnAction"
                 @select-area="pattern.setSelection"
                 @magic-select="pattern.setMagicSelection"
+                @selection-action="handleSelectionAction"
                 @clear-selection="pattern.clearSelection"
                 @place-selection="placeSelection"
                 @move-selection="moveSelectionDirectly"
