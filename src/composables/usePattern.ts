@@ -212,6 +212,18 @@ export function usePattern() {
     selectColumn(selection.value.left)
   }
 
+  function setHeaderSelection(axis: 'row' | 'column'): boolean {
+    const indices = axis === 'row' ? selectedRows.value : selectedColumns.value
+    if (indices.length < 2) {
+      selection.value = null
+      return false
+    }
+    selection.value = axis === 'row'
+      ? { top: Math.min(...indices), left: 0, bottom: Math.max(...indices), right: project.value.cells[0].length - 1 }
+      : { top: 0, left: Math.min(...indices), bottom: project.value.cells.length - 1, right: Math.max(...indices) }
+    return true
+  }
+
   function selectionCoordinates(candidate: GridSelection): Array<[number, number]> {
     if (candidate.cells) return candidate.cells
     const coordinates: Array<[number, number]> = []
@@ -839,6 +851,7 @@ export function usePattern() {
     clearGrid,
     flushAutosave,
     setSelection,
+    setHeaderSelection,
     setMagicSelection,
     fillSelection,
     eraseSelection,

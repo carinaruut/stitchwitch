@@ -49,7 +49,7 @@ guide:
     redo: tee uuesti
   selection:
     title: Valikutööriistad
-    intro: Vali valikutööriist ja lohista ristkülik või kasuta võlukeppi, et valida ühise servaga ühendatud sama värvi ruudud. Liigutamise, kopeerimise, kleepimise, pööramise, täitmise ja kustutamise toimingud leiad valiku sees paremklõpsates. Valikut saab ka otse liigutada, alustades lohistamist selle seest. Valikutööriistaga väljaspool valikut klõpsamine tühistab valiku.
+    intro: Vali valikutööriist ja lohista ristkülik, kasuta võlukeppi, et valida ühise servaga ühendatud sama värvi ruudud, või klõpsa tõstuklahvi all hoides kahte nummerdatud rea- või veerupäist, et valida kogu vahemik. Liigutamise, kopeerimise, kleepimise, pööramise, täitmise ja kustutamise toimingud leiad valiku sees paremklõpsates. Valikut saab ka otse liigutada, alustades lohistamist selle seest. Valikutööriistaga väljaspool valikut klõpsamine tühistab valiku.
     copyTitle: Kopeeri
     copyText: Talletab valitud ruudud sisemisele lõikelauale.
     pasteTitle: Kleebi
@@ -86,7 +86,7 @@ guide:
     rowsExampleOne: 1;2;3
     rowsTextBetween: või
     rowsExampleTwo: 1-3;6
-    rowsTextAfter: . Numbriga päise valimiseks klõpsa seda ja valiku tühistamiseks klõpsa uuesti; rea valimine tühistab veeruvaliku ja vastupidi. Tõstuklahvi all hoides klõpsamine laiendab valiku katkematuks vahemikuks. Struktuurimuudatused säilitavad muudetud alast väljapoole jäävad kordusalad.
+    rowsTextAfter: . Numbriga päise valimiseks klõpsa seda ja valiku tühistamiseks klõpsa uuesti; rea valimine tühistab veeruvaliku ja vastupidi. Tõstuklahvi all hoides klõpsamine laiendab valiku katkematuks vahemikuks ning muudab mitu rida või veergu alavalikuks. Struktuurimuudatused säilitavad muudetud alast väljapoole jäävad kordusalad.
     displayTitle: Kuvamine ja ajalugu
     displayText: Ruudustiku seaded muudavad kuvatava ruudu suurust ilma mustrit muutmata. Tagasivõtmine ja uuestitegemine taastavad joonistuse, struktuurimuudatused ning kordusalade muudatused.
   tracker:
@@ -111,7 +111,7 @@ guide:
     title: Klaviatuur ja hõlbustus
     copy: Kopeeri valik
     paste: Kleebi valik
-    escape: Tühista liigutatava valiku paigutamine või sulge juhend
+    escape: Tühista praegune valik või liigutatava valiku paigutamine või sulge juhend
     activate: Aktiveeri fookuses ruut või päis
 print:
   dimensions: "Veerge: {columns} · ridu: {rows}"

@@ -49,7 +49,7 @@ guide:
     redo: Redo
   selection:
     title: Selection tools
-    intro: Choose Select and drag a rectangle, or use Magic wand to select matching-color cells connected by shared edges. Right-click inside the selection for move, copy, paste, flip, fill, and erase actions. You can also drag from inside a selection to move it directly. Clicking outside with Select cancels the selection.
+    intro: Choose Select and drag a rectangle, use Magic wand to select matching-color cells connected by shared edges, or Shift-click two numbered row or column headers to select the complete range. Right-click inside the selection for move, copy, paste, flip, fill, and erase actions. You can also drag from inside a selection to move it directly. Clicking outside with Select cancels the selection.
     copyTitle: Copy
     copyText: Stores the selected cells in the internal clipboard.
     pasteTitle: Paste
@@ -86,7 +86,7 @@ guide:
     rowsExampleOne: 1;2;3
     rowsTextBetween: or
     rowsExampleTwo: 1-3;6
-    rowsTextAfter: . Click a numbered header to select it and click it again to deselect it; selecting a row clears the column selection and vice versa. Shift-click extends the selection to a contiguous range. Structural changes preserve repeat boxes outside the edited area.
+    rowsTextAfter: . Click a numbered header to select it and click it again to deselect it; selecting a row clears the column selection and vice versa. Shift-click extends the selection to a contiguous range and turns multiple rows or columns into an area selection. Structural changes preserve repeat boxes outside the edited area.
     displayTitle: Display and history
     displayText: Grid settings change the displayed cell size without changing the pattern. Undo and Redo restore drawing, structural edits, and repeat-box changes.
   tracker:
@@ -111,7 +111,7 @@ guide:
     title: Keyboard and accessibility
     copy: Copy selection
     paste: Paste selection
-    escape: Cancel move placement or close this guide
+    escape: Clear the current selection, cancel move placement, or close this guide
     activate: Activate a focused grid cell or header
 print:
   dimensions: "{columns} columns by {rows} rows"

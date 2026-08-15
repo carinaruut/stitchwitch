@@ -192,11 +192,13 @@ function deleteColumns(value: string) {
 function selectRowHeader(row: number, extend: boolean, toggle: boolean) {
   if (toggle) pattern.clearRowSelection()
   else pattern.selectRow(row, extend, true)
+  if (pattern.setHeaderSelection('row')) selectTool('select')
 }
 
 function selectColumnHeader(column: number, extend: boolean, toggle: boolean) {
   if (toggle) pattern.clearColumnSelection()
   else pattern.selectColumn(column, extend, true)
+  if (pattern.setHeaderSelection('column')) selectTool('select')
 }
 
 async function printPattern(mode: PrintMode = printMode.value) {
@@ -256,8 +258,11 @@ function handleKeyboardShortcuts(event: KeyboardEvent) {
   const target = event.target as HTMLElement | null
   if (target?.closest('input, textarea, select, [contenteditable="true"]')) return
   if (newModalOpen.value || clearModalOpen.value || importModalOpen.value || guideOpen.value) return
-  if (event.key === 'Escape' && placingSelection.value) {
+  if (event.key === 'Escape' && (placingSelection.value || pattern.hasSelection.value || pattern.selectedRows.value.length > 0 || pattern.selectedColumns.value.length > 0)) {
     placingSelection.value = false
+    pattern.clearSelection()
+    pattern.clearRowSelection()
+    pattern.clearColumnSelection()
     return
   }
   if (!event.metaKey && !event.ctrlKey && !event.altKey) {
