@@ -28,7 +28,7 @@ const columns = computed(() => props.cells[0].length)
         <div
           class="stitch-grid grid w-max"
           :class="`stitch-grid-${stitch}`"
-          :style="{ gridTemplateColumns: `repeat(${columns}, ${stitch === 'cross-stitch' ? 24 : 28}px)` }"
+          :style="{ gridTemplateColumns: `repeat(${columns}, ${stitch === 'cross-stitch' ? 24 : 27}px)` }"
           aria-label="Repeated stitch pattern preview"
         >
           <template v-for="(row, rowIndex) in cells" :key="rowIndex">
@@ -48,7 +48,7 @@ const columns = computed(() => props.cells[0].length)
 }
 
 .stitch-knit {
-  width: 28px;
+  width: 27px;
   height: 32px;
   mask: url('/assets/stitch_1.png') center / 100% 100% no-repeat;
   -webkit-mask: url('/assets/stitch_1.png') center / 100% 100% no-repeat;
@@ -62,8 +62,8 @@ const columns = computed(() => props.cells[0].length)
 }
 
 .stitch-grid-knit {
-  grid-auto-rows: 23px;
-  padding-bottom: 9px;
+  grid-auto-rows: 24px;
+  padding-bottom: 2px;
 }
 
 .stitch-grid-cross-stitch {
