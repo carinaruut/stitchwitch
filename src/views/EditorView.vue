@@ -435,6 +435,7 @@ onBeforeUnmount(() => {
                 :row-copies="renderedPattern.rowCopies"
                 :column-copies="renderedPattern.columnCopies"
                 :repeat-flags="renderedPattern.repeatFlags"
+                :repeat-color-indices="renderedPattern.repeatColorIndices"
                 :source-rows="pattern.rowCount.value"
                 :source-columns="pattern.columnCount.value"
                 :cell-size="pattern.project.value.cellSize"

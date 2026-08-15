@@ -256,6 +256,7 @@ onBeforeUnmount(() => {
               :row-headers="renderedPattern.rowHeaders"
               :column-headers="renderedPattern.columnHeaders"
               :repeat-flags="renderedPattern.repeatFlags"
+              :repeat-color-indices="renderedPattern.repeatColorIndices"
               :cell-size="cellSize"
               :progress="state.tracker.value.progress"
               @stitch="selectStitch"

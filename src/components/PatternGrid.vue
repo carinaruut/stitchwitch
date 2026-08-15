@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import type { DrawingTool, GridSelection, PatternGrid } from '../types/pattern'
-import { followsCenterBoundary, isCenterHeader, REPEAT_BOTTOM, REPEAT_COPY, REPEAT_LEFT, REPEAT_RIGHT, REPEAT_TOP } from '../utils/grid'
+import { followsCenterBoundary, isCenterHeader, repeatOutlineColor, REPEAT_BOTTOM, REPEAT_COPY, REPEAT_LEFT, REPEAT_RIGHT, REPEAT_TOP } from '../utils/grid'
 
 type SelectionAction = 'move' | 'copy' | 'paste' | 'flip-horizontal' | 'flip-vertical' | 'fill' | 'erase'
 
@@ -14,6 +14,7 @@ const props = defineProps<{
   rowCopies: number[]
   columnCopies: number[]
   repeatFlags: number[][]
+  repeatColorIndices: number[][]
   sourceRows: number
   sourceColumns: number
   cellSize: number
@@ -417,7 +418,7 @@ onBeforeUnmount(() => {
             'repeat-border-top': (repeatFlags[rowIndex][columnIndex] & REPEAT_TOP) !== 0,
             'repeat-border-bottom': (repeatFlags[rowIndex][columnIndex] & REPEAT_BOTTOM) !== 0,
           }"
-          :style="{ backgroundColor: color }"
+          :style="{ backgroundColor: color, '--repeat-color': repeatOutlineColor(repeatColorIndices[rowIndex][columnIndex]) }"
           role="gridcell"
           tabindex="0"
           :aria-label="`Row ${rowHeaders[rowIndex] + 1}, column ${columnHeaders[columnIndex] + 1}, color ${color}${(repeatFlags[rowIndex][columnIndex] & REPEAT_COPY) !== 0 || rowCopies[rowIndex] > 0 || columnCopies[columnIndex] > 0 ? ', repeated copy' : ''}`"

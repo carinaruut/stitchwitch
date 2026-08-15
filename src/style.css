@@ -162,23 +162,23 @@ body {
 }
 
 .repeat-copy-cell {
-  background-image: linear-gradient(color-mix(in oklab, currentColor 3%, transparent), color-mix(in oklab, currentColor 3%, transparent));
+  background-image: linear-gradient(color-mix(in oklab, var(--repeat-color, currentColor) 5%, transparent), color-mix(in oklab, var(--repeat-color, currentColor) 5%, transparent));
 }
 
 .repeat-border-left {
-  border-left: 2px solid color-mix(in oklab, var(--color-primary) 70%, transparent);
+  border-left: 2px dashed var(--repeat-color, var(--color-primary-content));
 }
 
 .repeat-border-right {
-  border-right: 2px solid color-mix(in oklab, var(--color-primary) 70%, transparent);
+  border-right: 2px dashed var(--repeat-color, var(--color-primary-content));
 }
 
 .repeat-border-top {
-  border-top: 2px solid color-mix(in oklab, var(--color-primary) 70%, transparent);
+  border-top: 2px dashed var(--repeat-color, var(--color-primary-content));
 }
 
 .repeat-border-bottom {
-  border-bottom: 2px solid color-mix(in oklab, var(--color-primary) 70%, transparent);
+  border-bottom: 2px dashed var(--repeat-color, var(--color-primary-content));
 }
 
 .mirror-axis-left {

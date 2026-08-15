@@ -2,7 +2,7 @@
 import { nextTick, ref } from 'vue'
 import type { PatternGrid } from '../types/pattern'
 import type { TrackerProgress } from '../types/tracker'
-import { followsCenterBoundary, isCenterHeader, REPEAT_BOTTOM, REPEAT_COPY, REPEAT_LEFT, REPEAT_RIGHT, REPEAT_TOP } from '../utils/grid'
+import { followsCenterBoundary, isCenterHeader, repeatOutlineColor, REPEAT_BOTTOM, REPEAT_COPY, REPEAT_LEFT, REPEAT_RIGHT, REPEAT_TOP } from '../utils/grid'
 import { rowCompletionRange, stitchOrdinal } from '../utils/tracker'
 
 const props = defineProps<{
@@ -10,6 +10,7 @@ const props = defineProps<{
   rowHeaders: number[]
   columnHeaders: number[]
   repeatFlags: number[][]
+  repeatColorIndices: number[][]
   cellSize: number
   progress: TrackerProgress
 }>()
@@ -123,7 +124,7 @@ function moveRowHeader(row: number, event: KeyboardEvent) {
             'repeat-border-top': (repeatFlags[rowIndex][columnIndex] & REPEAT_TOP) !== 0,
             'repeat-border-bottom': (repeatFlags[rowIndex][columnIndex] & REPEAT_BOTTOM) !== 0,
           }"
-          :style="{ backgroundColor: color }"
+          :style="{ backgroundColor: color, '--repeat-color': repeatOutlineColor(repeatColorIndices[rowIndex][columnIndex]) }"
           type="button"
           role="gridcell"
           :aria-rowindex="rowIndex + 2"

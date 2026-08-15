@@ -5,6 +5,20 @@ export const REPEAT_LEFT = 2
 export const REPEAT_RIGHT = 4
 export const REPEAT_TOP = 8
 export const REPEAT_BOTTOM = 16
+const REPEAT_OUTLINE_COLORS = [
+  'color-mix(in oklab, var(--color-primary) 65%, var(--color-primary-content))',
+  'var(--color-secondary)',
+  'var(--color-info)',
+  'var(--color-success)',
+  'var(--color-warning)',
+  'var(--color-error)',
+  'var(--color-accent-content)',
+  'var(--color-primary-content)',
+]
+
+export function repeatOutlineColor(index: number): string | undefined {
+  return index < 0 ? undefined : REPEAT_OUTLINE_COLORS[index % REPEAT_OUTLINE_COLORS.length]
+}
 
 export function isCenterHeader(index: number, count: number): boolean {
   return count % 2 === 1
@@ -96,22 +110,26 @@ export interface RenderedGrid {
   rowCopies: number[]
   columnCopies: number[]
   repeatFlags: number[][]
+  repeatColorIndices: number[][]
 }
 
 function identityRenderedGrid(grid: PatternGrid, boxes: RepeatBox[]): RenderedGrid {
   const sourceRows = grid.map((row, rowIndex) => row.map(() => rowIndex))
   const sourceColumns = grid.map((row) => row.map((_, columnIndex) => columnIndex))
   const repeatFlags = grid.map((row) => row.map(() => 0))
+  const repeatColorIndices = grid.map((row) => row.map(() => -1))
   const cells = cloneGrid(grid)
 
   for (let row = 0; row < grid.length; row += 1) {
     for (let column = 0; column < grid[row].length; column += 1) {
-      const box = boxes.find((candidate) => candidate.enabled && row >= candidate.top && row < candidate.bottom && column >= candidate.left && column < candidate.right)
-      if (!box) continue
+      const boxIndex = boxes.findIndex((candidate) => candidate.enabled && row >= candidate.top && row < candidate.bottom && column >= candidate.left && column < candidate.right)
+      if (boxIndex < 0) continue
+      const box = boxes[boxIndex]
       const [sourceRow, sourceColumn, copy] = sourceCellFor([box], row, column)
       sourceRows[row][column] = sourceRow
       sourceColumns[row][column] = sourceColumn
       cells[row][column] = grid[sourceRow][sourceColumn]
+      repeatColorIndices[row][column] = boxIndex
 
       let flags = copy > 0 ? REPEAT_COPY : 0
       if (box.direction === 'across') {
@@ -140,6 +158,7 @@ function identityRenderedGrid(grid: PatternGrid, boxes: RepeatBox[]): RenderedGr
     rowCopies: Array<number>(grid.length).fill(0),
     columnCopies: Array<number>(grid[0].length).fill(0),
     repeatFlags,
+    repeatColorIndices,
   }
 }
 
@@ -160,6 +179,7 @@ export function renderGrid(grid: PatternGrid, horizontal: number, vertical: numb
     rowCopies,
     columnCopies,
     repeatFlags: cells.map((row) => row.map(() => 0)),
+    repeatColorIndices: cells.map((row) => row.map(() => -1)),
   }
 }
 
