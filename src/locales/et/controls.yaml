@@ -62,6 +62,7 @@ controls:
     pixels: "{size} px"
   preview:
     title: Terve mustri eelvaade
+    fitWidth: Mahuta laiusesse
     stitch: Piste
     stitchLabel: Eelvaate piste
     knit: Silmus

@@ -62,6 +62,7 @@ controls:
     pixels: "{size} px"
   preview:
     title: Complete pattern preview
+    fitWidth: Fit width
     stitch: Stitch
     stitchLabel: Preview stitch
     knit: Knit

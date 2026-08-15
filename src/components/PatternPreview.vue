@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { PatternGrid, PreviewStitch } from '../types/pattern'
 
@@ -7,6 +7,43 @@ const props = defineProps<{ cells: PatternGrid }>()
 const stitch = defineModel<PreviewStitch>('stitch', { required: true })
 const { t } = useI18n({ useScope: 'global' })
 const columns = computed(() => props.cells[0].length)
+const previewArea = ref<HTMLElement | null>(null)
+const availableWidth = ref(0)
+const fitWidth = ref(false)
+let resizeObserver: ResizeObserver | null = null
+
+const stitchDimensions = computed(() => stitch.value === 'cross-stitch'
+  ? { column: 24, row: 24, width: 28, height: 28, paddingRight: 4, paddingBottom: 4 }
+  : { column: 27, row: 24, width: 27, height: 32, paddingRight: 0, paddingBottom: 2 })
+
+const previewScale = computed(() => {
+  if (!fitWidth.value || !availableWidth.value) return 1
+  const dimensions = stitchDimensions.value
+  const naturalWidth = columns.value * dimensions.column + dimensions.paddingRight
+  return Math.min(1, availableWidth.value / naturalWidth)
+})
+
+const previewStyle = computed(() => {
+  const dimensions = stitchDimensions.value
+  const scale = previewScale.value
+  return {
+    gridTemplateColumns: `repeat(${columns.value}, ${dimensions.column * scale}px)`,
+    gridAutoRows: `${dimensions.row * scale}px`,
+    paddingRight: `${dimensions.paddingRight * scale}px`,
+    paddingBottom: `${dimensions.paddingBottom * scale}px`,
+    '--stitch-width': `${dimensions.width * scale}px`,
+    '--stitch-height': `${dimensions.height * scale}px`,
+  }
+})
+
+onMounted(() => {
+  resizeObserver = new ResizeObserver(([entry]) => {
+    availableWidth.value = entry.contentRect.width
+  })
+  if (previewArea.value) resizeObserver.observe(previewArea.value)
+})
+
+onBeforeUnmount(() => resizeObserver?.disconnect())
 </script>
 
 <template>
@@ -15,6 +52,10 @@ const columns = computed(() => props.cells[0].length)
       <div class="flex flex-wrap items-center justify-between gap-2">
         <h2 class="card-title text-base">{{ t('controls.preview.title') }}</h2>
         <div class="flex flex-wrap items-center justify-end gap-2">
+          <button class="btn btn-sm gap-1.5" :class="fitWidth ? 'btn-primary' : 'btn-ghost'" type="button" :aria-pressed="fitWidth" @click="fitWidth = !fitWidth">
+            <span class="mdi mdi-fit-to-screen-outline text-lg" aria-hidden="true"></span>
+            {{ t('controls.preview.fitWidth') }}
+          </button>
           <label class="flex items-center gap-2 text-sm font-medium">
             {{ t('controls.preview.stitch') }}
             <select v-model="stitch" class="select select-bordered select-sm" :aria-label="t('controls.preview.stitchLabel')">
@@ -27,15 +68,17 @@ const columns = computed(() => props.cells[0].length)
         </div>
       </div>
       <div class="w-full min-w-0 overflow-x-auto overflow-y-hidden rounded-xl bg-base-200/30 p-4">
-        <div
-          class="stitch-grid grid w-max"
-          :class="`stitch-grid-${stitch}`"
-          :style="{ gridTemplateColumns: `repeat(${columns}, ${stitch === 'cross-stitch' ? 24 : 27}px)` }"
-          :aria-label="t('controls.preview.ariaLabel')"
-        >
-          <template v-for="(row, rowIndex) in cells" :key="rowIndex">
-            <span v-for="(color, columnIndex) in row" :key="columnIndex" class="stitch" :class="`stitch-${stitch}`" :style="{ '--stitch-color': color }" aria-hidden="true"></span>
-          </template>
+        <div ref="previewArea" class="min-w-0">
+          <div
+            class="stitch-grid grid w-max"
+            :class="`stitch-grid-${stitch}`"
+            :style="previewStyle"
+            :aria-label="t('controls.preview.ariaLabel')"
+          >
+            <template v-for="(row, rowIndex) in cells" :key="rowIndex">
+              <span v-for="(color, columnIndex) in row" :key="columnIndex" class="stitch" :class="`stitch-${stitch}`" :style="{ '--stitch-color': color }" aria-hidden="true"></span>
+            </template>
+          </div>
         </div>
       </div>
     </div>
@@ -50,28 +93,17 @@ const columns = computed(() => props.cells[0].length)
 }
 
 .stitch-knit {
-  width: 27px;
-  height: 32px;
+  width: var(--stitch-width);
+  height: var(--stitch-height);
   mask: url('/assets/stitch_1.png') center / 100% 100% no-repeat;
   -webkit-mask: url('/assets/stitch_1.png') center / 100% 100% no-repeat;
 }
 
 .stitch-cross-stitch {
-  width: 28px;
-  height: 28px;
+  width: var(--stitch-width);
+  height: var(--stitch-height);
   mask: url('/assets/stitch_2.png') center / 100% 100% no-repeat;
   -webkit-mask: url('/assets/stitch_2.png') center / 100% 100% no-repeat;
-}
-
-.stitch-grid-knit {
-  grid-auto-rows: 24px;
-  padding-bottom: 2px;
-}
-
-.stitch-grid-cross-stitch {
-  grid-auto-rows: 24px;
-  padding-right: 4px;
-  padding-bottom: 4px;
 }
 
 .stitch::after {
