@@ -14,6 +14,7 @@ validation:
   cellRows: Ruudustiku read ei vasta projekti mõõtmetele.
   cellColors: Ruudustiku värvid või veerud ei sobi.
   recentColors: Hiljuti kasutatud värvid ei sobi.
+  swatches: Projekti värvid ei sobi.
   repeatBoxes: Kordusalad ei sobi.
   repeatBoxId: Igal kordusalal peab olema kordumatu ID.
   repeatBoxSettings: Kordusala seaded ei sobi.

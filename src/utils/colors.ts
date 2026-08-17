@@ -1,4 +1,11 @@
 const HEX_COLOR = /^#[0-9a-f]{6}$/i
+const COLOR_SYMBOLS = [
+  '●', '○', '■', '□', '▲', '△', '◆', '◇', '✕', '＋', '−', '│', '╱', '╲', '✦', '✚',
+  '✖', '★', '☆', '♠', '♣', '♥', '♦', '☀', '☾', '☁', '☂', '⌁', '≈', '≡', '⊙', '⊗',
+  ...'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+  ...'abcdefghijklmnopqrstuvwxyz',
+  ...'0123456789',
+]
 
 export type DescriptiveColorName = 'black' | 'gray' | 'white' | 'red' | 'orange' | 'yellow' | 'lime' | 'green' | 'teal' | 'turquoise' | 'cyan' | 'blue' | 'indigo' | 'purple' | 'magenta' | 'mauve' | 'pink' | 'brown' | 'beige'
 export type DescriptiveColorTone = 'dark' | 'light' | 'muted' | 'vivid'
@@ -6,6 +13,12 @@ export type DescriptiveColorTone = 'dark' | 'light' | 'muted' | 'vivid'
 export interface ColorDescription {
   name: DescriptiveColorName
   tone: DescriptiveColorTone | null
+}
+
+export interface RgbColor {
+  red: number
+  green: number
+  blue: number
 }
 
 export function normalizeColor(value: string): string | null {
@@ -19,6 +32,33 @@ export function normalizeColor(value: string): string | null {
 
 export function isHexColor(value: unknown): value is string {
   return typeof value === 'string' && HEX_COLOR.test(value)
+}
+
+export function hexToRgb(value: string): RgbColor | null {
+  const hex = normalizeColor(value)
+  if (!hex) return null
+  return {
+    red: Number.parseInt(hex.slice(1, 3), 16),
+    green: Number.parseInt(hex.slice(3, 5), 16),
+    blue: Number.parseInt(hex.slice(5, 7), 16),
+  }
+}
+
+export function rgbToHex(red: number, green: number, blue: number): string | null {
+  const channels = [red, green, blue]
+  if (!channels.every((channel) => Number.isInteger(channel) && channel >= 0 && channel <= 255)) return null
+  return `#${channels.map((channel) => channel.toString(16).padStart(2, '0')).join('')}`
+}
+
+export function colorSymbolMap(colors: string[]): Record<string, string> {
+  const symbols: Record<string, string> = {}
+  let symbolIndex = 0
+  for (const color of colors) {
+    if (color.toLowerCase() === '#ffffff' || color in symbols) continue
+    symbols[color] = COLOR_SYMBOLS[symbolIndex] ?? String(symbolIndex + 1)
+    symbolIndex += 1
+  }
+  return symbols
 }
 
 export function contrastColor(hex: string): '#000000' | '#ffffff' {

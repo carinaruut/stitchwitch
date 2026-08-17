@@ -52,6 +52,17 @@ controls:
     eyedropper: Eyedropper
     hex: Hex color
     invalid: Enter a color such as #7c3aed.
+    rgb: RGB color
+    red: R
+    green: G
+    blue: B
+    rgbInvalid: Enter whole numbers from 0 to 255.
+    swatches: Project swatches
+    swatchesHelp: Saved with this project
+    saveSwatch: Save color
+    noSwatches: No colors saved yet.
+    selectSwatch: Select saved color {color}
+    removeSwatch: Remove saved color {color}
     recent: Recent colors
     selectRecent: Select recent color {color}
   reference:
@@ -85,6 +96,8 @@ controls:
     pixels: "{size} px"
     fullHeight: Show full canvas height
     fullHeightDescription: Use page scrolling instead of a scrollbar inside the canvas
+    showSymbols: Show color symbols
+    showSymbolsDescription: Add symbols to help distinguish similar colors
   preview:
     title: Complete pattern preview
     fitWidth: Fit width

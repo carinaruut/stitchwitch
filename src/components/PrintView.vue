@@ -3,11 +3,11 @@ import { computed, type CSSProperties } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { PatternGrid, PatternProject, PrintMode } from '../types/pattern'
 import { countColors, renderGrid } from '../utils/grid'
-import { describeColor } from '../utils/colors'
+import { colorSymbolMap, describeColor } from '../utils/colors'
 import PrintChart from './PrintChart.vue'
 
 const CHART_WIDTH_MM = 238
-const OVERVIEW_HEIGHT_MM = 160
+const OVERVIEW_HEIGHT_MM = 150
 const REPEAT_CHART_HEIGHT_MM = 145
 const PAGE_CONTENT_HEIGHT_MM = 170
 const READABLE_CELL_MM = 4
@@ -16,13 +16,6 @@ const TILE_COLUMNS = 55
 const TILE_ROWS = 35
 const REPEAT_GAP_MM = 6
 const KEY_ENTRIES_PER_PAGE = 52
-const PRINT_SYMBOLS = [
-  '●', '○', '■', '□', '▲', '△', '◆', '◇', '✕', '＋', '−', '│', '╱', '╲', '✦', '✚',
-  '✖', '★', '☆', '♠', '♣', '♥', '♦', '☀', '☾', '☁', '☂', '⌁', '≈', '≡', '⊙', '⊗',
-  ...'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
-  ...'abcdefghijklmnopqrstuvwxyz',
-  ...'0123456789',
-]
 
 interface PrintableChart {
   id: string
@@ -66,9 +59,10 @@ const legendPages = computed(() => props.mode === 'color'
       (_, index) => legendEntries.value.slice(index * KEY_ENTRIES_PER_PAGE, (index + 1) * KEY_ENTRIES_PER_PAGE),
     )
   : [])
-const symbolEntries = computed(() => legendEntries.value.filter(({ color }) => color.toLowerCase() !== '#ffffff').map((entry, index) => ({
+const printSymbolMap = computed(() => colorSymbolMap(legendEntries.value.map(({ color }) => color)))
+const symbolEntries = computed(() => legendEntries.value.filter(({ color }) => color.toLowerCase() !== '#ffffff').map((entry) => ({
   ...entry,
-  symbol: PRINT_SYMBOLS[index] ?? String(index + 1),
+  symbol: printSymbolMap.value[entry.color],
 })))
 const symbolMap = computed(() => props.mode === 'symbols'
   ? Object.fromEntries(symbolEntries.value.map(({ color, symbol }) => [color, symbol]))
@@ -234,12 +228,11 @@ const repeatPages = computed(() => packCharts(repeatCharts.value))
 
 <template>
   <article class="print-only">
-    <header class="print-header">
-      <h1>{{ project.name }}</h1>
-      <p>{{ t('print.dimensions', { columns, rows }) }}</p>
-    </header>
-
     <section class="print-chart-page">
+      <header class="print-header">
+        <h1>{{ project.name }}</h1>
+        <p>{{ t('print.dimensions', { columns, rows }) }}</p>
+      </header>
       <h2>{{ t('print.fullChart') }}</h2>
       <PrintChart
         :cells="pattern"

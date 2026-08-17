@@ -12,6 +12,7 @@ import { downloadTracker, readTrackerInput } from '../composables/useTrackerFile
 import type { PatternDisplay, PatternProject } from '../types/pattern'
 import type { TrackerDirection, TrackerPreferences, TrackerProject, TrackerStartRow } from '../types/tracker'
 import { localizedErrorMessage } from '../utils/appError'
+import { colorSymbolMap } from '../utils/colors'
 import { renderGrid } from '../utils/grid'
 import { MAX_TRACKER_STITCHES, renderedDimensions } from '../utils/tracker'
 
@@ -26,6 +27,7 @@ function readTrackerPreferences(): Partial<TrackerPreferences> {
       cellSize: Number.isInteger(value.cellSize) && value.cellSize! >= 16 && value.cellSize! <= 48 ? value.cellSize : undefined,
       autoScroll: typeof value.autoScroll === 'boolean' ? value.autoScroll : undefined,
       keepAwake: typeof value.keepAwake === 'boolean' ? value.keepAwake : undefined,
+      showSymbols: typeof value.showSymbols === 'boolean' ? value.showSymbols : undefined,
     }
   } catch {
     return {}
@@ -48,6 +50,7 @@ const cellSize = ref(savedPreferences.cellSize ?? Math.min(40, Math.max(18, stat
 const display = ref<PatternDisplay>(savedPreferences.display ?? 'canvas')
 const autoScroll = ref(savedPreferences.autoScroll ?? true)
 const keepAwake = ref(savedPreferences.keepAwake ?? false)
+const showSymbols = ref(savedPreferences.showSymbols ?? false)
 const wakeLockSupported = typeof navigator !== 'undefined' && 'wakeLock' in navigator
 const fullscreenSupported = typeof document !== 'undefined' && document.fullscreenEnabled
 const trackerFullscreen = ref(false)
@@ -62,6 +65,7 @@ const renderedPattern = computed(() => {
   const pattern = state.tracker.value.pattern
   return renderGrid(pattern.cells, pattern.horizontalRepeats, pattern.verticalRepeats, pattern.repeatBoxes)
 })
+const trackerSymbolMap = computed(() => showSymbols.value && renderedPattern.value ? colorSymbolMap(renderedPattern.value.cells.flat()) : undefined)
 const percentage = computed(() => state.totalCount.value === 0 ? 0 : Math.round((state.completedCount.value / state.totalCount.value) * 100))
 const alertClasses = {
   success: 'alert-success',
@@ -104,7 +108,7 @@ function applyInput(input: { tracker?: TrackerProject; pattern?: PatternProject 
     const pattern = input.tracker?.pattern ?? input.pattern
     if (pattern) cellSize.value = Math.min(40, Math.max(18, pattern.cellSize))
   }
-  const preferences = { display: display.value, cellSize: cellSize.value, autoScroll: autoScroll.value, keepAwake: keepAwake.value }
+  const preferences = { display: display.value, cellSize: cellSize.value, autoScroll: autoScroll.value, keepAwake: keepAwake.value, showSymbols: showSymbols.value }
   if (input.tracker) {
     state.openTracker(input.tracker, preferences)
     const trackerPreferences = state.tracker.value?.preferences
@@ -113,6 +117,7 @@ function applyInput(input: { tracker?: TrackerProject; pattern?: PatternProject 
       cellSize.value = trackerPreferences.cellSize
       autoScroll.value = trackerPreferences.autoScroll
       keepAwake.value = trackerPreferences.keepAwake
+      showSymbols.value = trackerPreferences.showSymbols
       if (keepAwake.value) void requestWakeLock()
       else releaseWakeLock()
     }
@@ -247,13 +252,14 @@ watch(state.autosaveStatus, (status) => {
     notify(t('tracker.notifications.autosaveFailed'), 'error', 8000)
   }
 })
-watch([display, cellSize, autoScroll, keepAwake], () => {
+watch([display, cellSize, autoScroll, keepAwake, showSymbols], () => {
   hasCellSizePreference = true
   const preferences = {
     display: display.value,
     cellSize: cellSize.value,
     autoScroll: autoScroll.value,
     keepAwake: keepAwake.value,
+    showSymbols: showSymbols.value,
   } satisfies TrackerPreferences
   try {
     localStorage.setItem(TRACKER_PREFERENCES_KEY, JSON.stringify(preferences))
@@ -402,6 +408,7 @@ function cancelActiveModal() {
                         <input v-model.number="cellSize" class="range range-xs w-full" type="range" min="16" max="48" :aria-label="t('tracker.controls.cellSize')" />
                       </label>
                       <label class="flex items-center justify-between gap-3 text-sm"><span>{{ t('tracker.controls.autoScroll') }}</span><input v-model="autoScroll" class="toggle toggle-primary toggle-sm" type="checkbox" /></label>
+                      <label class="flex items-center justify-between gap-3 text-sm"><span>{{ t('tracker.controls.showSymbols') }}</span><input v-model="showSymbols" class="toggle toggle-primary toggle-sm" type="checkbox" /></label>
                       <label v-if="wakeLockSupported" class="flex items-center justify-between gap-3 text-sm"><span>{{ t('tracker.controls.keepAwake') }}</span><input class="toggle toggle-primary toggle-sm" type="checkbox" :checked="keepAwake" @change="changeKeepAwake" /></label>
                     </div>
                   </div>
@@ -436,6 +443,7 @@ function cancelActiveModal() {
               :display="display"
               :progress="state.tracker.value.progress"
               :auto-scroll="autoScroll"
+              :symbols="trackerSymbolMap"
               @stitch="selectStitch"
               @row="state.selectRow($event, renderedPattern.cells.length, renderedPattern.cells[0].length)"
               @fullscreen-change="trackerFullscreen = $event"

@@ -24,15 +24,25 @@ import { useNotifications } from '../composables/useNotifications'
 import { downloadProject, readProjectFile, safeFilename } from '../composables/useProjectFiles'
 import type { DrawingTool, NewPatternProject, PatternProject, PrintMode, RepeatBoxInput } from '../types/pattern'
 import { localizedErrorMessage } from '../utils/appError'
+import { colorSymbolMap } from '../utils/colors'
 import { renderGrid } from '../utils/grid'
 
 const CANVAS_FULL_HEIGHT_KEY = 'stitch-canvas-full-height'
+const CANVAS_SYMBOLS_KEY = 'stitch-canvas-symbols'
 
 function readCanvasFullHeight() {
   try {
     return localStorage.getItem(CANVAS_FULL_HEIGHT_KEY) !== 'false'
   } catch {
     return true
+  }
+}
+
+function readCanvasSymbols() {
+  try {
+    return localStorage.getItem(CANVAS_SYMBOLS_KEY) === 'true'
+  } catch {
+    return false
   }
 }
 
@@ -51,6 +61,7 @@ const placingSelection = ref(false)
 const printMode = ref<PrintMode>('color')
 const printMenu = ref<HTMLDetailsElement | null>(null)
 const canvasFullHeight = ref(readCanvasFullHeight())
+const canvasSymbols = ref(readCanvasSymbols())
 const downloadBackupNeeded = ref(pattern.restoredAutosave.value)
 const patternName = ref(pattern.project.value.name)
 const toolShortcuts: Record<string, DrawingTool> = {
@@ -68,12 +79,20 @@ const renderedPattern = computed(() => renderGrid(
   pattern.project.value.verticalRepeats,
   pattern.project.value.repeatBoxes,
 ))
+const canvasSymbolMap = computed(() => canvasSymbols.value ? colorSymbolMap(renderedPattern.value.cells.flat()) : undefined)
 
 watch(canvasFullHeight, (value) => {
   try {
     localStorage.setItem(CANVAS_FULL_HEIGHT_KEY, String(value))
   } catch {
     // The canvas layout still works when browser storage is unavailable.
+  }
+})
+watch(canvasSymbols, (value) => {
+  try {
+    localStorage.setItem(CANVAS_SYMBOLS_KEY, String(value))
+  } catch {
+    // Symbols remain usable when browser storage is unavailable.
   }
 })
 
@@ -517,7 +536,7 @@ onBeforeUnmount(() => {
                 @print="printPattern"
               >
                 <template #color>
-                  <ColorMenu :color="pattern.selectedColor.value" :recent-colors="pattern.recentColors.value" @select="pattern.chooseColor($event)" @eyedropper="pattern.tool.value = 'eyedropper'" />
+                  <ColorMenu :color="pattern.selectedColor.value" :recent-colors="pattern.recentColors.value" :swatches="pattern.project.value.swatches" @select="pattern.chooseColor($event)" @eyedropper="pattern.tool.value = 'eyedropper'" @add-swatch="pattern.addSwatch()" @remove-swatch="pattern.removeSwatch($event)" />
                 </template>
                 <template #controls>
                   <RepeatMenu
@@ -560,7 +579,7 @@ onBeforeUnmount(() => {
                   />
                 </template>
                 <template #settings>
-                  <GridMenu :cell-size="pattern.project.value.cellSize" :full-height="canvasFullHeight" @cell-size="pattern.project.value.cellSize = $event" @full-height="canvasFullHeight = $event" />
+                  <GridMenu :cell-size="pattern.project.value.cellSize" :full-height="canvasFullHeight" :show-symbols="canvasSymbols" @cell-size="pattern.project.value.cellSize = $event" @full-height="canvasFullHeight = $event" @show-symbols="canvasSymbols = $event" />
                 </template>
               </DrawingTools>
               <div class="grid min-w-0" :class="referenceOpen ? 'gap-3 lg:grid-cols-[minmax(0,1fr)_22rem]' : 'grid-cols-1'">
@@ -596,8 +615,9 @@ onBeforeUnmount(() => {
                 :selection="pattern.selection.value"
                 :placing-selection="placingSelection"
                 :can-paste="pattern.hasClipboard.value"
-                :mirror-horizontal="pattern.mirrorHorizontal.value"
-                :mirror-vertical="pattern.mirrorVertical.value"
+                 :mirror-horizontal="pattern.mirrorHorizontal.value"
+                 :mirror-vertical="pattern.mirrorVertical.value"
+                 :symbols="canvasSymbolMap"
                 @stroke-start="beginStroke"
                 @paint="pattern.paintCell"
                 @stroke-end="endStroke"

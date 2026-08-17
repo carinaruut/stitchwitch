@@ -1,5 +1,5 @@
 import { computed, ref, watch } from 'vue'
-import { MAX_REPEAT_COUNT, type DrawingTool, type GridSelection, type NewPatternProject, type PatternGrid, type PatternProject, type RepeatBox, type RepeatBoxInput } from '../types/pattern'
+import { MAX_PROJECT_SWATCHES, MAX_REPEAT_COUNT, type DrawingTool, type GridSelection, type NewPatternProject, type PatternGrid, type PatternProject, type RepeatBox, type RepeatBoxInput } from '../types/pattern'
 import { addColumn, addRow, boxesOverlap, cloneGrid, createGrid, ensureGridSize, removeColumn, removeRow, renderGrid, sourceCellFor, synchronizeRepeatBox } from '../utils/grid'
 import { normalizeColor } from '../utils/colors'
 import { parseAxisSelection } from '../utils/axisSelection'
@@ -26,6 +26,7 @@ const DEFAULT_PROJECT: PatternProject = {
   verticalRepeats: 1,
   previewStitch: 'knit',
   recentColors: [],
+  swatches: [],
   repeatBoxes: [],
   cells: createGrid(20, 20, '#ffffff'),
 }
@@ -50,6 +51,7 @@ export function usePattern() {
   const project = ref<PatternProject>({
     ...initialProject,
     recentColors: [...initialProject.recentColors],
+    swatches: [...initialProject.swatches],
     repeatBoxes: initialProject.repeatBoxes.map((box) => ({ ...box })),
     cells: cloneGrid(initialProject.cells),
   })
@@ -182,8 +184,18 @@ export function usePattern() {
     return true
   }
 
+  function addSwatch(value = selectedColor.value) {
+    const color = normalizeColor(value)
+    if (!color || project.value.swatches.includes(color) || project.value.swatches.length >= MAX_PROJECT_SWATCHES) return
+    project.value.swatches.push(color)
+  }
+
+  function removeSwatch(color: string) {
+    project.value.swatches = project.value.swatches.filter((swatch) => swatch !== color)
+  }
+
   function replaceProject(next: PatternProject) {
-    project.value = { ...next, recentColors: [...next.recentColors], repeatBoxes: next.repeatBoxes.map((box) => ({ ...box })), cells: cloneGrid(next.cells) }
+    project.value = { ...next, recentColors: [...next.recentColors], swatches: [...next.swatches], repeatBoxes: next.repeatBoxes.map((box) => ({ ...box })), cells: cloneGrid(next.cells) }
     recentColors.value = [...next.recentColors]
     persistColors()
     selectRow(0)
@@ -194,7 +206,7 @@ export function usePattern() {
   }
 
   function createProject(input: NewPatternProject) {
-    replaceProject({ ...input, format: 'stitch-pattern', version: 1, previewStitch: 'knit', recentColors: [...recentColors.value], repeatBoxes: [], cells: createGrid(input.rows, input.columns, input.backgroundColor) })
+    replaceProject({ ...input, format: 'stitch-pattern', version: 1, previewStitch: 'knit', recentColors: [...recentColors.value], swatches: [], repeatBoxes: [], cells: createGrid(input.rows, input.columns, input.backgroundColor) })
   }
 
   function beginGridChange() {
@@ -827,6 +839,8 @@ export function usePattern() {
     hasColoredCells: computed(() => project.value.cells.some((row) => row.some((color) => color !== project.value.backgroundColor))),
     ...history,
     chooseColor,
+    addSwatch,
+    removeSwatch,
     replaceProject,
     createProject,
     beginGridChange,

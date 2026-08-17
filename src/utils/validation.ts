@@ -1,4 +1,4 @@
-import { MAX_REPEAT_COUNT, type PatternGrid, type PatternProject, type RepeatBox } from '../types/pattern'
+import { MAX_PROJECT_SWATCHES, MAX_REPEAT_COUNT, type PatternGrid, type PatternProject, type RepeatBox } from '../types/pattern'
 import { boxesOverlap } from './grid'
 import { isHexColor } from './colors'
 import { appError, type AppError } from './appError'
@@ -51,6 +51,9 @@ export function validateProject(value: unknown): ValidationResult {
   }
   if (project.recentColors !== undefined && (!Array.isArray(project.recentColors) || project.recentColors.length > 20 || !project.recentColors.every(isHexColor))) {
     return { valid: false, error: appError('validation.recentColors') }
+  }
+  if (project.swatches !== undefined && (!Array.isArray(project.swatches) || project.swatches.length > MAX_PROJECT_SWATCHES || !project.swatches.every(isHexColor) || new Set(project.swatches).size !== project.swatches.length)) {
+    return { valid: false, error: appError('validation.swatches') }
   }
 
   if (project.repeatBoxes !== undefined) {
@@ -119,6 +122,7 @@ export function asPatternProject(value: unknown): PatternProject {
     verticalRepeats: source.repeatBoxes === undefined && Array.isArray(source.repeatRanges) && source.repeatRanges.length > 0 ? 1 : source.verticalRepeats as number,
     previewStitch: source.previewStitch === 'cross-stitch' || source.previewStitch === 'single-crochet' ? source.previewStitch : 'knit',
     recentColors: Array.isArray(source.recentColors) ? [...source.recentColors] as string[] : [],
+    swatches: Array.isArray(source.swatches) ? [...source.swatches] as string[] : [],
     repeatBoxes: Array.isArray(source.repeatBoxes) ? (source.repeatBoxes as RepeatBox[]).map((box) => ({ ...box })) : [],
     cells,
   }

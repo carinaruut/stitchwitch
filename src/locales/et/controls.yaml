@@ -52,6 +52,17 @@ controls:
     eyedropper: Pipett
     hex: Värvi kuueteistkümnendkood
     invalid: Sisesta värv kujul #7c3aed.
+    rgb: RGB-värv
+    red: R
+    green: G
+    blue: B
+    rgbInvalid: Sisesta täisarvud vahemikus 0 kuni 255.
+    swatches: Projekti värvid
+    swatchesHelp: Salvestatakse selle projektiga
+    saveSwatch: Salvesta värv
+    noSwatches: Ühtegi värvi pole veel salvestatud.
+    selectSwatch: Vali salvestatud värv {color}
+    removeSwatch: Eemalda salvestatud värv {color}
     recent: Hiljutised värvid
     selectRecent: Vali hiljutine värv {color}
   reference:
@@ -85,6 +96,8 @@ controls:
     pixels: "{size} px"
     fullHeight: Näita lõuendit täiskõrguses
     fullHeightDescription: Kasuta lõuendi sisemise kerimisriba asemel lehe kerimist
+    showSymbols: Näita värvisümboleid
+    showSymbolsDescription: Lisa sarnaste värvide eristamiseks sümbolid
   preview:
     title: Terve mustri eelvaade
     fitWidth: Mahuta laiusesse

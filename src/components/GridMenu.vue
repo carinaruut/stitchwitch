@@ -3,8 +3,8 @@ import { useI18n } from 'vue-i18n'
 import ClickPopover from './ClickPopover.vue'
 import GridSettings from './GridSettings.vue'
 
-defineProps<{ cellSize: number; fullHeight: boolean }>()
-defineEmits<{ cellSize: [value: number]; fullHeight: [value: boolean] }>()
+defineProps<{ cellSize: number; fullHeight: boolean; showSymbols: boolean }>()
+defineEmits<{ cellSize: [value: number]; fullHeight: [value: boolean]; showSymbols: [value: boolean] }>()
 const { t } = useI18n({ useScope: 'global' })
 </script>
 
@@ -15,6 +15,6 @@ const { t } = useI18n({ useScope: 'global' })
         <span class="mdi mdi-cog-outline text-xl" aria-hidden="true"></span>
       </button>
     </template>
-    <GridSettings :cell-size="cellSize" :full-height="fullHeight" @cell-size="$emit('cellSize', $event)" @full-height="$emit('fullHeight', $event)" />
+    <GridSettings :cell-size="cellSize" :full-height="fullHeight" :show-symbols="showSymbols" @cell-size="$emit('cellSize', $event)" @full-height="$emit('fullHeight', $event)" @show-symbols="$emit('showSymbols', $event)" />
   </ClickPopover>
 </template>

@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { DrawingTool, GridSelection, PatternGrid } from '../types/pattern'
+import { contrastColor } from '../utils/colors'
 import { followsCenterBoundary, isCenterHeader, repeatOutlineColor, REPEAT_BOTTOM, REPEAT_COPY, REPEAT_LEFT, REPEAT_RIGHT, REPEAT_TOP } from '../utils/grid'
 
 type SelectionAction = 'move' | 'copy' | 'paste' | 'flip-horizontal' | 'flip-vertical' | 'fill' | 'erase'
@@ -30,6 +31,7 @@ const props = defineProps<{
   canPaste: boolean
   mirrorHorizontal: boolean
   mirrorVertical: boolean
+  symbols?: Record<string, string>
 }>()
 const emit = defineEmits<{
   strokeStart: []
@@ -438,7 +440,7 @@ onBeforeUnmount(() => {
           @contextmenu="openSelectionMenu(rowHeaders[rowIndex], columnHeaders[columnIndex], $event)"
           @keydown.enter.prevent="tool === 'select' || tool === 'wand' ? keyboardSelect(rowIndex, columnIndex) : keyboardPaint(cellSourceRows[rowIndex][columnIndex], cellSourceColumns[rowIndex][columnIndex])"
           @keydown.space.prevent="tool === 'select' || tool === 'wand' ? keyboardSelect(rowIndex, columnIndex) : keyboardPaint(cellSourceRows[rowIndex][columnIndex], cellSourceColumns[rowIndex][columnIndex])"
-        ></div>
+        ><span v-if="symbols?.[color]" class="pointer-events-none absolute inset-0 flex items-center justify-center font-bold leading-none" :style="{ color: contrastColor(color), fontSize: `${Math.max(7, Math.min(14, cellSize * 0.5))}px` }" aria-hidden="true">{{ symbols[color] }}</span></div>
       </template>
     </div>
   </div>

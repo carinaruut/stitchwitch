@@ -3,6 +3,7 @@ import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { PatternDisplay, PatternGrid } from '../types/pattern'
 import type { TrackerProgress } from '../types/tracker'
+import { contrastColor } from '../utils/colors'
 import { followsCenterBoundary, isCenterHeader, repeatOutlineColor, REPEAT_COPY } from '../utils/grid'
 import { rowCompletionRange, stitchOrdinal } from '../utils/tracker'
 
@@ -16,6 +17,7 @@ const props = defineProps<{
   display: PatternDisplay
   progress: TrackerProgress
   autoScroll: boolean
+  symbols?: Record<string, string>
 }>()
 
 const { t } = useI18n({ useScope: 'global' })
@@ -237,6 +239,7 @@ function moveRowHeader(row: number, event: KeyboardEvent) {
             :style="{ '--stitch-color': color }"
             aria-hidden="true"
           ></span>
+          <span v-if="symbols?.[color]" class="pointer-events-none absolute inset-0 z-[1] flex items-center justify-center font-bold leading-none" :style="{ color: contrastColor(color), fontSize: `${Math.max(8, Math.min(16, cellSize * 0.45))}px` }" aria-hidden="true">{{ symbols[color] }}</span>
         </button>
       </div>
     </div>

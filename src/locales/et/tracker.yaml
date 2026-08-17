@@ -46,6 +46,7 @@ tracker:
     singleCrochet: Kinnissilmus
     cellSize: Ruudu suurus
     autoScroll: Automaatne kerimine
+    showSymbols: Näita värvisümboleid
     keepAwake: Hoia ekraan ärkvel
     fullscreen: Ava täisekraan
     exitFullscreen: Välju täisekraanilt

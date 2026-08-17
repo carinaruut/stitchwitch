@@ -16,6 +16,7 @@ export interface TrackerPreferences {
   cellSize: number
   autoScroll: boolean
   keepAwake: boolean
+  showSymbols: boolean
 }
 
 export interface TrackerProject {

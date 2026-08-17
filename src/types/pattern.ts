@@ -5,6 +5,7 @@ export type PatternDisplay = 'canvas' | PreviewStitch
 export type PrintMode = 'color' | 'symbols'
 
 export const MAX_REPEAT_COUNT = 100
+export const MAX_PROJECT_SWATCHES = 32
 
 export interface GridSelection {
   top: number
@@ -41,8 +42,9 @@ export interface PatternProject {
   verticalRepeats: number
   previewStitch: PreviewStitch
   recentColors: string[]
+  swatches: string[]
   repeatBoxes: RepeatBox[]
   cells: PatternGrid
 }
 
-export type NewPatternProject = Omit<PatternProject, 'format' | 'version' | 'previewStitch' | 'cells' | 'recentColors' | 'repeatBoxes'>
+export type NewPatternProject = Omit<PatternProject, 'format' | 'version' | 'previewStitch' | 'cells' | 'recentColors' | 'swatches' | 'repeatBoxes'>
