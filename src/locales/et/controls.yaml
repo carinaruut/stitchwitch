@@ -54,6 +54,28 @@ controls:
     invalid: Sisesta värv kujul #7c3aed.
     recent: Hiljutised värvid
     selectRecent: Vali hiljutine värv {color}
+  reference:
+    title: Viitepilt
+    toggle: Näita või peida viitepilt
+    close: Sulge viitepilt
+    add: Lisa viitepilt
+    drop: Vali pilt või lohista see siia
+    pick: Vali pildilt värv
+    fit: Mahuta pilt paneelile
+    fitShort: Mahuta
+    zoomOut: Vähenda
+    zoomIn: Suurenda
+    pickHelp: Värvi valimiseks klõpsa või puuduta pilti.
+    idleHelp: Värvi valimiseks vali pipett või vajuta I.
+    imageAlt: Viitepilt {name}
+    replace: Asenda
+    remove: Eemalda
+    errors:
+      type: Vali pildifail.
+      size: Viitepilt peab olema väiksem kui 20 MB.
+      dimensions: Viitepildi mõõtmed on liiga suured.
+      decode: Viitepilti ei õnnestunud avada.
+      transparent: Vali läbipaistva ala asemel nähtav piksel.
   gridSettings:
     settings: Seaded
     title: Ruudustiku sätted

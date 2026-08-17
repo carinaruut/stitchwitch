@@ -12,6 +12,7 @@ import RowMenu from '../components/RowMenu.vue'
 import ColumnMenu from '../components/ColumnMenu.vue'
 import PatternGrid from '../components/PatternGrid.vue'
 import PatternPreview from '../components/PatternPreview.vue'
+import ReferenceImage from '../components/ReferenceImage.vue'
 import NewProjectModal from '../components/NewProjectModal.vue'
 import ConfirmModal from '../components/ConfirmModal.vue'
 import NotificationToast from '../components/NotificationToast.vue'
@@ -43,6 +44,7 @@ const newModalOpen = ref(false)
 const clearModalOpen = ref(false)
 const importModalOpen = ref(false)
 const guideOpen = ref(false)
+const referenceOpen = ref(false)
 const fileInput = ref<HTMLInputElement | null>(null)
 const pendingImport = ref<PatternProject | null>(null)
 const placingSelection = ref(false)
@@ -165,6 +167,12 @@ function cancelImport() {
 
 function beginStroke() {
   if (pattern.tool.value !== 'eyedropper') pattern.beginGridChange()
+}
+
+function pickReferenceColor(color: string) {
+  pattern.chooseColor(color, true)
+  pattern.tool.value = 'pencil'
+  notify(t('editor.notifications.referenceColorPicked', { color: color.toUpperCase() }), 'success')
 }
 
 function endStroke() {
@@ -497,9 +505,11 @@ onBeforeUnmount(() => {
                 :placing-selection="placingSelection"
                 :mirror-horizontal="pattern.mirrorHorizontal.value"
                 :mirror-vertical="pattern.mirrorVertical.value"
+                :reference-open="referenceOpen"
                 @select="selectTool"
                 @toggle-mirror-horizontal="toggleMirror('horizontal')"
                 @toggle-mirror-vertical="toggleMirror('vertical')"
+                @toggle-reference="referenceOpen = !referenceOpen"
                 @cancel-placement="placingSelection = false"
                 @clear="requestClear"
                 @save="saveProject"
@@ -553,7 +563,18 @@ onBeforeUnmount(() => {
                   <GridMenu :cell-size="pattern.project.value.cellSize" :full-height="canvasFullHeight" @cell-size="pattern.project.value.cellSize = $event" @full-height="canvasFullHeight = $event" />
                 </template>
               </DrawingTools>
-              <PatternGrid
+              <div class="grid min-w-0" :class="referenceOpen ? 'gap-3 lg:grid-cols-[minmax(0,1fr)_22rem]' : 'grid-cols-1'">
+                <div v-show="referenceOpen" class="min-w-0 lg:order-2 lg:sticky lg:top-3 lg:self-start">
+                  <ReferenceImage
+                    :picking="pattern.tool.value === 'eyedropper'"
+                    @pick="pickReferenceColor"
+                    @request-pick="selectTool('eyedropper')"
+                    @close="referenceOpen = false"
+                    @error="notify($event, 'error')"
+                  />
+                </div>
+                <div class="min-w-0 lg:order-1">
+                  <PatternGrid
                 :cells="renderedPattern.cells"
                 :cell-source-rows="renderedPattern.sourceRows"
                 :cell-source-columns="renderedPattern.sourceColumns"
@@ -589,8 +610,10 @@ onBeforeUnmount(() => {
                 @selection-action="handleSelectionAction"
                 @clear-selection="pattern.clearSelection"
                 @place-selection="placeSelection"
-                @move-selection="moveSelectionDirectly"
-              />
+                    @move-selection="moveSelectionDirectly"
+                  />
+                </div>
+              </div>
           </div>
         </section>
 

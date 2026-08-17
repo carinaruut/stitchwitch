@@ -64,6 +64,7 @@ editor:
     selectionPasted: Valik on kleebitud.
     selectionFlipped: Valik peegeldati {direction}.
     selectionMoved: Valik on teisaldatud.
+    referenceColorPicked: Viitepildilt valiti värv {color}.
     backupFailed: Kohalik varundamine nurjus. Muudatuste kaotsimineku vältimiseks laadi projekt alla.
     patternRecovered: Brauserisse salvestatud muster taastati.
     dismiss: 'Sulge teade: {message}'

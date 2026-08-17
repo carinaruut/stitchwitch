@@ -89,6 +89,8 @@ guide:
     rowsTextAfter: . Click a numbered header to select it and click it again to deselect it; selecting a row clears the column selection and vice versa. Shift-click extends the selection to a contiguous range and turns multiple rows or columns into an area selection. Structural changes preserve repeat boxes outside the edited area.
     displayTitle: Display and history
     displayText: Grid settings change the displayed cell size without changing the pattern. Undo and Redo restore drawing, structural edits, and repeat-box changes.
+    referenceTitle: Reference photo
+    referenceText: Open the reference-photo panel from the image button in the tools bar. Add a local image, select Eyedropper or press I, then click or tap the photo to use that color. Reference photos remain only for the current session and are not included in project files.
   tracker:
     title: Progress tracker
     intro: Open Tracker from the top menu, then open a saved design or tracker file. Choose the starting row and stitch direction before beginning. Clicking a stitch completes every earlier row and each stitch through that point; clicking a row number completes or reopens the whole row.

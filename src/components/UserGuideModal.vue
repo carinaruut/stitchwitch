@@ -171,6 +171,10 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleEscape))
               <h3 class="font-bold">{{ t('guide.canvas.displayTitle') }}</h3>
                <p class="mt-1 text-sm text-base-content/70">{{ t('guide.canvas.displayText') }}</p>
             </article>
+            <article class="rounded-box border border-base-300 p-4 md:col-span-2">
+              <h3 class="font-bold">{{ t('guide.canvas.referenceTitle') }}</h3>
+              <p class="mt-1 text-sm text-base-content/70">{{ t('guide.canvas.referenceText') }}</p>
+            </article>
           </div>
         </section>
 

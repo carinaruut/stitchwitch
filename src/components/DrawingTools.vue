@@ -8,6 +8,7 @@ defineProps<{
   placingSelection: boolean
   mirrorHorizontal: boolean
   mirrorVertical: boolean
+  referenceOpen: boolean
 }>()
 defineEmits<{
   select: [tool: DrawingTool]
@@ -17,6 +18,7 @@ defineEmits<{
   print: [mode: PrintMode]
   toggleMirrorHorizontal: []
   toggleMirrorVertical: []
+  toggleReference: []
   cancelPlacement: []
 }>()
 
@@ -72,6 +74,9 @@ function requestDownload(event: MouseEvent, action: () => void) {
       <div v-if="placingSelection" class="flex items-center gap-1 border-l border-base-300 pl-3">
         <span class="text-xs font-medium text-primary">{{ t('controls.drawing.chooseDestination') }}</span>
         <button class="btn btn-ghost btn-xs" type="button" @click="$emit('cancelPlacement')">{{ t('controls.common.cancel') }}</button>
+      </div>
+      <div class="tooltip" :data-tip="t('controls.reference.toggle')">
+        <button class="btn btn-sm" :class="referenceOpen ? 'btn-primary' : 'btn-ghost'" type="button" :aria-label="t('controls.reference.toggle')" :aria-pressed="referenceOpen" @click="$emit('toggleReference')"><span class="mdi mdi-image-outline text-xl" aria-hidden="true"></span></button>
       </div>
       <div v-if="$slots.settings" class="flex w-full shrink-0 items-center justify-start gap-1 border-t border-base-300 pt-1 lg:ml-auto lg:w-auto lg:border-l lg:border-t-0 lg:pl-2 lg:pt-0" :aria-label="t('controls.drawing.patternSettings')">
         <slot name="settings"></slot>

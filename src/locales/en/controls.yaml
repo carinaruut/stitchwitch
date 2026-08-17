@@ -54,6 +54,28 @@ controls:
     invalid: Enter a color such as #7c3aed.
     recent: Recent colors
     selectRecent: Select recent color {color}
+  reference:
+    title: Reference photo
+    toggle: Toggle reference photo
+    close: Close reference photo
+    add: Add reference photo
+    drop: Choose an image or drop it here
+    pick: Pick color from photo
+    fit: Fit image to panel
+    fitShort: Fit
+    zoomOut: Zoom out
+    zoomIn: Zoom in
+    pickHelp: Click or tap the photo to pick a color.
+    idleHelp: Select Eyedropper or press I to pick a color.
+    imageAlt: Reference photo {name}
+    replace: Replace
+    remove: Remove
+    errors:
+      type: Choose an image file.
+      size: The reference photo must be smaller than 20 MB.
+      dimensions: The reference photo dimensions are too large.
+      decode: The reference photo could not be opened.
+      transparent: Choose a visible pixel instead of a transparent area.
   gridSettings:
     settings: Settings
     title: Grid settings

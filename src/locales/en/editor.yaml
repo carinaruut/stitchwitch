@@ -64,6 +64,7 @@ editor:
     selectionPasted: Selection pasted.
     selectionFlipped: Selection flipped {direction}.
     selectionMoved: Selection moved.
+    referenceColorPicked: Selected {color} from the reference photo.
     backupFailed: Local backup failed. Download the project to avoid losing changes.
     patternRecovered: Recovered your locally saved pattern.
     dismiss: Dismiss {message}

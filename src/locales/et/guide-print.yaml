@@ -89,6 +89,8 @@ guide:
     rowsTextAfter: . Numbriga päise valimiseks klõpsa seda ja valiku tühistamiseks klõpsa uuesti; rea valimine tühistab veeruvaliku ja vastupidi. Tõstuklahvi all hoides klõpsamine laiendab valiku katkematuks vahemikuks ning muudab mitu rida või veergu alavalikuks. Struktuurimuudatused säilitavad muudetud alast väljapoole jäävad kordusalad.
     displayTitle: Kuvamine ja ajalugu
     displayText: Ruudustiku seaded muudavad kuvatava ruudu suurust ilma mustrit muutmata. Tagasivõtmine ja uuestitegemine taastavad joonistuse, struktuurimuudatused ning kordusalade muudatused.
+    referenceTitle: Viitepilt
+    referenceText: Ava viitepildi paneel tööriistariba pildinupust. Lisa kohalik pilt, vali pipett või vajuta I ning klõpsa või puuduta värvi kasutamiseks pilti. Viitepilt säilib ainult praeguse seansi jooksul ja seda ei lisata projektifaili.
   tracker:
     title: Edenemise jälgija
     intro: Ava ülamenüüst jälgija ja seejärel salvestatud kavand või jälgijafail. Enne alustamist vali algusrida ja pistete tegemise suund. Pistelt klõpsamine märgib lõpetatuks kõik varasemad read ja pisted kuni valitud kohani; reanumbril klõpsamine lõpetab või taasavab terve rea.
