@@ -25,10 +25,26 @@ const { t } = useI18n({ useScope: 'global' })
 </script>
 
 <template>
-  <ClickPopover :label="t('controls.repeat.controls')" align="right" width="md">
+  <ClickPopover
+    :label="t('controls.repeat.controls')"
+    align="right"
+    width="md"
+  >
     <template #trigger="{ open, panelId }">
-      <button class="btn btn-sm" :class="open ? 'btn-primary' : 'btn-ghost'" type="button" :aria-label="t('controls.repeat.controls')" :title="t('controls.repeat.controls')" aria-haspopup="true" :aria-controls="panelId" :aria-expanded="open">
-        <span class="mdi mdi-repeat text-xl" aria-hidden="true"></span>
+      <button
+        class="btn btn-sm"
+        :class="open ? 'btn-primary' : 'btn-ghost'"
+        type="button"
+        :aria-label="t('controls.repeat.controls')"
+        :title="t('controls.repeat.controls')"
+        aria-haspopup="true"
+        :aria-controls="panelId"
+        :aria-expanded="open"
+      >
+        <span
+          class="mdi mdi-repeat text-xl"
+          aria-hidden="true"
+        />
       </button>
     </template>
     <RepeatSettings

@@ -166,85 +166,124 @@ function moveRowHeader(row: number, event: KeyboardEvent) {
 </script>
 
 <template>
-  <div ref="fullscreenTarget" class="tracker-fullscreen relative w-full min-w-0 bg-base-100">
-    <div ref="viewport" class="tracker-viewport w-full min-w-0 overflow-x-auto rounded-box border border-base-300/70 bg-base-100 p-3" :aria-label="t('tracker.grid.label')">
+  <div
+    ref="fullscreenTarget"
+    class="tracker-fullscreen relative w-full min-w-0 bg-base-100"
+  >
     <div
-      class="grid w-max border border-base-300/70 bg-base-100"
-      :style="{ gridTemplateColumns: `32px repeat(${cells[0].length}, ${cellSize}px)`, gridTemplateRows: `32px repeat(${cells.length}, ${cellSize}px)` }"
-      role="grid"
-      :aria-rowcount="cells.length + 1"
-      :aria-colcount="cells[0].length + 1"
+      ref="viewport"
+      class="tracker-viewport w-full min-w-0 overflow-x-auto rounded-box border border-base-300/70 bg-base-100 p-3"
+      :aria-label="t('tracker.grid.label')"
     >
-      <div class="contents" role="row" aria-rowindex="1">
-        <span class="sticky left-0 top-0 z-20 border-b border-r border-base-300/70 bg-base-100" aria-hidden="true"></span>
-        <span
-          v-for="column in cells[0].length"
-          :key="`column-${column}`"
-          class="sticky top-0 z-10 flex items-center justify-center border-b border-base-300/70 bg-base-100 font-mono text-[10px] font-medium tabular-nums text-base-content/60"
-          :class="{ 'section-column-end': (columnHeaders[column - 1] + 1) % 5 === 0 && column < cells[0].length, 'center-axis-label': isCenterHeader(column - 1, cells[0].length), 'center-column-marker': followsCenterBoundary(column - 1, cells[0].length) }"
-          role="columnheader"
-          :aria-colindex="column + 1"
-        >{{ columnHeaders[column - 1] + 1 }}</span>
-      </div>
-
-      <div v-for="(row, rowIndex) in cells" :key="rowIndex" class="contents" role="row" :aria-rowindex="rowIndex + 2">
-        <button
-          :data-tracker-row="rowIndex"
-          class="sticky left-0 z-10 flex items-center justify-center border-0 border-r border-base-300/70 bg-base-100 p-0 font-mono text-[10px] font-medium tabular-nums text-base-content/60 hover:bg-base-200 focus-visible:z-20 focus-visible:outline-2 focus-visible:outline-primary"
-          :class="{
-            'section-row-end': (rowHeaders[rowIndex] + 1) % 5 === 0 && rowIndex < cells.length - 1,
-            'bg-success/15! font-bold text-success!': rowComplete(rowIndex),
-            'center-axis-label': isCenterHeader(rowIndex, cells.length),
-            'center-row-marker': followsCenterBoundary(rowIndex, cells.length),
-          }"
-          type="button"
-          role="rowheader"
-          aria-colindex="1"
-          :tabindex="activeRowHeader === rowIndex ? 0 : -1"
-          :aria-label="rowComplete(rowIndex) ? t('tracker.grid.reopenRow', { row: rowHeaders[rowIndex] + 1 }) : t('tracker.grid.completeThroughRow', { row: rowHeaders[rowIndex] + 1 })"
-          @focus="activeRowHeader = rowIndex"
-          @click="$emit('row', rowIndex)"
-          @keydown="moveRowHeader(rowIndex, $event)"
-        >{{ rowHeaders[rowIndex] + 1 }}</button>
-
-        <button
-          v-for="(color, columnIndex) in row"
-          :key="columnIndex"
-          :data-tracker-cell="`${rowIndex}-${columnIndex}`"
-          class="pattern-cell tracker-cell relative"
-          :class="{
-            'bg-transparent': display !== 'canvas',
-            'tracker-cell-complete': ordinal(rowIndex, columnIndex) < progress.completedCount,
-            'tracker-cell-next': ordinal(rowIndex, columnIndex) === progress.completedCount,
-            'section-column-end': (columnHeaders[columnIndex] + 1) % 5 === 0 && columnIndex < row.length - 1,
-            'section-row-end': (rowHeaders[rowIndex] + 1) % 5 === 0 && rowIndex < cells.length - 1,
-            'repeat-copy-cell': (repeatFlags[rowIndex][columnIndex] & REPEAT_COPY) !== 0,
-          }"
-          :style="{ backgroundColor: display === 'canvas' ? color : undefined, '--repeat-color': repeatOutlineColor(repeatColorIndices[rowIndex][columnIndex]) }"
-          type="button"
-          role="gridcell"
-          :aria-rowindex="rowIndex + 2"
-          :aria-colindex="columnIndex + 2"
-          :tabindex="activeCell.row === rowIndex && activeCell.column === columnIndex ? 0 : -1"
-          :aria-selected="ordinal(rowIndex, columnIndex) < progress.completedCount"
-          :aria-label="t('tracker.grid.cell', { row: rowHeaders[rowIndex] + 1, column: columnHeaders[columnIndex] + 1, status: ordinal(rowIndex, columnIndex) < progress.completedCount ? t('tracker.grid.completed') : ordinal(rowIndex, columnIndex) === progress.completedCount ? t('tracker.grid.nextStitch') : t('tracker.grid.notCompleted') })"
-          @focus="activeCell = { row: rowIndex, column: columnIndex }"
-          @click="selectStitch(rowIndex, columnIndex)"
-          @keydown="moveCell(rowIndex, columnIndex, $event)"
+      <div
+        class="grid w-max border border-base-300/70 bg-base-100"
+        :style="{ gridTemplateColumns: `32px repeat(${cells[0].length}, ${cellSize}px)`, gridTemplateRows: `32px repeat(${cells.length}, ${cellSize}px)` }"
+        role="grid"
+        :aria-rowcount="cells.length + 1"
+        :aria-colcount="cells[0].length + 1"
+      >
+        <div
+          class="contents"
+          role="row"
+          aria-rowindex="1"
         >
           <span
-            v-if="display !== 'canvas'"
-            class="tracker-stitch"
-            :class="`tracker-stitch-${display}`"
-            :style="{ '--stitch-color': color }"
+            class="sticky left-0 top-0 z-20 border-b border-r border-base-300/70 bg-base-100"
             aria-hidden="true"
-          ></span>
-          <span v-if="symbols?.[color]" class="pointer-events-none absolute inset-0 z-[1] flex items-center justify-center font-bold leading-none" :style="{ color: contrastColor(color), fontSize: `${Math.max(8, Math.min(16, cellSize * 0.45))}px` }" aria-hidden="true">{{ symbols[color] }}</span>
-        </button>
+          />
+          <span
+            v-for="column in cells[0].length"
+            :key="`column-${column}`"
+            class="sticky top-0 z-10 flex items-center justify-center border-b border-base-300/70 bg-base-100 font-mono text-[10px] font-medium tabular-nums text-base-content/60"
+            :class="{ 'section-column-end': (columnHeaders[column - 1] + 1) % 5 === 0 && column < cells[0].length, 'center-axis-label': isCenterHeader(column - 1, cells[0].length), 'center-column-marker': followsCenterBoundary(column - 1, cells[0].length) }"
+            role="columnheader"
+            :aria-colindex="column + 1"
+          >{{ columnHeaders[column - 1] + 1 }}</span>
+        </div>
+
+        <div
+          v-for="(row, rowIndex) in cells"
+          :key="rowIndex"
+          class="contents"
+          role="row"
+          :aria-rowindex="rowIndex + 2"
+        >
+          <button
+            :data-tracker-row="rowIndex"
+            class="sticky left-0 z-10 flex items-center justify-center border-0 border-r border-base-300/70 bg-base-100 p-0 font-mono text-[10px] font-medium tabular-nums text-base-content/60 hover:bg-base-200 focus-visible:z-20 focus-visible:outline-2 focus-visible:outline-primary"
+            :class="{
+              'section-row-end': (rowHeaders[rowIndex] + 1) % 5 === 0 && rowIndex < cells.length - 1,
+              'bg-success/15! font-bold text-success!': rowComplete(rowIndex),
+              'center-axis-label': isCenterHeader(rowIndex, cells.length),
+              'center-row-marker': followsCenterBoundary(rowIndex, cells.length),
+            }"
+            type="button"
+            role="rowheader"
+            aria-colindex="1"
+            :tabindex="activeRowHeader === rowIndex ? 0 : -1"
+            :aria-label="rowComplete(rowIndex) ? t('tracker.grid.reopenRow', { row: rowHeaders[rowIndex] + 1 }) : t('tracker.grid.completeThroughRow', { row: rowHeaders[rowIndex] + 1 })"
+            @focus="activeRowHeader = rowIndex"
+            @click="$emit('row', rowIndex)"
+            @keydown="moveRowHeader(rowIndex, $event)"
+          >
+            {{ rowHeaders[rowIndex] + 1 }}
+          </button>
+
+          <button
+            v-for="(color, columnIndex) in row"
+            :key="columnIndex"
+            :data-tracker-cell="`${rowIndex}-${columnIndex}`"
+            class="pattern-cell tracker-cell relative"
+            :class="{
+              'bg-transparent': display !== 'canvas',
+              'tracker-cell-complete': ordinal(rowIndex, columnIndex) < progress.completedCount,
+              'tracker-cell-next': ordinal(rowIndex, columnIndex) === progress.completedCount,
+              'section-column-end': (columnHeaders[columnIndex] + 1) % 5 === 0 && columnIndex < row.length - 1,
+              'section-row-end': (rowHeaders[rowIndex] + 1) % 5 === 0 && rowIndex < cells.length - 1,
+              'repeat-copy-cell': (repeatFlags[rowIndex][columnIndex] & REPEAT_COPY) !== 0,
+            }"
+            :style="{ backgroundColor: display === 'canvas' ? color : undefined, '--repeat-color': repeatOutlineColor(repeatColorIndices[rowIndex][columnIndex]) }"
+            type="button"
+            role="gridcell"
+            :aria-rowindex="rowIndex + 2"
+            :aria-colindex="columnIndex + 2"
+            :tabindex="activeCell.row === rowIndex && activeCell.column === columnIndex ? 0 : -1"
+            :aria-selected="ordinal(rowIndex, columnIndex) < progress.completedCount"
+            :aria-label="t('tracker.grid.cell', { row: rowHeaders[rowIndex] + 1, column: columnHeaders[columnIndex] + 1, status: ordinal(rowIndex, columnIndex) < progress.completedCount ? t('tracker.grid.completed') : ordinal(rowIndex, columnIndex) === progress.completedCount ? t('tracker.grid.nextStitch') : t('tracker.grid.notCompleted') })"
+            @focus="activeCell = { row: rowIndex, column: columnIndex }"
+            @click="selectStitch(rowIndex, columnIndex)"
+            @keydown="moveCell(rowIndex, columnIndex, $event)"
+          >
+            <span
+              v-if="display !== 'canvas'"
+              class="tracker-stitch"
+              :class="`tracker-stitch-${display}`"
+              :style="{ '--stitch-color': color }"
+              aria-hidden="true"
+            />
+            <span
+              v-if="symbols?.[color]"
+              class="pointer-events-none absolute inset-0 z-[1] flex items-center justify-center font-bold leading-none"
+              :style="{ color: contrastColor(color), fontSize: `${Math.max(8, Math.min(16, cellSize * 0.45))}px` }"
+              aria-hidden="true"
+            >{{ symbols[color] }}</span>
+          </button>
+        </div>
       </div>
     </div>
-    </div>
-    <button v-if="isFullscreen" class="btn btn-neutral btn-square btn-sm absolute right-4 top-4 z-30 shadow-lg" type="button" :aria-label="t('tracker.controls.exitFullscreen')" :title="t('tracker.controls.exitFullscreen')" @click="exitFullscreen"><span class="mdi mdi-fullscreen-exit text-xl" aria-hidden="true"></span></button>
+    <button
+      v-if="isFullscreen"
+      class="btn btn-neutral btn-square btn-sm absolute right-4 top-4 z-30 shadow-lg"
+      type="button"
+      :aria-label="t('tracker.controls.exitFullscreen')"
+      :title="t('tracker.controls.exitFullscreen')"
+      @click="exitFullscreen"
+    >
+      <span
+        class="mdi mdi-fullscreen-exit text-xl"
+        aria-hidden="true"
+      />
+    </button>
   </div>
 </template>
 

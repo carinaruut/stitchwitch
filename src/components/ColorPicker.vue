@@ -48,49 +48,146 @@ function submitRgb() {
 <template>
   <section class="card border border-base-300 bg-base-100">
     <div class="card-body gap-3 p-4">
-      <h2 class="card-title text-base">{{ t('controls.color.title') }}</h2>
+      <h2 class="card-title text-base">
+        {{ t('controls.color.title') }}
+      </h2>
       <div class="flex items-center gap-3">
-        <label class="relative h-11 w-11 shrink-0 cursor-pointer rounded border-2 border-base-content" :style="{ backgroundColor: color }">
+        <label
+          class="relative h-11 w-11 shrink-0 cursor-pointer rounded border-2 border-base-content"
+          :style="{ backgroundColor: color }"
+        >
           <span class="sr-only">{{ t('controls.color.choose') }}</span>
-          <input class="absolute inset-0 h-full w-full cursor-pointer opacity-0" type="color" :value="color" :aria-label="t('controls.color.choose')" @input="selectColor(($event.target as HTMLInputElement).value)" />
+          <input
+            class="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+            type="color"
+            :value="color"
+            :aria-label="t('controls.color.choose')"
+            @input="selectColor(($event.target as HTMLInputElement).value)"
+          >
         </label>
-        <button class="btn btn-sm btn-outline" type="button" @click="$emit('eyedropper')"><span class="mdi mdi-eyedropper" aria-hidden="true"></span>{{ t('controls.color.eyedropper') }}</button>
+        <button
+          class="btn btn-sm btn-outline"
+          type="button"
+          @click="$emit('eyedropper')"
+        >
+          <span
+            class="mdi mdi-eyedropper"
+            aria-hidden="true"
+          />{{ t('controls.color.eyedropper') }}
+        </button>
       </div>
       <label class="form-control">
         <span class="label-text mb-1">{{ t('controls.color.hex') }}</span>
-        <input v-model="hexValue" class="input input-bordered input-sm w-full font-mono" :class="{ 'input-error': hexError }" maxlength="7" @change="submitHex" @keyup.enter="submitHex" />
-        <span v-if="hexError" class="mt-1 text-xs text-error">{{ t('controls.color.invalid') }}</span>
+        <input
+          v-model="hexValue"
+          class="input input-bordered input-sm w-full font-mono"
+          :class="{ 'input-error': hexError }"
+          maxlength="7"
+          @change="submitHex"
+          @keyup.enter="submitHex"
+        >
+        <span
+          v-if="hexError"
+          class="mt-1 text-xs text-error"
+        >{{ t('controls.color.invalid') }}</span>
       </label>
       <fieldset>
-        <legend class="mb-1 text-sm">{{ t('controls.color.rgb') }}</legend>
+        <legend class="mb-1 text-sm">
+          {{ t('controls.color.rgb') }}
+        </legend>
         <div class="grid grid-cols-3 gap-2">
-          <label v-for="channel in (['red', 'green', 'blue'] as const)" :key="channel" class="form-control">
+          <label
+            v-for="channel in (['red', 'green', 'blue'] as const)"
+            :key="channel"
+            class="form-control"
+          >
             <span class="label-text mb-1">{{ t(`controls.color.${channel}`) }}</span>
-            <input v-model="rgbValues[channel]" class="input input-bordered input-sm min-w-0 w-full font-mono" :class="{ 'input-error': rgbError }" type="number" min="0" max="255" inputmode="numeric" @change="submitRgb" @keyup.enter="submitRgb" />
+            <input
+              v-model="rgbValues[channel]"
+              class="input input-bordered input-sm min-w-0 w-full font-mono"
+              :class="{ 'input-error': rgbError }"
+              type="number"
+              min="0"
+              max="255"
+              inputmode="numeric"
+              @change="submitRgb"
+              @keyup.enter="submitRgb"
+            >
           </label>
         </div>
-        <span v-if="rgbError" class="mt-1 block text-xs text-error">{{ t('controls.color.rgbInvalid') }}</span>
+        <span
+          v-if="rgbError"
+          class="mt-1 block text-xs text-error"
+        >{{ t('controls.color.rgbInvalid') }}</span>
       </fieldset>
       <div class="border-t border-base-300 pt-3">
         <div class="mb-2 flex items-center justify-between gap-3">
           <div>
-            <p class="text-sm font-medium">{{ t('controls.color.swatches') }}</p>
-            <p class="text-xs text-base-content/60">{{ t('controls.color.swatchesHelp') }}</p>
+            <p class="text-sm font-medium">
+              {{ t('controls.color.swatches') }}
+            </p>
+            <p class="text-xs text-base-content/60">
+              {{ t('controls.color.swatchesHelp') }}
+            </p>
           </div>
-          <button class="btn btn-primary btn-xs shrink-0" type="button" :disabled="!canAddSwatch" @click="$emit('addSwatch')"><span class="mdi mdi-plus" aria-hidden="true"></span>{{ t('controls.color.saveSwatch') }}</button>
+          <button
+            class="btn btn-primary btn-xs shrink-0"
+            type="button"
+            :disabled="!canAddSwatch"
+            @click="$emit('addSwatch')"
+          >
+            <span
+              class="mdi mdi-plus"
+              aria-hidden="true"
+            />{{ t('controls.color.saveSwatch') }}
+          </button>
         </div>
-        <div v-if="swatches.length" class="flex flex-wrap gap-2">
-          <div v-for="swatch in swatches" :key="swatch" class="join">
-            <button class="btn join-item h-9 min-h-9 gap-2 px-2 font-mono text-xs" type="button" :aria-label="t('controls.color.selectSwatch', { color: swatch })" :aria-pressed="swatch === color" @click="$emit('select', swatch)">
-              <span class="h-5 w-5 rounded border border-base-content/30" :style="{ backgroundColor: swatch }" aria-hidden="true"></span>{{ swatch.toUpperCase() }}
+        <div
+          v-if="swatches.length"
+          class="flex flex-wrap gap-2"
+        >
+          <div
+            v-for="swatch in swatches"
+            :key="swatch"
+            class="join"
+          >
+            <button
+              class="btn join-item h-9 min-h-9 gap-2 px-2 font-mono text-xs"
+              type="button"
+              :aria-label="t('controls.color.selectSwatch', { color: swatch })"
+              :aria-pressed="swatch === color"
+              @click="$emit('select', swatch)"
+            >
+              <span
+                class="h-5 w-5 rounded border border-base-content/30"
+                :style="{ backgroundColor: swatch }"
+                aria-hidden="true"
+              />{{ swatch.toUpperCase() }}
             </button>
-            <button class="btn btn-ghost join-item h-9 min-h-9 px-2" type="button" :aria-label="t('controls.color.removeSwatch', { color: swatch })" @click="$emit('removeSwatch', swatch)"><span class="mdi mdi-close" aria-hidden="true"></span></button>
+            <button
+              class="btn btn-ghost join-item h-9 min-h-9 px-2"
+              type="button"
+              :aria-label="t('controls.color.removeSwatch', { color: swatch })"
+              @click="$emit('removeSwatch', swatch)"
+            >
+              <span
+                class="mdi mdi-close"
+                aria-hidden="true"
+              />
+            </button>
           </div>
         </div>
-        <p v-else class="text-xs text-base-content/60">{{ t('controls.color.noSwatches') }}</p>
+        <p
+          v-else
+          class="text-xs text-base-content/60"
+        >
+          {{ t('controls.color.noSwatches') }}
+        </p>
       </div>
       <div v-if="recentColors.length">
-        <p class="mb-2 text-sm font-medium">{{ t('controls.color.recent') }}</p>
+        <p class="mb-2 text-sm font-medium">
+          {{ t('controls.color.recent') }}
+        </p>
         <div class="flex flex-wrap gap-2">
           <button
             v-for="swatch in recentColors"
@@ -102,7 +199,7 @@ function submitRgb() {
             :aria-label="t('controls.color.selectRecent', { color: swatch })"
             :aria-pressed="swatch === color"
             @click="$emit('select', swatch)"
-          ></button>
+          />
         </div>
       </div>
     </div>

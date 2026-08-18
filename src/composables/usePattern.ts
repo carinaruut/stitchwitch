@@ -67,7 +67,7 @@ export function usePattern() {
   const savedColor = normalizeColor(localStorage.getItem('stitch-selected-color') ?? '')
   const selectedColor = ref(savedColor ?? '#7c3aed')
   const savedRecent = localStorage.getItem('stitch-recent-colors')
-  let parsedRecent: unknown = []
+  let parsedRecent: unknown
   try {
     parsedRecent = savedRecent ? JSON.parse(savedRecent) : []
   } catch {
@@ -306,7 +306,7 @@ export function usePattern() {
     const normalized = normalizeColor(color)
     if (!normalized) return false
     beginGridChange()
-    let cells = cloneGrid(project.value.cells)
+    const cells = cloneGrid(project.value.cells)
     for (const [row, column] of selectionCoordinates(selection.value)) {
       const [sourceRow, sourceColumn] = sourceCellFor(project.value.repeatBoxes, row, column)
       cells[sourceRow][sourceColumn] = normalized
@@ -362,7 +362,7 @@ export function usePattern() {
     const copied = selectionClipboard(source)
     if (row + copied.cells.length > 500 || column + copied.cells[0].length > 500) return false
     beginGridChange()
-    let next = cloneGrid(project.value.cells)
+    const next = cloneGrid(project.value.cells)
     for (const [sourceRow, sourceColumn] of selectionCoordinates(source)) {
       const [mappedRow, mappedColumn] = sourceCellFor(project.value.repeatBoxes, sourceRow, sourceColumn)
       next[mappedRow][mappedColumn] = project.value.backgroundColor
@@ -379,7 +379,7 @@ export function usePattern() {
     copied.cells = direction === 'horizontal' ? copied.cells.map((row) => [...row].reverse()) : [...copied.cells].reverse()
     if (copied.mask) copied.mask = direction === 'horizontal' ? copied.mask.map((row) => [...row].reverse()) : [...copied.mask].reverse()
     beginGridChange()
-    let next = cloneGrid(project.value.cells)
+    const next = cloneGrid(project.value.cells)
     if (source.cells) {
       for (const [sourceRow, sourceColumn] of source.cells) {
         const [mappedRow, mappedColumn] = sourceCellFor(project.value.repeatBoxes, sourceRow, sourceColumn)
@@ -590,7 +590,7 @@ export function usePattern() {
     const rows = [...new Set(indices)].filter((index) => index >= 0 && index < project.value.cells.length)
     if (rows.length === 0) return
     beginGridChange()
-    let cells = cloneGrid(project.value.cells)
+    const cells = cloneGrid(project.value.cells)
     for (const row of rows) {
       for (let column = 0; column < cells[row].length; column += 1) {
         const [sourceRow, sourceColumn] = sourceCellFor(project.value.repeatBoxes, row, column)
@@ -713,7 +713,7 @@ export function usePattern() {
     const columns = [...new Set(indices)].filter((index) => index >= 0 && index < project.value.cells[0].length)
     if (columns.length === 0) return
     beginGridChange()
-    let cells = cloneGrid(project.value.cells)
+    const cells = cloneGrid(project.value.cells)
     for (let row = 0; row < cells.length; row += 1) {
       for (const column of columns) {
         const [sourceRow, sourceColumn] = sourceCellFor(project.value.repeatBoxes, row, column)

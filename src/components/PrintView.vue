@@ -244,12 +244,25 @@ const repeatPages = computed(() => packCharts(repeatCharts.value))
       />
     </section>
 
-    <div v-if="symbolKeyPages.length" class="print-page-group" :class="{ 'print-page-group-multiple': symbolKeyPages.length > 1 }">
-      <section v-for="(entries, pageIndex) in symbolKeyPages" :key="`symbol-${pageIndex}`" class="print-symbol-key-page" :class="{ 'print-start-page': pageIndex > 0 }">
+    <div
+      v-if="symbolKeyPages.length"
+      class="print-page-group"
+      :class="{ 'print-page-group-multiple': symbolKeyPages.length > 1 }"
+    >
+      <section
+        v-for="(entries, pageIndex) in symbolKeyPages"
+        :key="`symbol-${pageIndex}`"
+        class="print-symbol-key-page"
+        :class="{ 'print-start-page': pageIndex > 0 }"
+      >
         <h2>{{ t('print.symbolKeyTitle', { page: pageIndex + 1, total: symbolKeyPages.length }) }}</h2>
         <p>{{ t('print.symbolKeyDescription') }}</p>
         <div class="print-symbol-key">
-          <div v-for="entry in entries" :key="entry.color" class="print-symbol-key-entry">
+          <div
+            v-for="entry in entries"
+            :key="entry.color"
+            class="print-symbol-key-entry"
+          >
             <span class="print-symbol-key-mark">{{ entry.symbol }}</span>
             <span>{{ colorName(entry.color) }}</span>
             <strong class="print-key-count">{{ stitchCount(entry.count) }}</strong>
@@ -258,13 +271,29 @@ const repeatPages = computed(() => packCharts(repeatCharts.value))
       </section>
     </div>
 
-    <div v-if="legendPages.length" class="print-page-group" :class="{ 'print-page-group-multiple': legendPages.length > 1 }">
-      <section v-for="(entries, pageIndex) in legendPages" :key="`color-${pageIndex}`" class="print-color-key-page" :class="{ 'print-start-page': pageIndex > 0 }">
+    <div
+      v-if="legendPages.length"
+      class="print-page-group"
+      :class="{ 'print-page-group-multiple': legendPages.length > 1 }"
+    >
+      <section
+        v-for="(entries, pageIndex) in legendPages"
+        :key="`color-${pageIndex}`"
+        class="print-color-key-page"
+        :class="{ 'print-start-page': pageIndex > 0 }"
+      >
         <h2>{{ t('print.colorLegendTitle', { page: pageIndex + 1, total: legendPages.length }) }}</h2>
         <p>{{ t('print.colorLegendDescription') }}</p>
         <div class="print-symbol-key">
-          <div v-for="entry in entries" :key="entry.color" class="print-symbol-key-entry">
-            <span class="print-color-key-mark" :style="{ backgroundColor: entry.color }"></span>
+          <div
+            v-for="entry in entries"
+            :key="entry.color"
+            class="print-symbol-key-entry"
+          >
+            <span
+              class="print-color-key-mark"
+              :style="{ backgroundColor: entry.color }"
+            />
             <span>{{ entry.color.toUpperCase() }}</span>
             <strong class="print-key-count">{{ stitchCount(entry.count) }}</strong>
           </div>
@@ -272,9 +301,22 @@ const repeatPages = computed(() => packCharts(repeatCharts.value))
       </section>
     </div>
 
-    <section v-for="(page, pageIndex) in detailPages" :key="`detail-${pageIndex}`" class="print-detail-page">
-      <div v-for="(row, rowIndex) in page.rows" :key="rowIndex" class="print-repeat-row">
-        <article v-for="detail in row.charts" :key="detail.id" class="print-repeat-chart" :style="{ width: `${detail.width}mm` }">
+    <section
+      v-for="(page, pageIndex) in detailPages"
+      :key="`detail-${pageIndex}`"
+      class="print-detail-page"
+    >
+      <div
+        v-for="(row, rowIndex) in page.rows"
+        :key="rowIndex"
+        class="print-repeat-row"
+      >
+        <article
+          v-for="detail in row.charts"
+          :key="detail.id"
+          class="print-repeat-chart"
+          :style="{ width: `${detail.width}mm` }"
+        >
           <h2>{{ detail.title }}</h2>
           <p>{{ detail.description }}</p>
           <PrintChart
@@ -289,11 +331,29 @@ const repeatPages = computed(() => packCharts(repeatCharts.value))
       </div>
     </section>
 
-    <div v-if="repeatPages.length" class="print-page-group" :class="{ 'print-page-group-multiple': repeatPages.length > 1 }">
-      <section v-for="(page, pageIndex) in repeatPages" :key="`repeat-${pageIndex}`" class="print-repeat-page" :class="{ 'print-start-page': pageIndex > 0 }">
+    <div
+      v-if="repeatPages.length"
+      class="print-page-group"
+      :class="{ 'print-page-group-multiple': repeatPages.length > 1 }"
+    >
+      <section
+        v-for="(page, pageIndex) in repeatPages"
+        :key="`repeat-${pageIndex}`"
+        class="print-repeat-page"
+        :class="{ 'print-start-page': pageIndex > 0 }"
+      >
         <h2>{{ t('print.repeatChartsTitle', { page: pageIndex + 1, total: repeatPages.length }) }}</h2>
-        <div v-for="(row, rowIndex) in page.rows" :key="rowIndex" class="print-repeat-row">
-          <article v-for="repeat in row.charts" :key="repeat.id" class="print-repeat-chart" :style="{ width: `${repeat.width}mm` }">
+        <div
+          v-for="(row, rowIndex) in page.rows"
+          :key="rowIndex"
+          class="print-repeat-row"
+        >
+          <article
+            v-for="repeat in row.charts"
+            :key="repeat.id"
+            class="print-repeat-chart"
+            :style="{ width: `${repeat.width}mm` }"
+          >
             <h3>{{ repeat.title }}</h3>
             <p>{{ repeat.description }}</p>
             <PrintChart

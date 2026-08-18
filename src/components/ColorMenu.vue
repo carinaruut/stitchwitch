@@ -9,12 +9,37 @@ const { t } = useI18n({ useScope: 'global' })
 </script>
 
 <template>
-  <ClickPopover :label="t('controls.color.controls')" align="right" width="md">
+  <ClickPopover
+    :label="t('controls.color.controls')"
+    align="right"
+    width="md"
+  >
     <template #trigger="{ open, panelId }">
-      <button class="btn btn-sm" :class="open ? 'btn-primary' : 'btn-ghost'" type="button" :aria-label="t('controls.color.controls')" :title="t('controls.color.controls')" aria-haspopup="true" :aria-controls="panelId" :aria-expanded="open">
-        <span class="h-5 w-5 rounded-full border border-base-content/30 shadow-sm" :style="{ backgroundColor: color }" aria-hidden="true"></span>
+      <button
+        class="btn btn-sm"
+        :class="open ? 'btn-primary' : 'btn-ghost'"
+        type="button"
+        :aria-label="t('controls.color.controls')"
+        :title="t('controls.color.controls')"
+        aria-haspopup="true"
+        :aria-controls="panelId"
+        :aria-expanded="open"
+      >
+        <span
+          class="h-5 w-5 rounded-full border border-base-content/30 shadow-sm"
+          :style="{ backgroundColor: color }"
+          aria-hidden="true"
+        />
       </button>
     </template>
-    <ColorPicker :color="color" :recent-colors="recentColors" :swatches="swatches" @select="$emit('select', $event)" @eyedropper="$emit('eyedropper')" @add-swatch="$emit('addSwatch')" @remove-swatch="$emit('removeSwatch', $event)" />
+    <ColorPicker
+      :color="color"
+      :recent-colors="recentColors"
+      :swatches="swatches"
+      @select="$emit('select', $event)"
+      @eyedropper="$emit('eyedropper')"
+      @add-swatch="$emit('addSwatch')"
+      @remove-swatch="$emit('removeSwatch', $event)"
+    />
   </ClickPopover>
 </template>

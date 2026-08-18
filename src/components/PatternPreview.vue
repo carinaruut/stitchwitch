@@ -57,13 +57,28 @@ onBeforeUnmount(() => resizeObserver?.disconnect())
   <section class="card min-w-0 border border-base-300 bg-base-100">
     <div class="card-body min-w-0 gap-3 p-4">
       <div class="flex flex-wrap items-center justify-between gap-2">
-        <h2 class="card-title text-base">{{ t('controls.preview.title') }}</h2>
+        <h2 class="card-title text-base">
+          {{ t('controls.preview.title') }}
+        </h2>
         <div class="flex flex-wrap items-center justify-end gap-2">
-          <button class="btn btn-sm gap-1.5" :class="fitWidth ? 'btn-primary' : 'btn-ghost'" type="button" :aria-pressed="fitWidth" @click="fitWidth = !fitWidth">
-            <span class="mdi mdi-fit-to-screen-outline text-lg" aria-hidden="true"></span>
+          <button
+            class="btn btn-sm gap-1.5"
+            :class="fitWidth ? 'btn-primary' : 'btn-ghost'"
+            type="button"
+            :aria-pressed="fitWidth"
+            @click="fitWidth = !fitWidth"
+          >
+            <span
+              class="mdi mdi-fit-to-screen-outline text-lg"
+              aria-hidden="true"
+            />
             {{ t('controls.preview.fitWidth') }}
           </button>
-          <div class="flex flex-wrap gap-1" role="group" :aria-label="t('controls.preview.stitchLabel')">
+          <div
+            class="flex flex-wrap gap-1"
+            role="group"
+            :aria-label="t('controls.preview.stitchLabel')"
+          >
             <button
               v-for="option in stitchOptions"
               :key="option.value"
@@ -83,22 +98,27 @@ onBeforeUnmount(() => resizeObserver?.disconnect())
         </div>
       </div>
       <div class="w-full min-w-0 overflow-x-auto overflow-y-hidden rounded-xl bg-base-200/30 p-4">
-        <div ref="previewArea" class="min-w-0">
+        <div
+          ref="previewArea"
+          class="min-w-0"
+        >
           <div
             class="stitch-grid grid w-max"
             :class="`stitch-grid-${stitch}`"
             :style="previewStyle"
             :aria-label="t('controls.preview.ariaLabel')"
           >
-            <template v-for="(row, rowIndex) in cells" :key="rowIndex">
+            <template
+              v-for="(row, rowIndex) in cells"
+              :key="rowIndex"
+            >
               <span
                 v-for="(color, columnIndex) in row"
                 :key="`${rowIndex}-${columnIndex}`"
-                v-memo="[color, cells.length, columns]"
                 class="stitch"
                 :style="{ '--stitch-color': color, '--row-stack': cells.length - rowIndex, '--single-stack': (cells.length - rowIndex) * (columns + 1) + columns - columnIndex }"
                 aria-hidden="true"
-              ></span>
+              />
             </template>
           </div>
         </div>

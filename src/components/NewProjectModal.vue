@@ -42,23 +42,102 @@ function submit() {
 </script>
 
 <template>
-  <div v-if="open" class="modal modal-open" role="dialog" aria-modal="true" aria-labelledby="new-project-title" @keydown.esc="$emit('cancel')">
-    <form class="modal-box" @submit.prevent="submit">
-      <h2 id="new-project-title" class="text-lg font-bold">{{ t('controls.newProject.title') }}</h2>
-      <div v-if="errorKey" class="alert alert-error mt-4 text-sm" role="alert">{{ t(errorKey, { max: MAX_REPEAT_COUNT }) }}</div>
+  <div
+    v-if="open"
+    class="modal modal-open"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="new-project-title"
+    @keydown.esc="$emit('cancel')"
+  >
+    <form
+      class="modal-box"
+      @submit.prevent="submit"
+    >
+      <h2
+        id="new-project-title"
+        class="text-lg font-bold"
+      >
+        {{ t('controls.newProject.title') }}
+      </h2>
+      <div
+        v-if="errorKey"
+        class="alert alert-error mt-4 text-sm"
+        role="alert"
+      >
+        {{ t(errorKey, { max: MAX_REPEAT_COUNT }) }}
+      </div>
       <div class="mt-4 grid gap-4 sm:grid-cols-2">
-        <label class="form-control sm:col-span-2"><span class="label-text mb-1">{{ t('controls.newProject.projectName') }}</span><input v-model="form.name" class="input input-bordered w-full" required maxlength="100" autofocus /></label>
-        <label class="form-control"><span class="label-text mb-1">{{ t('controls.newProject.rows') }}</span><input v-model.number="form.rows" class="input input-bordered w-full" type="number" min="1" max="200" required /></label>
-        <label class="form-control"><span class="label-text mb-1">{{ t('controls.newProject.columns') }}</span><input v-model.number="form.columns" class="input input-bordered w-full" type="number" min="1" max="200" required /></label>
-        <label class="form-control sm:col-span-2"><span class="label-text mb-1">{{ t('controls.newProject.cellSize', { size: form.cellSize }) }}</span><input v-model.number="form.cellSize" class="range range-primary" type="range" min="8" max="64" /></label>
-        <label class="form-control"><span class="label-text mb-1">{{ t('controls.newProject.horizontalRepeats') }}</span><input v-model.number="form.horizontalRepeats" class="input input-bordered w-full" type="number" min="1" :max="MAX_REPEAT_COUNT" required /></label>
-        <label class="form-control"><span class="label-text mb-1">{{ t('controls.newProject.verticalRepeats') }}</span><input v-model.number="form.verticalRepeats" class="input input-bordered w-full" type="number" min="1" :max="MAX_REPEAT_COUNT" required /></label>
+        <label class="form-control sm:col-span-2"><span class="label-text mb-1">{{ t('controls.newProject.projectName') }}</span><input
+          v-model="form.name"
+          class="input input-bordered w-full"
+          required
+          maxlength="100"
+          autofocus
+        ></label>
+        <label class="form-control"><span class="label-text mb-1">{{ t('controls.newProject.rows') }}</span><input
+          v-model.number="form.rows"
+          class="input input-bordered w-full"
+          type="number"
+          min="1"
+          max="200"
+          required
+        ></label>
+        <label class="form-control"><span class="label-text mb-1">{{ t('controls.newProject.columns') }}</span><input
+          v-model.number="form.columns"
+          class="input input-bordered w-full"
+          type="number"
+          min="1"
+          max="200"
+          required
+        ></label>
+        <label class="form-control sm:col-span-2"><span class="label-text mb-1">{{ t('controls.newProject.cellSize', { size: form.cellSize }) }}</span><input
+          v-model.number="form.cellSize"
+          class="range range-primary"
+          type="range"
+          min="8"
+          max="64"
+        ></label>
+        <label class="form-control"><span class="label-text mb-1">{{ t('controls.newProject.horizontalRepeats') }}</span><input
+          v-model.number="form.horizontalRepeats"
+          class="input input-bordered w-full"
+          type="number"
+          min="1"
+          :max="MAX_REPEAT_COUNT"
+          required
+        ></label>
+        <label class="form-control"><span class="label-text mb-1">{{ t('controls.newProject.verticalRepeats') }}</span><input
+          v-model.number="form.verticalRepeats"
+          class="input input-bordered w-full"
+          type="number"
+          min="1"
+          :max="MAX_REPEAT_COUNT"
+          required
+        ></label>
       </div>
       <div class="modal-action">
-        <button class="btn" type="button" @click="$emit('cancel')">{{ t('controls.common.cancel') }}</button>
-        <button class="btn btn-primary" type="submit">{{ t('controls.newProject.create') }}</button>
+        <button
+          class="btn"
+          type="button"
+          @click="$emit('cancel')"
+        >
+          {{ t('controls.common.cancel') }}
+        </button>
+        <button
+          class="btn btn-primary"
+          type="submit"
+        >
+          {{ t('controls.newProject.create') }}
+        </button>
       </div>
     </form>
-    <button class="modal-backdrop" type="button" :aria-label="t('controls.newProject.close')" @click="$emit('cancel')">{{ t('controls.newProject.close') }}</button>
+    <button
+      class="modal-backdrop"
+      type="button"
+      :aria-label="t('controls.newProject.close')"
+      @click="$emit('cancel')"
+    >
+      {{ t('controls.newProject.close') }}
+    </button>
   </div>
 </template>

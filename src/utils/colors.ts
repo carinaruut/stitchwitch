@@ -88,7 +88,7 @@ export function describeColor(hex: string): ColorDescription {
     return { name: 'gray', tone: null }
   }
 
-  let hue = 0
+  let hue: number
   if (maximum === red) hue = 60 * (((green - blue) / difference) % 6)
   else if (maximum === green) hue = 60 * ((blue - red) / difference + 2)
   else hue = 60 * ((red - green) / difference + 4)

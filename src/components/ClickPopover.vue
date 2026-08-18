@@ -77,13 +77,32 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div ref="root" class="relative">
+  <div
+    ref="root"
+    class="relative"
+  >
     <div @click="toggle">
-      <slot name="trigger" :open="open" :panel-id="panelId"></slot>
+      <slot
+        name="trigger"
+        :open="open"
+        :panel-id="panelId"
+      />
     </div>
-    <div v-if="open" :id="panelId" ref="panel" class="popover-panel" :class="panelClass" :style="panelStyle" role="region" :aria-label="label">
-      <span class="popover-arrow" aria-hidden="true"></span>
-      <slot></slot>
+    <div
+      v-if="open"
+      :id="panelId"
+      ref="panel"
+      class="popover-panel"
+      :class="panelClass"
+      :style="panelStyle"
+      role="region"
+      :aria-label="label"
+    >
+      <span
+        class="popover-arrow"
+        aria-hidden="true"
+      />
+      <slot />
     </div>
   </div>
 </template>

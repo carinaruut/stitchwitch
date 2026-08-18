@@ -9,12 +9,34 @@ const { t } = useI18n({ useScope: 'global' })
 </script>
 
 <template>
-  <ClickPopover :label="t('controls.gridSettings.settings')" align="right">
+  <ClickPopover
+    :label="t('controls.gridSettings.settings')"
+    align="right"
+  >
     <template #trigger="{ open, panelId }">
-      <button class="btn btn-sm" :class="open ? 'btn-primary' : 'btn-ghost'" type="button" :aria-label="t('controls.gridSettings.settings')" :title="t('controls.gridSettings.settings')" aria-haspopup="true" :aria-controls="panelId" :aria-expanded="open">
-        <span class="mdi mdi-cog-outline text-xl" aria-hidden="true"></span>
+      <button
+        class="btn btn-sm"
+        :class="open ? 'btn-primary' : 'btn-ghost'"
+        type="button"
+        :aria-label="t('controls.gridSettings.settings')"
+        :title="t('controls.gridSettings.settings')"
+        aria-haspopup="true"
+        :aria-controls="panelId"
+        :aria-expanded="open"
+      >
+        <span
+          class="mdi mdi-cog-outline text-xl"
+          aria-hidden="true"
+        />
       </button>
     </template>
-    <GridSettings :cell-size="cellSize" :full-height="fullHeight" :show-symbols="showSymbols" @cell-size="$emit('cellSize', $event)" @full-height="$emit('fullHeight', $event)" @show-symbols="$emit('showSymbols', $event)" />
+    <GridSettings
+      :cell-size="cellSize"
+      :full-height="fullHeight"
+      :show-symbols="showSymbols"
+      @cell-size="$emit('cellSize', $event)"
+      @full-height="$emit('fullHeight', $event)"
+      @show-symbols="$emit('showSymbols', $event)"
+    />
   </ClickPopover>
 </template>

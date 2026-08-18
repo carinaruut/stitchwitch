@@ -122,13 +122,44 @@ onBeforeUnmount(clearImage)
   <aside class="card min-w-0 border border-base-300 bg-base-100">
     <div class="card-body min-w-0 gap-3 p-3">
       <div class="flex items-center justify-between gap-2">
-        <h2 class="card-title min-w-0 text-sm"><span class="mdi mdi-image-outline text-xl" aria-hidden="true"></span><span class="truncate">{{ t('controls.reference.title') }}</span></h2>
-        <button class="btn btn-ghost btn-sm" type="button" :aria-label="t('controls.reference.close')" :title="t('controls.reference.close')" @click="$emit('close')"><span class="mdi mdi-close text-xl" aria-hidden="true"></span></button>
+        <h2 class="card-title min-w-0 text-sm">
+          <span
+            class="mdi mdi-image-outline text-xl"
+            aria-hidden="true"
+          /><span class="truncate">{{ t('controls.reference.title') }}</span>
+        </h2>
+        <button
+          class="btn btn-ghost btn-sm"
+          type="button"
+          :aria-label="t('controls.reference.close')"
+          :title="t('controls.reference.close')"
+          @click="$emit('close')"
+        >
+          <span
+            class="mdi mdi-close text-xl"
+            aria-hidden="true"
+          />
+        </button>
       </div>
 
-      <input ref="fileInput" class="hidden" type="file" accept="image/*" @change="selectFile" />
+      <input
+        ref="fileInput"
+        class="hidden"
+        type="file"
+        accept="image/*"
+        @change="selectFile"
+      >
 
-      <div v-if="errorMessage" class="alert alert-error py-2 text-xs" role="alert"><span class="mdi mdi-alert-circle-outline" aria-hidden="true"></span><span>{{ errorMessage }}</span></div>
+      <div
+        v-if="errorMessage"
+        class="alert alert-error py-2 text-xs"
+        role="alert"
+      >
+        <span
+          class="mdi mdi-alert-circle-outline"
+          aria-hidden="true"
+        /><span>{{ errorMessage }}</span>
+      </div>
 
       <button
         v-if="!imageUrl"
@@ -142,7 +173,10 @@ onBeforeUnmount(clearImage)
         @drop.prevent="dropFile"
       >
         <span>
-          <span class="mdi mdi-image-plus-outline block text-4xl text-primary" aria-hidden="true"></span>
+          <span
+            class="mdi mdi-image-plus-outline block text-4xl text-primary"
+            aria-hidden="true"
+          />
           <strong class="mt-2 block text-sm">{{ t('controls.reference.add') }}</strong>
           <span class="mt-1 block text-xs text-base-content/60">{{ t('controls.reference.drop') }}</span>
         </span>
@@ -150,26 +184,110 @@ onBeforeUnmount(clearImage)
 
       <template v-else>
         <div class="flex items-center gap-1">
-          <button class="btn btn-sm" :class="picking ? 'btn-primary' : 'btn-ghost'" type="button" :aria-pressed="picking" :aria-label="t('controls.reference.pick')" :title="t('controls.reference.pick')" @click="$emit('requestPick')"><span class="mdi mdi-eyedropper text-xl" aria-hidden="true"></span></button>
-          <button class="btn btn-sm" :class="fit ? 'btn-primary' : 'btn-ghost'" type="button" :aria-pressed="fit" :aria-label="t('controls.reference.fit')" :title="t('controls.reference.fit')" @click="fit = true"><span class="mdi mdi-fit-to-screen-outline text-xl" aria-hidden="true"></span></button>
-          <button class="btn btn-ghost btn-sm" type="button" :aria-label="t('controls.reference.zoomOut')" :title="t('controls.reference.zoomOut')" @click="adjustZoom(-25)"><span class="mdi mdi-minus text-xl" aria-hidden="true"></span></button>
+          <button
+            class="btn btn-sm"
+            :class="picking ? 'btn-primary' : 'btn-ghost'"
+            type="button"
+            :aria-pressed="picking"
+            :aria-label="t('controls.reference.pick')"
+            :title="t('controls.reference.pick')"
+            @click="$emit('requestPick')"
+          >
+            <span
+              class="mdi mdi-eyedropper text-xl"
+              aria-hidden="true"
+            />
+          </button>
+          <button
+            class="btn btn-sm"
+            :class="fit ? 'btn-primary' : 'btn-ghost'"
+            type="button"
+            :aria-pressed="fit"
+            :aria-label="t('controls.reference.fit')"
+            :title="t('controls.reference.fit')"
+            @click="fit = true"
+          >
+            <span
+              class="mdi mdi-fit-to-screen-outline text-xl"
+              aria-hidden="true"
+            />
+          </button>
+          <button
+            class="btn btn-ghost btn-sm"
+            type="button"
+            :aria-label="t('controls.reference.zoomOut')"
+            :title="t('controls.reference.zoomOut')"
+            @click="adjustZoom(-25)"
+          >
+            <span
+              class="mdi mdi-minus text-xl"
+              aria-hidden="true"
+            />
+          </button>
           <span class="min-w-10 text-center font-mono text-xs tabular-nums">{{ fit ? t('controls.reference.fitShort') : `${zoom}%` }}</span>
-          <button class="btn btn-ghost btn-sm" type="button" :aria-label="t('controls.reference.zoomIn')" :title="t('controls.reference.zoomIn')" @click="adjustZoom(25)"><span class="mdi mdi-plus text-xl" aria-hidden="true"></span></button>
+          <button
+            class="btn btn-ghost btn-sm"
+            type="button"
+            :aria-label="t('controls.reference.zoomIn')"
+            :title="t('controls.reference.zoomIn')"
+            @click="adjustZoom(25)"
+          >
+            <span
+              class="mdi mdi-plus text-xl"
+              aria-hidden="true"
+            />
+          </button>
         </div>
 
-        <p class="text-xs" :class="picking ? 'font-medium text-primary' : 'text-base-content/60'">{{ t(picking ? 'controls.reference.pickHelp' : 'controls.reference.idleHelp') }}</p>
+        <p
+          class="text-xs"
+          :class="picking ? 'font-medium text-primary' : 'text-base-content/60'"
+        >
+          {{ t(picking ? 'controls.reference.pickHelp' : 'controls.reference.idleHelp') }}
+        </p>
 
         <div class="max-h-[65dvh] min-h-56 overflow-auto rounded-box border border-base-300 bg-white">
-          <div class="relative leading-none" :style="imageStyle">
-            <img ref="imageElement" class="block h-auto w-full select-none" :class="picking ? 'cursor-crosshair' : 'cursor-default'" :src="imageUrl" :alt="t('controls.reference.imageAlt', { name: filename })" draggable="false" @click="sampleColor" />
-            <span v-if="marker" class="pointer-events-none absolute size-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white shadow-[0_0_0_1px_#111827]" :style="{ left: `${marker.x}%`, top: `${marker.y}%`, backgroundColor: marker.color }" aria-hidden="true"></span>
+          <div
+            class="relative leading-none"
+            :style="imageStyle"
+          >
+            <img
+              ref="imageElement"
+              class="block h-auto w-full select-none"
+              :class="picking ? 'cursor-crosshair' : 'cursor-default'"
+              :src="imageUrl"
+              :alt="t('controls.reference.imageAlt', { name: filename })"
+              draggable="false"
+              @click="sampleColor"
+            >
+            <span
+              v-if="marker"
+              class="pointer-events-none absolute size-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white shadow-[0_0_0_1px_#111827]"
+              :style="{ left: `${marker.x}%`, top: `${marker.y}%`, backgroundColor: marker.color }"
+              aria-hidden="true"
+            />
           </div>
         </div>
 
         <div class="flex min-w-0 items-center gap-2">
-          <span class="min-w-0 flex-1 truncate text-xs text-base-content/60" :title="filename">{{ filename }}</span>
-          <button class="btn btn-ghost btn-sm" type="button" @click="fileInput?.click()">{{ t('controls.reference.replace') }}</button>
-          <button class="btn btn-ghost btn-sm text-error" type="button" @click="clearImage">{{ t('controls.reference.remove') }}</button>
+          <span
+            class="min-w-0 flex-1 truncate text-xs text-base-content/60"
+            :title="filename"
+          >{{ filename }}</span>
+          <button
+            class="btn btn-ghost btn-sm"
+            type="button"
+            @click="fileInput?.click()"
+          >
+            {{ t('controls.reference.replace') }}
+          </button>
+          <button
+            class="btn btn-ghost btn-sm text-error"
+            type="button"
+            @click="clearImage"
+          >
+            {{ t('controls.reference.remove') }}
+          </button>
         </div>
       </template>
     </div>

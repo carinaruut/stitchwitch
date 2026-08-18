@@ -35,23 +35,41 @@ onBeforeUnmount(() => document.removeEventListener('click', closeFromOutside))
 
 <template>
   <div ref="root">
-    <details ref="menu" class="dropdown dropdown-end" @keydown.esc.stop.prevent="closeMenu(true)">
+    <details
+      ref="menu"
+      class="dropdown dropdown-end"
+      @keydown.esc.stop.prevent="closeMenu(true)"
+    >
       <summary
         ref="trigger"
         class="btn btn-ghost btn-square btn-sm list-none [&::-webkit-details-marker]:hidden"
         :aria-label="t('language.current', { language: currentLocale.name })"
       >
-        <img class="h-4 w-6 rounded-[2px] object-cover shadow-sm" :src="currentLocale.flag" alt="" />
+        <img
+          class="h-4 w-6 rounded-[2px] object-cover shadow-sm"
+          :src="currentLocale.flag"
+          alt=""
+        >
       </summary>
-      <ul class="menu dropdown-content z-50 mt-2 w-40 rounded-box border border-base-300 bg-base-100 p-1 shadow-lg" :aria-label="t('language.label')">
-        <li v-for="item in locales" :key="item.value">
+      <ul
+        class="menu dropdown-content z-50 mt-2 w-40 rounded-box border border-base-300 bg-base-100 p-1 shadow-lg"
+        :aria-label="t('language.label')"
+      >
+        <li
+          v-for="item in locales"
+          :key="item.value"
+        >
           <button
             type="button"
             :class="{ 'menu-active': locale === item.value }"
             :aria-pressed="locale === item.value"
             @click="changeLocale(item.value)"
           >
-            <img class="h-4 w-6 rounded-[2px] object-cover shadow-sm" :src="item.flag" alt="" />
+            <img
+              class="h-4 w-6 rounded-[2px] object-cover shadow-sm"
+              :src="item.flag"
+              alt=""
+            >
             <span>{{ item.name }}</span>
           </button>
         </li>

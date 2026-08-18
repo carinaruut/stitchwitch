@@ -214,29 +214,61 @@ function updateFallback(event: Event, eventName: 'horizontal' | 'vertical') {
   <section class="card border border-base-300 bg-base-100">
     <div class="card-body gap-3 p-3">
       <div>
-        <h2 class="card-title text-base">{{ t('controls.repeat.title') }}</h2>
+        <h2 class="card-title text-base">
+          {{ t('controls.repeat.title') }}
+        </h2>
         <p class="mt-1 text-xs leading-relaxed text-base-content/60">
           {{ t('controls.repeat.description') }}
         </p>
       </div>
 
-      <form class="space-y-2.5" novalidate @submit.prevent="submit">
+      <form
+        class="space-y-2.5"
+        novalidate
+        @submit.prevent="submit"
+      >
         <fieldset class="grid grid-cols-2 gap-1 rounded-box bg-base-200 p-1">
-          <legend class="sr-only">{{ t('controls.repeat.direction') }}</legend>
-          <label v-for="option in (['across', 'down'] as RepeatDirection[])" :key="option" class="cursor-pointer">
-            <input v-model="direction" class="peer sr-only" type="radio" name="repeat-direction" :value="option" />
+          <legend class="sr-only">
+            {{ t('controls.repeat.direction') }}
+          </legend>
+          <label
+            v-for="option in (['across', 'down'] as RepeatDirection[])"
+            :key="option"
+            class="cursor-pointer"
+          >
+            <input
+              v-model="direction"
+              class="peer sr-only"
+              type="radio"
+              name="repeat-direction"
+              :value="option"
+            >
             <span class="btn btn-sm w-full border-0 peer-checked:btn-primary">{{ t(`controls.repeat.${option}`) }}</span>
           </label>
         </fieldset>
 
         <fieldset class="grid grid-cols-2 gap-1 rounded-box bg-base-200 p-1">
-          <legend class="sr-only">{{ t('controls.repeat.sizingMethod') }}</legend>
+          <legend class="sr-only">
+            {{ t('controls.repeat.sizingMethod') }}
+          </legend>
           <label class="cursor-pointer">
-            <input v-model="sizingMode" class="peer sr-only" type="radio" name="repeat-sizing" value="sections" />
+            <input
+              v-model="sizingMode"
+              class="peer sr-only"
+              type="radio"
+              name="repeat-sizing"
+              value="sections"
+            >
             <span class="btn btn-xs h-8 w-full border-0 peer-checked:btn-primary">{{ t('controls.repeat.sectionCount') }}</span>
           </label>
           <label class="cursor-pointer">
-            <input v-model="sizingMode" class="peer sr-only" type="radio" name="repeat-sizing" value="boundary" />
+            <input
+              v-model="sizingMode"
+              class="peer sr-only"
+              type="radio"
+              name="repeat-sizing"
+              value="boundary"
+            >
             <span class="btn btn-xs h-8 w-full border-0 peer-checked:btn-primary">{{ t('controls.repeat.endBoundary') }}</span>
           </label>
         </fieldset>
@@ -244,89 +276,213 @@ function updateFallback(event: Event, eventName: 'horizontal' | 'vertical') {
         <div class="grid grid-cols-2 gap-2">
           <label class="grid gap-1">
             <span class="text-xs font-medium">{{ t(direction === 'across' ? 'controls.repeat.topRow' : 'controls.repeat.leftColumn') }}</span>
-            <input v-model.number="firstCross" class="input input-bordered input-sm min-w-0 w-full" type="number" min="1" max="500" />
+            <input
+              v-model.number="firstCross"
+              class="input input-bordered input-sm min-w-0 w-full"
+              type="number"
+              min="1"
+              max="500"
+            >
           </label>
           <label class="grid gap-1">
             <span class="text-xs font-medium">{{ t(direction === 'across' ? 'controls.repeat.bottomRow' : 'controls.repeat.rightColumn') }}</span>
-            <input v-model.number="lastCross" class="input input-bordered input-sm min-w-0 w-full" type="number" min="1" max="500" />
+            <input
+              v-model.number="lastCross"
+              class="input input-bordered input-sm min-w-0 w-full"
+              type="number"
+              min="1"
+              max="500"
+            >
           </label>
           <label class="grid gap-1">
             <span class="text-xs font-medium">{{ t(direction === 'across' ? 'controls.repeat.startColumn' : 'controls.repeat.startRow') }}</span>
-            <input v-model.number="start" class="input input-bordered input-sm min-w-0 w-full" type="number" min="1" max="500" />
+            <input
+              v-model.number="start"
+              class="input input-bordered input-sm min-w-0 w-full"
+              type="number"
+              min="1"
+              max="500"
+            >
           </label>
           <label class="grid gap-1">
             <template v-if="sizingMode === 'boundary'">
               <span class="text-xs font-medium">{{ t(direction === 'across' ? 'controls.repeat.endBeforeColumn' : 'controls.repeat.endBeforeRow') }}</span>
-              <input v-model.number="ending" class="input input-bordered input-sm min-w-0 w-full" type="number" min="2" max="501" />
+              <input
+                v-model.number="ending"
+                class="input input-bordered input-sm min-w-0 w-full"
+                type="number"
+                min="2"
+                max="501"
+              >
             </template>
             <template v-else>
               <span class="text-xs font-medium">{{ t('controls.repeat.sections') }}</span>
-              <input v-model.number="sections" class="input input-bordered input-sm min-w-0 w-full" type="number" min="2" :max="MAX_REPEAT_COUNT" />
+              <input
+                v-model.number="sections"
+                class="input input-bordered input-sm min-w-0 w-full"
+                type="number"
+                min="2"
+                :max="MAX_REPEAT_COUNT"
+              >
             </template>
           </label>
           <label class="col-span-2 grid gap-1">
             <span class="text-xs font-medium">{{ t(direction === 'across' ? 'controls.repeat.sectionWidth' : 'controls.repeat.sectionHeight') }}</span>
-            <input v-model.number="sectionSize" class="input input-bordered input-sm w-full" type="number" min="1" max="500" />
+            <input
+              v-model.number="sectionSize"
+              class="input input-bordered input-sm w-full"
+              type="number"
+              min="1"
+              max="500"
+            >
           </label>
         </div>
         <p class="text-[11px] text-base-content/50">
           {{ t('controls.repeat.includedBoundary') }}
-          <template v-if="sizingMode === 'boundary'">{{ t('controls.repeat.excludedBoundaryHelp') }}</template>
-          <template v-else>{{ t('controls.repeat.calculatedBoundaryHelp') }}</template>
+          <template v-if="sizingMode === 'boundary'">
+            {{ t('controls.repeat.excludedBoundaryHelp') }}
+          </template>
+          <template v-else>
+            {{ t('controls.repeat.calculatedBoundaryHelp') }}
+          </template>
         </p>
 
-        <p v-if="displayedError" class="text-xs text-error" role="alert">{{ displayedError }}</p>
-        <div v-else class="rounded-box bg-base-200/70 px-3 py-2 text-xs" aria-live="polite">
-          <p class="font-medium">{{ summaryRange(input!) }}</p>
-          <p class="mt-0.5 text-base-content/60">{{ summarySections(input!) }}</p>
+        <p
+          v-if="displayedError"
+          class="text-xs text-error"
+          role="alert"
+        >
+          {{ displayedError }}
+        </p>
+        <div
+          v-else
+          class="rounded-box bg-base-200/70 px-3 py-2 text-xs"
+          aria-live="polite"
+        >
+          <p class="font-medium">
+            {{ summaryRange(input!) }}
+          </p>
+          <p class="mt-0.5 text-base-content/60">
+            {{ summarySections(input!) }}
+          </p>
         </div>
 
         <div class="flex gap-2">
-          <button class="btn btn-primary btn-sm min-w-0 flex-1" type="submit" :disabled="!!validationMessage">
-            <span class="mdi mdi-repeat" aria-hidden="true"></span>
+          <button
+            class="btn btn-primary btn-sm min-w-0 flex-1"
+            type="submit"
+            :disabled="!!validationMessage"
+          >
+            <span
+              class="mdi mdi-repeat"
+              aria-hidden="true"
+            />
             {{ t(editingId ? 'controls.repeat.saveChanges' : 'controls.repeat.addBox') }}
           </button>
-          <button v-if="editingId" class="btn btn-ghost btn-sm" type="button" @click="cancelEdit">{{ t('controls.common.cancel') }}</button>
+          <button
+            v-if="editingId"
+            class="btn btn-ghost btn-sm"
+            type="button"
+            @click="cancelEdit"
+          >
+            {{ t('controls.common.cancel') }}
+          </button>
         </div>
       </form>
 
-      <div v-if="boxes.length" class="space-y-2 border-t border-base-300 pt-3">
-        <article v-for="box in boxes" :key="box.id" class="rounded-box border border-base-300 p-3" :class="box.enabled ? 'bg-primary/5' : 'opacity-60'">
+      <div
+        v-if="boxes.length"
+        class="space-y-2 border-t border-base-300 pt-3"
+      >
+        <article
+          v-for="box in boxes"
+          :key="box.id"
+          class="rounded-box border border-base-300 p-3"
+          :class="box.enabled ? 'bg-primary/5' : 'opacity-60'"
+        >
           <div class="flex items-start justify-between gap-2">
             <div class="min-w-0">
-               <p class="text-xs font-medium leading-relaxed">{{ summaryRange(box) }}</p>
-               <p class="mt-0.5 text-[11px] text-base-content/60">{{ summarySections(box) }}</p>
-                <p class="mt-1 text-[11px] text-base-content/60">{{ t('controls.repeat.source', { size: sourceSize(box) }) }}</p>
+              <p class="text-xs font-medium leading-relaxed">
+                {{ summaryRange(box) }}
+              </p>
+              <p class="mt-0.5 text-[11px] text-base-content/60">
+                {{ summarySections(box) }}
+              </p>
+              <p class="mt-1 text-[11px] text-base-content/60">
+                {{ t('controls.repeat.source', { size: sourceSize(box) }) }}
+              </p>
             </div>
             <label class="flex shrink-0 cursor-pointer items-center">
-                <span class="sr-only">{{ t('controls.repeat.enable', { summary: summary(box) }) }}</span>
-              <input class="toggle toggle-primary toggle-sm" type="checkbox" :checked="box.enabled" @change="$emit('toggle', box.id, ($event.target as HTMLInputElement).checked)" />
+              <span class="sr-only">{{ t('controls.repeat.enable', { summary: summary(box) }) }}</span>
+              <input
+                class="toggle toggle-primary toggle-sm"
+                type="checkbox"
+                :checked="box.enabled"
+                @change="$emit('toggle', box.id, ($event.target as HTMLInputElement).checked)"
+              >
             </label>
           </div>
           <div class="mt-2 flex justify-end gap-1">
-            <button class="btn btn-ghost btn-xs" type="button" @click="edit(box)">
-              <span class="mdi mdi-pencil-outline" aria-hidden="true"></span>{{ t('controls.common.edit') }}
+            <button
+              class="btn btn-ghost btn-xs"
+              type="button"
+              @click="edit(box)"
+            >
+              <span
+                class="mdi mdi-pencil-outline"
+                aria-hidden="true"
+              />{{ t('controls.common.edit') }}
             </button>
-            <button class="btn btn-ghost btn-xs text-error" type="button" @click="$emit('remove', box.id)">
-              <span class="mdi mdi-delete-outline" aria-hidden="true"></span>{{ t('controls.common.delete') }}
+            <button
+              class="btn btn-ghost btn-xs text-error"
+              type="button"
+              @click="$emit('remove', box.id)"
+            >
+              <span
+                class="mdi mdi-delete-outline"
+                aria-hidden="true"
+              />{{ t('controls.common.delete') }}
             </button>
           </div>
         </article>
       </div>
-      <p v-else class="border-t border-base-300 pt-3 text-xs text-base-content/55">{{ t('controls.repeat.none') }}</p>
+      <p
+        v-else
+        class="border-t border-base-300 pt-3 text-xs text-base-content/55"
+      >
+        {{ t('controls.repeat.none') }}
+      </p>
 
       <details class="collapse-arrow collapse border border-base-300 bg-base-100">
-        <summary class="collapse-title min-h-0 py-3 text-sm font-medium">{{ t('controls.repeat.fallbackTitle') }}</summary>
+        <summary class="collapse-title min-h-0 py-3 text-sm font-medium">
+          {{ t('controls.repeat.fallbackTitle') }}
+        </summary>
         <div class="collapse-content">
-          <p class="mb-2 text-xs text-base-content/60">{{ t('controls.repeat.fallbackHelp') }}</p>
+          <p class="mb-2 text-xs text-base-content/60">
+            {{ t('controls.repeat.fallbackHelp') }}
+          </p>
           <div class="grid grid-cols-2 gap-2">
             <label class="form-control">
               <span class="label-text mb-1 text-xs">{{ t('controls.repeat.across') }}</span>
-              <input class="input input-bordered input-sm min-w-0 w-full" type="number" min="1" :max="MAX_REPEAT_COUNT" :value="horizontal" @change="updateFallback($event, 'horizontal')" />
+              <input
+                class="input input-bordered input-sm min-w-0 w-full"
+                type="number"
+                min="1"
+                :max="MAX_REPEAT_COUNT"
+                :value="horizontal"
+                @change="updateFallback($event, 'horizontal')"
+              >
             </label>
             <label class="form-control">
               <span class="label-text mb-1 text-xs">{{ t('controls.repeat.down') }}</span>
-              <input class="input input-bordered input-sm min-w-0 w-full" type="number" min="1" :max="MAX_REPEAT_COUNT" :value="vertical" @change="updateFallback($event, 'vertical')" />
+              <input
+                class="input input-bordered input-sm min-w-0 w-full"
+                type="number"
+                min="1"
+                :max="MAX_REPEAT_COUNT"
+                :value="vertical"
+                @change="updateFallback($event, 'vertical')"
+              >
             </label>
           </div>
         </div>

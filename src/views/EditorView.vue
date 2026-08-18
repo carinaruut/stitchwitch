@@ -484,156 +484,196 @@ onBeforeUnmount(() => {
       @theme="toggleTheme"
       @guide="guideOpen = true"
     />
-    <input ref="fileInput" class="hidden" type="file" accept=".stitch-pattern,application/json" @change="selectFile" />
+    <input
+      ref="fileInput"
+      class="hidden"
+      type="file"
+      accept=".stitch-pattern,application/json"
+      @change="selectFile"
+    >
 
     <div class="min-w-0 p-3 sm:p-5">
       <main class="mx-auto max-w-[90rem] space-y-4">
         <section class="card border border-base-300 bg-base-100">
           <div class="card-body gap-3 p-3 sm:p-5">
-              <div class="flex flex-wrap items-start justify-between gap-3">
-                <div>
-                  <input
-                    v-model="patternName"
-                    class="input input-ghost h-auto min-h-0 w-full max-w-lg px-0 py-0 text-xl font-bold focus:px-2 focus:py-1"
-                    type="text"
-                    required
-                    maxlength="100"
-                    :aria-label="t('controls.newProject.projectName')"
-                    @blur="savePatternName"
-                    @keydown.enter.prevent="blurPatternName"
-                    @keydown.esc.prevent="cancelPatternName"
-                  />
-                </div>
-                <div class="flex w-full flex-col items-stretch gap-2 sm:w-auto sm:items-end">
-                  <div class="flex flex-wrap items-center gap-2 sm:justify-end">
-                    <span class="badge" :class="pattern.autosaveStatus.value === 'error' ? 'badge-error' : pattern.autosaveStatus.value === 'saving' ? 'badge-ghost' : 'badge-success badge-outline'">
-                      <span class="mdi" :class="pattern.autosaveStatus.value === 'error' ? 'mdi-alert-circle-outline' : pattern.autosaveStatus.value === 'saving' ? 'mdi-loading mdi-spin' : 'mdi-content-save-check-outline'" aria-hidden="true"></span>
-                      {{ t(`editor.status.${pattern.autosaveStatus.value}`) }}
-                    </span>
-                    <span v-if="downloadBackupNeeded" class="badge badge-warning badge-outline">
-                      <span class="mdi mdi-download-alert-outline" aria-hidden="true"></span>
-                      {{ t('editor.status.notDownloaded') }}
-                    </span>
-                    <span class="badge badge-primary">{{ t(renderedPattern.cells[0].length === 1 ? 'editor.status.oneColumn' : 'editor.status.columns', { count: renderedPattern.cells[0].length }) }}</span>
-                    <span class="badge badge-secondary">{{ t(renderedPattern.cells.length === 1 ? 'editor.status.oneRow' : 'editor.status.rows', { count: renderedPattern.cells.length }) }}</span>
-                  </div>
+            <div class="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <input
+                  v-model="patternName"
+                  class="input input-ghost h-auto min-h-0 w-full max-w-lg px-0 py-0 text-xl font-bold focus:px-2 focus:py-1"
+                  type="text"
+                  required
+                  maxlength="100"
+                  :aria-label="t('controls.newProject.projectName')"
+                  @blur="savePatternName"
+                  @keydown.enter.prevent="blurPatternName"
+                  @keydown.esc.prevent="cancelPatternName"
+                >
+              </div>
+              <div class="flex w-full flex-col items-stretch gap-2 sm:w-auto sm:items-end">
+                <div class="flex flex-wrap items-center gap-2 sm:justify-end">
+                  <span
+                    class="badge"
+                    :class="pattern.autosaveStatus.value === 'error' ? 'badge-error' : pattern.autosaveStatus.value === 'saving' ? 'badge-ghost' : 'badge-success badge-outline'"
+                  >
+                    <span
+                      class="mdi"
+                      :class="pattern.autosaveStatus.value === 'error' ? 'mdi-alert-circle-outline' : pattern.autosaveStatus.value === 'saving' ? 'mdi-loading mdi-spin' : 'mdi-content-save-check-outline'"
+                      aria-hidden="true"
+                    />
+                    {{ t(`editor.status.${pattern.autosaveStatus.value}`) }}
+                  </span>
+                  <span
+                    v-if="downloadBackupNeeded"
+                    class="badge badge-warning badge-outline"
+                  >
+                    <span
+                      class="mdi mdi-download-alert-outline"
+                      aria-hidden="true"
+                    />
+                    {{ t('editor.status.notDownloaded') }}
+                  </span>
+                  <span class="badge badge-primary">{{ t(renderedPattern.cells[0].length === 1 ? 'editor.status.oneColumn' : 'editor.status.columns', { count: renderedPattern.cells[0].length }) }}</span>
+                  <span class="badge badge-secondary">{{ t(renderedPattern.cells.length === 1 ? 'editor.status.oneRow' : 'editor.status.rows', { count: renderedPattern.cells.length }) }}</span>
                 </div>
               </div>
-              <DrawingTools
-                :tool="pattern.tool.value"
-                :placing-selection="placingSelection"
-                :mirror-horizontal="pattern.mirrorHorizontal.value"
-                :mirror-vertical="pattern.mirrorVertical.value"
-                :reference-open="referenceOpen"
-                @select="selectTool"
-                @toggle-mirror-horizontal="toggleMirror('horizontal')"
-                @toggle-mirror-vertical="toggleMirror('vertical')"
-                @toggle-reference="referenceOpen = !referenceOpen"
-                @cancel-placement="placingSelection = false"
-                @clear="requestClear"
-                @save="saveProject"
-                @png="downloadCanvasPng"
-                @print="printPattern"
+            </div>
+            <DrawingTools
+              :tool="pattern.tool.value"
+              :placing-selection="placingSelection"
+              :mirror-horizontal="pattern.mirrorHorizontal.value"
+              :mirror-vertical="pattern.mirrorVertical.value"
+              :reference-open="referenceOpen"
+              @select="selectTool"
+              @toggle-mirror-horizontal="toggleMirror('horizontal')"
+              @toggle-mirror-vertical="toggleMirror('vertical')"
+              @toggle-reference="referenceOpen = !referenceOpen"
+              @cancel-placement="placingSelection = false"
+              @clear="requestClear"
+              @save="saveProject"
+              @png="downloadCanvasPng"
+              @print="printPattern"
+            >
+              <template #color>
+                <ColorMenu
+                  :color="pattern.selectedColor.value"
+                  :recent-colors="pattern.recentColors.value"
+                  :swatches="pattern.project.value.swatches"
+                  @select="pattern.chooseColor($event)"
+                  @eyedropper="pattern.tool.value = 'eyedropper'"
+                  @add-swatch="pattern.addSwatch()"
+                  @remove-swatch="pattern.removeSwatch($event)"
+                />
+              </template>
+              <template #controls>
+                <RepeatMenu
+                  :horizontal="pattern.project.value.horizontalRepeats"
+                  :vertical="pattern.project.value.verticalRepeats"
+                  :boxes="pattern.project.value.repeatBoxes"
+                  :selected-row="pattern.selectedRow.value"
+                  :row-count="pattern.rowCount.value"
+                  :selected-column="pattern.selectedColumn.value"
+                  :column-count="pattern.columnCount.value"
+                  @horizontal="pattern.project.value.horizontalRepeats = $event"
+                  @vertical="pattern.project.value.verticalRepeats = $event"
+                  @save="saveRepeatBox"
+                  @toggle="pattern.toggleRepeatBox"
+                  @remove="pattern.removeRepeatBox"
+                />
+                <RowMenu
+                  :selected="pattern.selectedRow.value"
+                  :count="pattern.rowCount.value"
+                  @before="pattern.insertRow(pattern.selectedRow.value)"
+                  @after="pattern.insertRow(pattern.selectedRow.value + 1)"
+                  @beginning="pattern.insertRow(0)"
+                  @end="pattern.insertRow(pattern.rowCount.value)"
+                  @fill="pattern.fillRow(pattern.selectedRow.value, pattern.selectedColor.value)"
+                  @erase="pattern.eraseRow(pattern.selectedRow.value)"
+                  @remove-current="pattern.deleteSelectedRow"
+                  @remove-rows="deleteRows"
+                />
+                <ColumnMenu
+                  :selected="pattern.selectedColumn.value"
+                  :count="pattern.columnCount.value"
+                  @before="pattern.insertColumn(pattern.selectedColumn.value)"
+                  @after="pattern.insertColumn(pattern.selectedColumn.value + 1)"
+                  @beginning="pattern.insertColumn(0)"
+                  @end="pattern.insertColumn(pattern.columnCount.value)"
+                  @fill="pattern.fillColumn(pattern.selectedColumn.value, pattern.selectedColor.value)"
+                  @erase="pattern.eraseColumn(pattern.selectedColumn.value)"
+                  @remove-current="pattern.deleteSelectedColumn"
+                  @remove-columns="deleteColumns"
+                />
+              </template>
+              <template #settings>
+                <GridMenu
+                  :cell-size="pattern.project.value.cellSize"
+                  :full-height="canvasFullHeight"
+                  :show-symbols="canvasSymbols"
+                  @cell-size="pattern.project.value.cellSize = $event"
+                  @full-height="canvasFullHeight = $event"
+                  @show-symbols="canvasSymbols = $event"
+                />
+              </template>
+            </DrawingTools>
+            <div
+              class="grid min-w-0"
+              :class="referenceOpen ? 'gap-3 lg:grid-cols-[minmax(0,1fr)_22rem]' : 'grid-cols-1'"
+            >
+              <div
+                v-show="referenceOpen"
+                class="min-w-0 lg:order-2 lg:sticky lg:top-3 lg:self-start"
               >
-                <template #color>
-                  <ColorMenu :color="pattern.selectedColor.value" :recent-colors="pattern.recentColors.value" :swatches="pattern.project.value.swatches" @select="pattern.chooseColor($event)" @eyedropper="pattern.tool.value = 'eyedropper'" @add-swatch="pattern.addSwatch()" @remove-swatch="pattern.removeSwatch($event)" />
-                </template>
-                <template #controls>
-                  <RepeatMenu
-                    :horizontal="pattern.project.value.horizontalRepeats"
-                    :vertical="pattern.project.value.verticalRepeats"
-                    :boxes="pattern.project.value.repeatBoxes"
-                    :selected-row="pattern.selectedRow.value"
-                    :row-count="pattern.rowCount.value"
-                    :selected-column="pattern.selectedColumn.value"
-                    :column-count="pattern.columnCount.value"
-                    @horizontal="pattern.project.value.horizontalRepeats = $event"
-                    @vertical="pattern.project.value.verticalRepeats = $event"
-                    @save="saveRepeatBox"
-                    @toggle="pattern.toggleRepeatBox"
-                    @remove="pattern.removeRepeatBox"
-                  />
-                  <RowMenu
-                    :selected="pattern.selectedRow.value"
-                    :count="pattern.rowCount.value"
-                    @before="pattern.insertRow(pattern.selectedRow.value)"
-                    @after="pattern.insertRow(pattern.selectedRow.value + 1)"
-                    @beginning="pattern.insertRow(0)"
-                    @end="pattern.insertRow(pattern.rowCount.value)"
-                    @fill="pattern.fillRow(pattern.selectedRow.value, pattern.selectedColor.value)"
-                    @erase="pattern.eraseRow(pattern.selectedRow.value)"
-                    @remove-current="pattern.deleteSelectedRow"
-                    @remove-rows="deleteRows"
-                  />
-                  <ColumnMenu
-                    :selected="pattern.selectedColumn.value"
-                    :count="pattern.columnCount.value"
-                    @before="pattern.insertColumn(pattern.selectedColumn.value)"
-                    @after="pattern.insertColumn(pattern.selectedColumn.value + 1)"
-                    @beginning="pattern.insertColumn(0)"
-                    @end="pattern.insertColumn(pattern.columnCount.value)"
-                    @fill="pattern.fillColumn(pattern.selectedColumn.value, pattern.selectedColor.value)"
-                    @erase="pattern.eraseColumn(pattern.selectedColumn.value)"
-                    @remove-current="pattern.deleteSelectedColumn"
-                    @remove-columns="deleteColumns"
-                  />
-                </template>
-                <template #settings>
-                  <GridMenu :cell-size="pattern.project.value.cellSize" :full-height="canvasFullHeight" :show-symbols="canvasSymbols" @cell-size="pattern.project.value.cellSize = $event" @full-height="canvasFullHeight = $event" @show-symbols="canvasSymbols = $event" />
-                </template>
-              </DrawingTools>
-              <div class="grid min-w-0" :class="referenceOpen ? 'gap-3 lg:grid-cols-[minmax(0,1fr)_22rem]' : 'grid-cols-1'">
-                <div v-show="referenceOpen" class="min-w-0 lg:order-2 lg:sticky lg:top-3 lg:self-start">
-                  <ReferenceImage
-                    :picking="pattern.tool.value === 'eyedropper'"
-                    @pick="pickReferenceColor"
-                    @request-pick="selectTool('eyedropper')"
-                    @close="referenceOpen = false"
-                    @error="notify($event, 'error')"
-                  />
-                </div>
-                <div class="min-w-0 lg:order-1">
-                  <PatternGrid
-                :cells="renderedPattern.cells"
-                :cell-source-rows="renderedPattern.sourceRows"
-                :cell-source-columns="renderedPattern.sourceColumns"
-                :row-headers="renderedPattern.rowHeaders"
-                :column-headers="renderedPattern.columnHeaders"
-                :row-copies="renderedPattern.rowCopies"
-                :column-copies="renderedPattern.columnCopies"
-                :repeat-flags="renderedPattern.repeatFlags"
-                :repeat-color-indices="renderedPattern.repeatColorIndices"
-                :source-rows="pattern.rowCount.value"
-                :source-columns="pattern.columnCount.value"
-                :cell-size="pattern.project.value.cellSize"
-                :full-height="canvasFullHeight"
-                :selected-row="pattern.selectedRow.value"
-                :selected-column="pattern.selectedColumn.value"
-                :selected-rows="pattern.selectedRows.value"
-                :selected-columns="pattern.selectedColumns.value"
-                :tool="pattern.tool.value"
-                :selection="pattern.selection.value"
-                :placing-selection="placingSelection"
-                :can-paste="pattern.hasClipboard.value"
-                 :mirror-horizontal="pattern.mirrorHorizontal.value"
-                 :mirror-vertical="pattern.mirrorVertical.value"
-                 :symbols="canvasSymbolMap"
-                @stroke-start="beginStroke"
-                @paint="pattern.paintCell"
-                @stroke-end="endStroke"
-                @select-row="selectRowHeader"
-                @row-action="handleRowAction"
-                @select-column="selectColumnHeader"
-                @column-action="handleColumnAction"
-                @select-area="pattern.setSelection"
-                @magic-select="pattern.setMagicSelection"
-                @selection-action="handleSelectionAction"
-                @clear-selection="pattern.clearSelection"
-                @place-selection="placeSelection"
-                    @move-selection="moveSelectionDirectly"
-                  />
-                </div>
+                <ReferenceImage
+                  :picking="pattern.tool.value === 'eyedropper'"
+                  @pick="pickReferenceColor"
+                  @request-pick="selectTool('eyedropper')"
+                  @close="referenceOpen = false"
+                  @error="notify($event, 'error')"
+                />
               </div>
+              <div class="min-w-0 lg:order-1">
+                <PatternGrid
+                  :cells="renderedPattern.cells"
+                  :cell-source-rows="renderedPattern.sourceRows"
+                  :cell-source-columns="renderedPattern.sourceColumns"
+                  :row-headers="renderedPattern.rowHeaders"
+                  :column-headers="renderedPattern.columnHeaders"
+                  :row-copies="renderedPattern.rowCopies"
+                  :column-copies="renderedPattern.columnCopies"
+                  :repeat-flags="renderedPattern.repeatFlags"
+                  :repeat-color-indices="renderedPattern.repeatColorIndices"
+                  :source-rows="pattern.rowCount.value"
+                  :source-columns="pattern.columnCount.value"
+                  :cell-size="pattern.project.value.cellSize"
+                  :full-height="canvasFullHeight"
+                  :selected-row="pattern.selectedRow.value"
+                  :selected-column="pattern.selectedColumn.value"
+                  :selected-rows="pattern.selectedRows.value"
+                  :selected-columns="pattern.selectedColumns.value"
+                  :tool="pattern.tool.value"
+                  :selection="pattern.selection.value"
+                  :placing-selection="placingSelection"
+                  :can-paste="pattern.hasClipboard.value"
+                  :mirror-horizontal="pattern.mirrorHorizontal.value"
+                  :mirror-vertical="pattern.mirrorVertical.value"
+                  :symbols="canvasSymbolMap"
+                  @stroke-start="beginStroke"
+                  @paint="pattern.paintCell"
+                  @stroke-end="endStroke"
+                  @select-row="selectRowHeader"
+                  @row-action="handleRowAction"
+                  @select-column="selectColumnHeader"
+                  @column-action="handleColumnAction"
+                  @select-area="pattern.setSelection"
+                  @magic-select="pattern.setMagicSelection"
+                  @selection-action="handleSelectionAction"
+                  @clear-selection="pattern.clearSelection"
+                  @place-selection="placeSelection"
+                  @move-selection="moveSelectionDirectly"
+                />
+              </div>
+            </div>
           </div>
         </section>
 
@@ -643,13 +683,19 @@ onBeforeUnmount(() => {
           v-model:stitch="pattern.project.value.previewStitch"
           :cells="renderedPattern.cells"
         />
-
       </main>
     </div>
   </div>
 
-  <NewProjectModal :open="newModalOpen" @create="createProject" @cancel="newModalOpen = false" />
-  <UserGuideModal :open="guideOpen" @close="guideOpen = false" />
+  <NewProjectModal
+    :open="newModalOpen"
+    @create="createProject"
+    @cancel="newModalOpen = false"
+  />
+  <UserGuideModal
+    :open="guideOpen"
+    @close="guideOpen = false"
+  />
   <ConfirmModal
     :open="clearModalOpen"
     :title="t('editor.confirmations.clearTitle')"
@@ -667,6 +713,12 @@ onBeforeUnmount(() => {
     @confirm="confirmImport"
     @cancel="cancelImport"
   />
-  <NotificationToast :notifications="notifications" @dismiss="dismiss" />
-  <PrintView :project="pattern.project.value" :mode="printMode" />
+  <NotificationToast
+    :notifications="notifications"
+    @dismiss="dismiss"
+  />
+  <PrintView
+    :project="pattern.project.value"
+    :mode="printMode"
+  />
 </template>

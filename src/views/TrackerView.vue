@@ -309,33 +309,126 @@ function cancelActiveModal() {
       <div class="navbar-start gap-2">
         <span class="text-lg font-semibold tracking-tight">{{ t('tracker.brand') }}</span>
       </div>
-      <nav class="navbar-center hidden gap-1 sm:flex" :aria-label="t('tracker.actions.label')">
-        <RouterLink class="btn btn-ghost btn-sm" to="/"><span class="mdi mdi-pencil-ruler text-lg" aria-hidden="true"></span>{{ t('tracker.actions.editor') }}</RouterLink>
-        <button class="btn btn-ghost btn-sm" type="button" @click="fileInput?.click()"><span class="mdi mdi-folder-open-outline text-lg" aria-hidden="true"></span>{{ t('tracker.actions.open') }}</button>
-        <button class="btn btn-ghost btn-sm" type="button" :disabled="!state.tracker.value" @click="saveTracker"><span class="mdi mdi-content-save-outline text-lg" aria-hidden="true"></span>{{ t('tracker.actions.save') }}</button>
+      <nav
+        class="navbar-center hidden gap-1 sm:flex"
+        :aria-label="t('tracker.actions.label')"
+      >
+        <RouterLink
+          class="btn btn-ghost btn-sm"
+          to="/"
+        >
+          <span
+            class="mdi mdi-pencil-ruler text-lg"
+            aria-hidden="true"
+          />{{ t('tracker.actions.editor') }}
+        </RouterLink>
+        <button
+          class="btn btn-ghost btn-sm"
+          type="button"
+          @click="fileInput?.click()"
+        >
+          <span
+            class="mdi mdi-folder-open-outline text-lg"
+            aria-hidden="true"
+          />{{ t('tracker.actions.open') }}
+        </button>
+        <button
+          class="btn btn-ghost btn-sm"
+          type="button"
+          :disabled="!state.tracker.value"
+          @click="saveTracker"
+        >
+          <span
+            class="mdi mdi-content-save-outline text-lg"
+            aria-hidden="true"
+          />{{ t('tracker.actions.save') }}
+        </button>
       </nav>
       <div class="navbar-end gap-1">
-        <RouterLink class="btn btn-ghost btn-square btn-sm sm:hidden" to="/" :aria-label="t('tracker.actions.openEditor')"><span class="mdi mdi-pencil-ruler text-lg" aria-hidden="true"></span></RouterLink>
-        <button class="btn btn-ghost btn-square btn-sm sm:hidden" type="button" :aria-label="t('tracker.actions.openDesignOrTracker')" @click="fileInput?.click()"><span class="mdi mdi-folder-open-outline text-lg" aria-hidden="true"></span></button>
-        <button class="btn btn-primary btn-square btn-sm sm:hidden" type="button" :disabled="!state.tracker.value" :aria-label="t('tracker.actions.saveAria')" @click="saveTracker"><span class="mdi mdi-content-save-outline text-lg" aria-hidden="true"></span></button>
+        <RouterLink
+          class="btn btn-ghost btn-square btn-sm sm:hidden"
+          to="/"
+          :aria-label="t('tracker.actions.openEditor')"
+        >
+          <span
+            class="mdi mdi-pencil-ruler text-lg"
+            aria-hidden="true"
+          />
+        </RouterLink>
+        <button
+          class="btn btn-ghost btn-square btn-sm sm:hidden"
+          type="button"
+          :aria-label="t('tracker.actions.openDesignOrTracker')"
+          @click="fileInput?.click()"
+        >
+          <span
+            class="mdi mdi-folder-open-outline text-lg"
+            aria-hidden="true"
+          />
+        </button>
+        <button
+          class="btn btn-primary btn-square btn-sm sm:hidden"
+          type="button"
+          :disabled="!state.tracker.value"
+          :aria-label="t('tracker.actions.saveAria')"
+          @click="saveTracker"
+        >
+          <span
+            class="mdi mdi-content-save-outline text-lg"
+            aria-hidden="true"
+          />
+        </button>
         <LanguageSwitcher />
-        <ThemeToggle :theme="theme" @toggle="toggleTheme" />
+        <ThemeToggle
+          :theme="theme"
+          @toggle="toggleTheme"
+        />
       </div>
     </header>
-    <input ref="fileInput" class="hidden" type="file" accept=".stitch-pattern,.stitch-tracker,application/json" @change="selectFile" />
+    <input
+      ref="fileInput"
+      class="hidden"
+      type="file"
+      accept=".stitch-pattern,.stitch-tracker,application/json"
+      @change="selectFile"
+    >
 
     <main class="mx-auto max-w-[90rem] space-y-4 p-3 sm:p-5">
-      <section v-if="!state.tracker.value" class="grid min-h-[calc(100dvh-7rem)] place-items-center">
+      <section
+        v-if="!state.tracker.value"
+        class="grid min-h-[calc(100dvh-7rem)] place-items-center"
+      >
         <div class="card w-full max-w-2xl border border-base-300 bg-base-100 shadow-sm">
           <div class="card-body items-start gap-5 p-6 sm:p-10">
-            <div class="grid size-14 place-items-center rounded-2xl bg-primary/10 text-primary-content"><span class="mdi mdi-progress-check text-3xl" aria-hidden="true"></span></div>
-            <div>
-              <h1 class="text-3xl font-bold tracking-tight">{{ t('tracker.empty.title') }}</h1>
-              <p class="mt-2 max-w-xl text-base-content/70">{{ t('tracker.empty.description') }}</p>
+            <div class="grid size-14 place-items-center rounded-2xl bg-primary/10 text-primary-content">
+              <span
+                class="mdi mdi-progress-check text-3xl"
+                aria-hidden="true"
+              />
             </div>
-            <button class="btn btn-primary" type="button" @click="fileInput?.click()"><span class="mdi mdi-folder-open-outline text-lg" aria-hidden="true"></span>{{ t('tracker.actions.openDesignOrTracker') }}</button>
+            <div>
+              <h1 class="text-3xl font-bold tracking-tight">
+                {{ t('tracker.empty.title') }}
+              </h1>
+              <p class="mt-2 max-w-xl text-base-content/70">
+                {{ t('tracker.empty.description') }}
+              </p>
+            </div>
+            <button
+              class="btn btn-primary"
+              type="button"
+              @click="fileInput?.click()"
+            >
+              <span
+                class="mdi mdi-folder-open-outline text-lg"
+                aria-hidden="true"
+              />{{ t('tracker.actions.openDesignOrTracker') }}
+            </button>
             <div class="alert alert-warning text-sm">
-              <span class="mdi mdi-alert-outline text-xl" aria-hidden="true"></span>
+              <span
+                class="mdi mdi-alert-outline text-xl"
+                aria-hidden="true"
+              />
               <span>{{ t('tracker.warnings.localOnly') }}</span>
             </div>
           </div>
@@ -347,23 +440,57 @@ function cancelActiveModal() {
           <div class="card-body gap-4 p-4 sm:p-5">
             <div class="flex flex-wrap items-start justify-between gap-4">
               <div>
-                <p class="text-xs font-semibold uppercase tracking-widest text-primary-content">{{ t('tracker.progress.heading') }}</p>
-                <h1 class="mt-1 text-2xl font-bold">{{ state.tracker.value.pattern.name }}</h1>
-                <p class="mt-1 text-sm text-base-content/65">{{ t('tracker.progress.completed', { completed: n(state.completedCount.value, 'integer'), total: n(state.totalCount.value, 'integer') }) }}</p>
+                <p class="text-xs font-semibold uppercase tracking-widest text-primary-content">
+                  {{ t('tracker.progress.heading') }}
+                </p>
+                <h1 class="mt-1 text-2xl font-bold">
+                  {{ state.tracker.value.pattern.name }}
+                </h1>
+                <p class="mt-1 text-sm text-base-content/65">
+                  {{ t('tracker.progress.completed', { completed: n(state.completedCount.value, 'integer'), total: n(state.totalCount.value, 'integer') }) }}
+                </p>
               </div>
               <div class="flex flex-wrap items-center justify-end gap-2">
-                <span class="badge" :class="state.autosaveStatus.value === 'error' ? 'badge-error' : state.autosaveStatus.value === 'saving' ? 'badge-ghost' : 'badge-success badge-outline'">
-                  <span class="mdi" :class="state.autosaveStatus.value === 'error' ? 'mdi-alert-circle-outline' : state.autosaveStatus.value === 'saving' ? 'mdi-loading mdi-spin' : 'mdi-content-save-check-outline'" aria-hidden="true"></span>
+                <span
+                  class="badge"
+                  :class="state.autosaveStatus.value === 'error' ? 'badge-error' : state.autosaveStatus.value === 'saving' ? 'badge-ghost' : 'badge-success badge-outline'"
+                >
+                  <span
+                    class="mdi"
+                    :class="state.autosaveStatus.value === 'error' ? 'mdi-alert-circle-outline' : state.autosaveStatus.value === 'saving' ? 'mdi-loading mdi-spin' : 'mdi-content-save-check-outline'"
+                    aria-hidden="true"
+                  />
                   {{ state.autosaveStatus.value === 'error' ? t('tracker.autosave.failed') : state.autosaveStatus.value === 'saving' ? t('tracker.autosave.saving') : t('tracker.autosave.saved') }}
                 </span>
-                <span v-if="state.backupNeeded.value" class="badge badge-warning badge-outline">{{ t('tracker.autosave.changed') }}</span>
-                <button class="btn btn-primary btn-sm" type="button" @click="saveTracker"><span class="mdi mdi-download text-base" aria-hidden="true"></span>{{ t('tracker.actions.save') }}</button>
+                <span
+                  v-if="state.backupNeeded.value"
+                  class="badge badge-warning badge-outline"
+                >{{ t('tracker.autosave.changed') }}</span>
+                <button
+                  class="btn btn-primary btn-sm"
+                  type="button"
+                  @click="saveTracker"
+                >
+                  <span
+                    class="mdi mdi-download text-base"
+                    aria-hidden="true"
+                  />{{ t('tracker.actions.save') }}
+                </button>
               </div>
             </div>
-            <progress class="progress progress-primary w-full" :value="state.completedCount.value" :max="state.totalCount.value"></progress>
-            <div class="flex items-center justify-between text-xs text-base-content/60"><span>{{ t('tracker.progress.percentComplete', { percentage: n(percentage / 100, 'percent') }) }}</span><span>{{ t('tracker.progress.updated', { date: d(new Date(state.tracker.value.progress.updatedAt), 'short') }) }}</span></div>
+            <progress
+              class="progress progress-primary w-full"
+              :value="state.completedCount.value"
+              :max="state.totalCount.value"
+            />
+            <div class="flex items-center justify-between text-xs text-base-content/60">
+              <span>{{ t('tracker.progress.percentComplete', { percentage: n(percentage / 100, 'percent') }) }}</span><span>{{ t('tracker.progress.updated', { date: d(new Date(state.tracker.value.progress.updatedAt), 'short') }) }}</span>
+            </div>
             <div class="alert alert-warning py-3 text-sm">
-              <span class="mdi mdi-shield-download-outline text-xl" aria-hidden="true"></span>
+              <span
+                class="mdi mdi-shield-download-outline text-xl"
+                aria-hidden="true"
+              />
               <span>{{ t('tracker.warnings.recovery') }}</span>
             </div>
           </div>
@@ -375,28 +502,57 @@ function cancelActiveModal() {
               <div class="flex flex-wrap items-end gap-3">
                 <label class="form-control w-40">
                   <span class="label py-1 text-xs font-semibold">{{ t('tracker.order.startRow') }}</span>
-                  <select class="select select-bordered select-sm" :value="state.tracker.value.progress.startRow" :disabled="state.completedCount.value > 0" @change="changeStartRow">
+                  <select
+                    class="select select-bordered select-sm"
+                    :value="state.tracker.value.progress.startRow"
+                    :disabled="state.completedCount.value > 0"
+                    @change="changeStartRow"
+                  >
                     <option value="top">{{ t('tracker.order.top') }}</option><option value="bottom">{{ t('tracker.order.bottom') }}</option>
                   </select>
                 </label>
                 <label class="form-control w-44">
                   <span class="label py-1 text-xs font-semibold">{{ t('tracker.order.firstRowDirection') }}</span>
-                  <select class="select select-bordered select-sm" :value="state.tracker.value.progress.firstRowDirection" :disabled="state.completedCount.value > 0" @change="changeDirection">
+                  <select
+                    class="select select-bordered select-sm"
+                    :value="state.tracker.value.progress.firstRowDirection"
+                    :disabled="state.completedCount.value > 0"
+                    @change="changeDirection"
+                  >
                     <option value="left-to-right">{{ t('tracker.order.leftToRight') }}</option><option value="right-to-left">{{ t('tracker.order.rightToLeft') }}</option>
                   </select>
                 </label>
                 <label class="flex h-8 items-center gap-2 pb-1 text-sm">
-                  <input class="checkbox checkbox-primary checkbox-sm" type="checkbox" :checked="state.tracker.value.progress.alternateRows" :disabled="state.completedCount.value > 0" @change="changeAlternation" />{{ t('tracker.order.alternate') }}
+                  <input
+                    class="checkbox checkbox-primary checkbox-sm"
+                    type="checkbox"
+                    :checked="state.tracker.value.progress.alternateRows"
+                    :disabled="state.completedCount.value > 0"
+                    @change="changeAlternation"
+                  >{{ t('tracker.order.alternate') }}
                 </label>
               </div>
               <div class="flex flex-wrap items-center gap-2">
                 <details class="dropdown dropdown-end">
-                  <summary class="btn btn-ghost btn-square btn-sm" :aria-label="t('tracker.controls.settings')" :title="t('tracker.controls.settings')"><span class="mdi mdi-cog-outline text-xl" aria-hidden="true"></span></summary>
+                  <summary
+                    class="btn btn-ghost btn-square btn-sm"
+                    :aria-label="t('tracker.controls.settings')"
+                    :title="t('tracker.controls.settings')"
+                  >
+                    <span
+                      class="mdi mdi-cog-outline text-xl"
+                      aria-hidden="true"
+                    />
+                  </summary>
                   <div class="dropdown-content z-40 mt-2 w-72 rounded-box border border-base-300 bg-base-100 p-4 shadow-lg">
                     <div class="flex flex-col gap-6">
                       <label class="form-control gap-1">
                         <span class="text-xs font-semibold">{{ t('tracker.controls.display') }}</span>
-                        <select v-model="display" class="select select-bordered select-sm w-full" :aria-label="t('tracker.controls.displayAria')">
+                        <select
+                          v-model="display"
+                          class="select select-bordered select-sm w-full"
+                          :aria-label="t('tracker.controls.displayAria')"
+                        >
                           <option value="canvas">{{ t('tracker.controls.canvas') }}</option>
                           <option value="knit">{{ t('tracker.controls.knit') }}</option>
                           <option value="cross-stitch">{{ t('tracker.controls.crossStitch') }}</option>
@@ -405,30 +561,108 @@ function cancelActiveModal() {
                       </label>
                       <label class="form-control gap-2">
                         <span class="flex items-center justify-between gap-3 text-xs font-semibold"><span>{{ t('tracker.controls.cellSize') }}</span><span class="font-mono font-normal tabular-nums">{{ cellSize }} px</span></span>
-                        <input v-model.number="cellSize" class="range range-xs w-full" type="range" min="16" max="48" :aria-label="t('tracker.controls.cellSize')" />
+                        <input
+                          v-model.number="cellSize"
+                          class="range range-xs w-full"
+                          type="range"
+                          min="16"
+                          max="48"
+                          :aria-label="t('tracker.controls.cellSize')"
+                        >
                       </label>
-                      <label class="flex items-center justify-between gap-3 text-sm"><span>{{ t('tracker.controls.autoScroll') }}</span><input v-model="autoScroll" class="toggle toggle-primary toggle-sm" type="checkbox" /></label>
-                      <label class="flex items-center justify-between gap-3 text-sm"><span>{{ t('tracker.controls.showSymbols') }}</span><input v-model="showSymbols" class="toggle toggle-primary toggle-sm" type="checkbox" /></label>
-                      <label v-if="wakeLockSupported" class="flex items-center justify-between gap-3 text-sm"><span>{{ t('tracker.controls.keepAwake') }}</span><input class="toggle toggle-primary toggle-sm" type="checkbox" :checked="keepAwake" @change="changeKeepAwake" /></label>
+                      <label class="flex items-center justify-between gap-3 text-sm"><span>{{ t('tracker.controls.autoScroll') }}</span><input
+                        v-model="autoScroll"
+                        class="toggle toggle-primary toggle-sm"
+                        type="checkbox"
+                      ></label>
+                      <label class="flex items-center justify-between gap-3 text-sm"><span>{{ t('tracker.controls.showSymbols') }}</span><input
+                        v-model="showSymbols"
+                        class="toggle toggle-primary toggle-sm"
+                        type="checkbox"
+                      ></label>
+                      <label
+                        v-if="wakeLockSupported"
+                        class="flex items-center justify-between gap-3 text-sm"
+                      ><span>{{ t('tracker.controls.keepAwake') }}</span><input
+                        class="toggle toggle-primary toggle-sm"
+                        type="checkbox"
+                        :checked="keepAwake"
+                        @change="changeKeepAwake"
+                      ></label>
                     </div>
                   </div>
                 </details>
-                <div v-if="fullscreenSupported" class="tooltip" :data-tip="t(trackerFullscreen ? 'tracker.controls.exitFullscreen' : 'tracker.controls.fullscreen')">
-                  <button class="btn btn-ghost btn-square btn-sm" type="button" :aria-label="t(trackerFullscreen ? 'tracker.controls.exitFullscreen' : 'tracker.controls.fullscreen')" @click="toggleFullscreen"><span class="mdi text-lg" :class="trackerFullscreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'" aria-hidden="true"></span></button>
+                <div
+                  v-if="fullscreenSupported"
+                  class="tooltip"
+                  :data-tip="t(trackerFullscreen ? 'tracker.controls.exitFullscreen' : 'tracker.controls.fullscreen')"
+                >
+                  <button
+                    class="btn btn-ghost btn-square btn-sm"
+                    type="button"
+                    :aria-label="t(trackerFullscreen ? 'tracker.controls.exitFullscreen' : 'tracker.controls.fullscreen')"
+                    @click="toggleFullscreen"
+                  >
+                    <span
+                      class="mdi text-lg"
+                      :class="trackerFullscreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'"
+                      aria-hidden="true"
+                    />
+                  </button>
                 </div>
-                <div class="tooltip" :data-tip="t('tracker.actions.reset')">
-                  <button class="btn btn-ghost btn-square btn-sm text-error" type="button" :disabled="state.completedCount.value === 0" :aria-label="t('tracker.actions.reset')" @click="resetModalOpen = true"><span class="mdi mdi-restart text-lg" aria-hidden="true"></span></button>
+                <div
+                  class="tooltip"
+                  :data-tip="t('tracker.actions.reset')"
+                >
+                  <button
+                    class="btn btn-ghost btn-square btn-sm text-error"
+                    type="button"
+                    :disabled="state.completedCount.value === 0"
+                    :aria-label="t('tracker.actions.reset')"
+                    @click="resetModalOpen = true"
+                  >
+                    <span
+                      class="mdi mdi-restart text-lg"
+                      aria-hidden="true"
+                    />
+                  </button>
                 </div>
-                <div class="tooltip" :data-tip="t('tracker.actions.close')">
-                  <button class="btn btn-ghost btn-square btn-sm" type="button" :aria-label="t('tracker.actions.close')" @click="clearModalOpen = true"><span class="mdi mdi-close-circle-outline text-lg" aria-hidden="true"></span></button>
+                <div
+                  class="tooltip"
+                  :data-tip="t('tracker.actions.close')"
+                >
+                  <button
+                    class="btn btn-ghost btn-square btn-sm"
+                    type="button"
+                    :aria-label="t('tracker.actions.close')"
+                    @click="clearModalOpen = true"
+                  >
+                    <span
+                      class="mdi mdi-close-circle-outline text-lg"
+                      aria-hidden="true"
+                    />
+                  </button>
                 </div>
               </div>
             </div>
-            <p v-if="state.completedCount.value > 0" class="text-xs text-base-content/55">{{ t('tracker.instructions.resetOrder') }}</p>
-            <p class="text-sm text-base-content/65">{{ t('tracker.instructions.usage') }}</p>
+            <p
+              v-if="state.completedCount.value > 0"
+              class="text-xs text-base-content/55"
+            >
+              {{ t('tracker.instructions.resetOrder') }}
+            </p>
+            <p class="text-sm text-base-content/65">
+              {{ t('tracker.instructions.usage') }}
+            </p>
 
-            <div v-if="tooLarge" class="alert alert-error">
-              <span class="mdi mdi-grid-off text-xl" aria-hidden="true"></span>
+            <div
+              v-if="tooLarge"
+              class="alert alert-error"
+            >
+              <span
+                class="mdi mdi-grid-off text-xl"
+                aria-hidden="true"
+              />
               <span>{{ t('tracker.errors.oversized', { total: n(state.totalCount.value, 'integer') }) }}</span>
             </div>
             <TrackerGrid
@@ -454,21 +688,67 @@ function cancelActiveModal() {
     </main>
   </div>
 
-  <div v-if="confirmation" class="modal modal-open" role="dialog" aria-modal="true" :aria-label="confirmation.title" @keydown.esc="cancelActiveModal">
+  <div
+    v-if="confirmation"
+    class="modal modal-open"
+    role="dialog"
+    aria-modal="true"
+    :aria-label="confirmation.title"
+    @keydown.esc="cancelActiveModal"
+  >
     <div class="modal-box">
-      <h2 class="text-lg font-bold">{{ confirmation.title }}</h2>
-      <p class="py-4">{{ confirmation.message }}</p>
+      <h2 class="text-lg font-bold">
+        {{ confirmation.title }}
+      </h2>
+      <p class="py-4">
+        {{ confirmation.message }}
+      </p>
       <div class="modal-action">
-        <button class="btn" type="button" @click="cancelActiveModal">{{ t('tracker.confirm.cancel') }}</button>
-        <button class="btn btn-error" type="button" autofocus @click="confirmActiveModal">{{ confirmation.label }}</button>
+        <button
+          class="btn"
+          type="button"
+          @click="cancelActiveModal"
+        >
+          {{ t('tracker.confirm.cancel') }}
+        </button>
+        <button
+          class="btn btn-error"
+          type="button"
+          autofocus
+          @click="confirmActiveModal"
+        >
+          {{ confirmation.label }}
+        </button>
       </div>
     </div>
-    <button class="modal-backdrop" type="button" :aria-label="t('tracker.confirm.closeDialog')" @click="cancelActiveModal">{{ t('tracker.confirm.closeBackdrop') }}</button>
+    <button
+      class="modal-backdrop"
+      type="button"
+      :aria-label="t('tracker.confirm.closeDialog')"
+      @click="cancelActiveModal"
+    >
+      {{ t('tracker.confirm.closeBackdrop') }}
+    </button>
   </div>
-  <div class="toast toast-end toast-top z-[100] mt-14" aria-live="polite">
-    <div v-for="item in notifications" :key="item.id" class="alert max-w-sm" :class="alertClasses[item.kind]">
+  <div
+    class="toast toast-end toast-top z-[100] mt-14"
+    aria-live="polite"
+  >
+    <div
+      v-for="item in notifications"
+      :key="item.id"
+      class="alert max-w-sm"
+      :class="alertClasses[item.kind]"
+    >
       <span>{{ item.message }}</span>
-      <button class="btn btn-ghost btn-xs" type="button" :aria-label="t('tracker.notifications.dismissAria', { message: item.message })" @click="dismiss(item.id)">{{ t('tracker.notifications.close') }}</button>
+      <button
+        class="btn btn-ghost btn-xs"
+        type="button"
+        :aria-label="t('tracker.notifications.dismissAria', { message: item.message })"
+        @click="dismiss(item.id)"
+      >
+        {{ t('tracker.notifications.close') }}
+      </button>
     </div>
   </div>
 </template>

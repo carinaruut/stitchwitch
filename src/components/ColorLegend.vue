@@ -19,10 +19,18 @@ function totalCount(count: number) {
 </script>
 
 <template>
-  <section class="card border border-base-300 bg-base-100" aria-labelledby="color-legend-title">
+  <section
+    class="card border border-base-300 bg-base-100"
+    aria-labelledby="color-legend-title"
+  >
     <div class="card-body gap-4 p-4 sm:p-5">
       <div class="flex flex-wrap items-center justify-between gap-2">
-        <h2 id="color-legend-title" class="card-title text-lg">{{ t('editor.legend.title') }}</h2>
+        <h2
+          id="color-legend-title"
+          class="card-title text-lg"
+        >
+          {{ t('editor.legend.title') }}
+        </h2>
         <span class="badge badge-outline">{{ totalCount(total) }}</span>
       </div>
       <ul class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -32,7 +40,11 @@ function totalCount(count: number) {
           class="flex items-center gap-3 rounded-box border border-base-300 bg-base-200/50 px-3 py-2"
           :aria-label="t('editor.legend.entryLabel', { color: entry.color.toUpperCase(), stitches: stitchCount(entry.count) })"
         >
-          <span class="size-7 shrink-0 rounded-md border border-base-content/25 shadow-sm" :style="{ backgroundColor: entry.color }" aria-hidden="true"></span>
+          <span
+            class="size-7 shrink-0 rounded-md border border-base-content/25 shadow-sm"
+            :style="{ backgroundColor: entry.color }"
+            aria-hidden="true"
+          />
           <code class="min-w-0 text-xs font-semibold">{{ entry.color.toUpperCase() }}</code>
           <span class="ml-auto whitespace-nowrap text-sm tabular-nums text-base-content/70">{{ stitchCount(entry.count) }}</span>
         </li>
