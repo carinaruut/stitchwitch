@@ -1,4 +1,4 @@
-name: Deploy
+name: Validate and deploy
 
 on:
   push:
@@ -12,7 +12,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
+  validate:
     runs-on: ubuntu-latest
 
     steps:
@@ -33,6 +33,12 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Lint Vue and TypeScript
+        run: pnpm lint
+
+      - name: Check TypeScript
+        run: pnpm typecheck
+
       - name: Build site
         run: pnpm build
 
@@ -42,7 +48,7 @@ jobs:
           path: dist
 
   deploy:
-    needs: build
+    needs: validate
     runs-on: ubuntu-latest
 
     permissions:
