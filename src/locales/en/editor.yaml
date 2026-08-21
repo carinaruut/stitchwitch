@@ -18,6 +18,7 @@ editor:
     oneStitch: '{count} stitch'
     stitches: '{count} stitches'
     entryLabel: 'Color {color}: {stitches}'
+    entryLabelWithSymbol: 'Color {color}, symbol {symbol}: {stitches}'
     progress: '{done}/{total} stitches'
   print:
     button: Download

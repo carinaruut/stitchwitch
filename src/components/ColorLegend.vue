@@ -2,9 +2,10 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { PatternGrid } from '../types/pattern'
+import { contrastColor } from '../utils/colors'
 import { countColors } from '../utils/grid'
 
-const props = defineProps<{ cells: PatternGrid; completedCounts?: Record<string, number> }>()
+const props = defineProps<{ cells: PatternGrid; completedCounts?: Record<string, number>; symbols?: Record<string, string> }>()
 const { n, t } = useI18n({ useScope: 'global' })
 const entries = computed(() => countColors(props.cells))
 const total = computed(() => props.cells.reduce((count, row) => count + row.length, 0))
@@ -20,6 +21,11 @@ function totalCount(count: number) {
 
 function progressCount(done: number, count: number) {
   return t('editor.legend.progress', { done: n(done, 'integer'), total: n(count, 'integer') })
+}
+
+function entryLabel(color: string, stitches: string) {
+  const symbol = props.symbols?.[color]
+  return t(symbol ? 'editor.legend.entryLabelWithSymbol' : 'editor.legend.entryLabel', { color: color.toUpperCase(), stitches, symbol })
 }
 </script>
 
@@ -43,13 +49,18 @@ function progressCount(done: number, count: number) {
           v-for="entry in entries"
           :key="entry.color"
           class="flex items-center gap-3 rounded-box border border-base-300 bg-base-200/50 px-3 py-2"
-          :aria-label="t('editor.legend.entryLabel', { color: entry.color.toUpperCase(), stitches: completedCounts ? progressCount(completedCounts[entry.color] ?? 0, entry.count) : stitchCount(entry.count) })"
+          :aria-label="entryLabel(entry.color, completedCounts ? progressCount(completedCounts[entry.color] ?? 0, entry.count) : stitchCount(entry.count))"
         >
           <span
-            class="size-7 shrink-0 rounded-md border border-base-content/25 shadow-sm"
+            class="flex size-7 shrink-0 items-center justify-center rounded-md border border-base-content/25 text-base font-bold leading-none shadow-sm"
             :style="{ backgroundColor: entry.color }"
             aria-hidden="true"
-          />
+          >
+            <span
+              v-if="symbols?.[entry.color]"
+              :style="{ color: contrastColor(entry.color) }"
+            >{{ symbols[entry.color] }}</span>
+          </span>
           <code class="min-w-0 text-xs font-semibold">{{ entry.color.toUpperCase() }}</code>
           <span class="ml-auto whitespace-nowrap text-sm tabular-nums text-base-content/70">{{ completedCounts ? progressCount(completedCounts[entry.color] ?? 0, entry.count) : stitchCount(entry.count) }}</span>
         </li>

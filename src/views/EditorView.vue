@@ -702,7 +702,10 @@ onBeforeUnmount(() => {
           </div>
         </section>
 
-        <ColorLegend :cells="renderedPattern.cells" />
+        <ColorLegend
+          :cells="renderedPattern.cells"
+          :symbols="canvasSymbolMap"
+        />
 
         <PatternPreview
           v-model:stitch="pattern.project.value.previewStitch"

@@ -823,6 +823,7 @@ function cancelActiveModal() {
           v-if="renderedPattern"
           :cells="renderedPattern.cells"
           :completed-counts="completedColorCounts"
+          :symbols="trackerSymbolMap"
         />
       </template>
     </main>

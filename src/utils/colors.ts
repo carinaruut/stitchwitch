@@ -1,11 +1,16 @@
 const HEX_COLOR = /^#[0-9a-f]{6}$/i
-const COLOR_SYMBOLS = [
+const GRAPHIC_SYMBOLS = [
   '●', '○', '■', '□', '▲', '△', '◆', '◇', '✕', '＋', '−', '│', '╱', '╲', '✦', '✚',
   '✖', '★', '☆', '♠', '♣', '♥', '♦', '☀', '☾', '☁', '☂', '⌁', '≈', '≡', '⊙', '⊗',
-  ...'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
-  ...'abcdefghijklmnopqrstuvwxyz',
-  ...'0123456789',
 ]
+const UPPERCASE_LETTERS = [...'ABCDEFGHIJKLMNOPQRSTUVWXYZ']
+const LOWERCASE_LETTERS = [...'abcdefghijklmnopqrstuvwxyz']
+const NUMBER_SYMBOLS = Array.from({ length: 100 }, (_, index) => String(index))
+const PREFIXED_LETTERS = Array.from({ length: 9 }, (_, index) => {
+  const prefix = String(index + 1)
+  return [...LOWERCASE_LETTERS, ...UPPERCASE_LETTERS].map((letter) => `${prefix}${letter}`)
+}).flat()
+const COLOR_SYMBOLS = [...GRAPHIC_SYMBOLS, ...UPPERCASE_LETTERS, ...LOWERCASE_LETTERS, ...NUMBER_SYMBOLS, ...PREFIXED_LETTERS]
 
 export type DescriptiveColorName = 'black' | 'gray' | 'white' | 'red' | 'orange' | 'yellow' | 'lime' | 'green' | 'teal' | 'turquoise' | 'cyan' | 'blue' | 'indigo' | 'purple' | 'magenta' | 'mauve' | 'pink' | 'brown' | 'beige'
 export type DescriptiveColorTone = 'dark' | 'light' | 'muted' | 'vivid'
@@ -55,7 +60,7 @@ export function colorSymbolMap(colors: string[]): Record<string, string> {
   let symbolIndex = 0
   for (const color of colors) {
     if (color.toLowerCase() === '#ffffff' || color in symbols) continue
-    symbols[color] = COLOR_SYMBOLS[symbolIndex] ?? String(symbolIndex + 1)
+    symbols[color] = COLOR_SYMBOLS[symbolIndex] ?? `#${symbolIndex - COLOR_SYMBOLS.length + 1}`
     symbolIndex += 1
   }
   return symbols
