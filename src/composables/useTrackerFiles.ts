@@ -6,7 +6,7 @@ import { appError } from '../utils/appError'
 
 function trackerFilename(name: string) {
   const safe = name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
-  return `${safe || 'my-pattern'}.stitch-tracker`
+  return `${safe || 'my-pattern'}-tracker.stitch-tracker`
 }
 
 export function downloadTracker(tracker: TrackerProject) {
