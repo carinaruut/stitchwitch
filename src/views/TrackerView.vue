@@ -447,9 +447,10 @@ function cancelActiveModal() {
     </header>
     <input
       ref="fileInput"
-      class="hidden"
+      class="sr-only"
       type="file"
-      accept=".stitch-pattern,.stitch-tracker,application/json"
+      tabindex="-1"
+      :aria-label="t('tracker.actions.openDesignOrTracker')"
       @change="selectFile"
     >
 

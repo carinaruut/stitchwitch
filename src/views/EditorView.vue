@@ -482,9 +482,10 @@ onBeforeUnmount(() => {
     />
     <input
       ref="fileInput"
-      class="hidden"
+      class="sr-only"
       type="file"
-      accept=".stitch-pattern,application/json"
+      tabindex="-1"
+      :aria-label="t('editor.nav.openProject')"
       @change="selectFile"
     >
 
