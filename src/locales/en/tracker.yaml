@@ -23,6 +23,7 @@ tracker:
     elapsed: 'Elapsed time: {time}'
     start: Start timer
     pause: Pause timer
+    reset: Reset timer
   autosave:
     failed: Autosave failed
     saving: Saving in browser

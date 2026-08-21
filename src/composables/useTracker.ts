@@ -124,6 +124,13 @@ export function useTracker() {
     changed()
   }
 
+  function resetTimer() {
+    if (!tracker.value) return
+    tracker.value.timer.elapsedMilliseconds = 0
+    tracker.value.timer.startedAt = null
+    changed()
+  }
+
   function downloadSnapshot(): TrackerProject {
     if (!tracker.value) throw new Error('No tracker is open')
     return {
@@ -172,6 +179,7 @@ export function useTracker() {
     resetProgress,
     startTimer,
     pauseTimer,
+    resetTimer,
     downloadSnapshot,
     markDownloaded,
     clearTracker,

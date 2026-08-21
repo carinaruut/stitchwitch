@@ -23,6 +23,7 @@ tracker:
     elapsed: 'Kulunud aeg: {time}'
     start: Käivita taimer
     pause: Peata taimer
+    reset: Lähtesta taimer
   autosave:
     failed: Automaatne salvestamine nurjus
     saving: Salvestamine brauserisse

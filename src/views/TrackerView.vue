@@ -573,9 +573,35 @@ function cancelActiveModal() {
               </div>
               <div class="flex flex-wrap items-center gap-2">
                 <div class="flex items-center gap-1 rounded-box border border-base-300 bg-base-200/60 p-1 pl-2">
-                  <time class="font-mono text-sm font-semibold tabular-nums" :aria-label="t('tracker.timer.elapsed', { time: formattedTime })">{{ formattedTime }}</time>
-                  <button class="btn btn-primary btn-square btn-sm" type="button" :aria-label="t(timerRunning ? 'tracker.timer.pause' : 'tracker.timer.start')" :title="t(timerRunning ? 'tracker.timer.pause' : 'tracker.timer.start')" @click="timerRunning ? state.pauseTimer() : state.startTimer()">
-                    <span class="mdi text-lg" :class="timerRunning ? 'mdi-pause' : 'mdi-play'" aria-hidden="true" />
+                  <time
+                    class="font-mono text-sm font-semibold tabular-nums"
+                    :aria-label="t('tracker.timer.elapsed', { time: formattedTime })"
+                  >{{ formattedTime }}</time>
+                  <button
+                    class="btn btn-primary btn-square btn-sm"
+                    type="button"
+                    :aria-label="t(timerRunning ? 'tracker.timer.pause' : 'tracker.timer.start')"
+                    :title="t(timerRunning ? 'tracker.timer.pause' : 'tracker.timer.start')"
+                    @click="timerRunning ? state.pauseTimer() : state.startTimer()"
+                  >
+                    <span
+                      class="mdi text-lg"
+                      :class="timerRunning ? 'mdi-pause' : 'mdi-play'"
+                      aria-hidden="true"
+                    />
+                  </button>
+                  <button
+                    class="btn btn-ghost btn-square btn-sm"
+                    type="button"
+                    :disabled="elapsedMilliseconds === 0"
+                    :aria-label="t('tracker.timer.reset')"
+                    :title="t('tracker.timer.reset')"
+                    @click="state.resetTimer()"
+                  >
+                    <span
+                      class="mdi mdi-restart text-lg"
+                      aria-hidden="true"
+                    />
                   </button>
                 </div>
                 <details class="dropdown dropdown-end">
@@ -729,7 +755,11 @@ function cancelActiveModal() {
             />
           </div>
         </section>
-        <ColorLegend v-if="renderedPattern" :cells="renderedPattern.cells" :completed-counts="completedColorCounts" />
+        <ColorLegend
+          v-if="renderedPattern"
+          :cells="renderedPattern.cells"
+          :completed-counts="completedColorCounts"
+        />
       </template>
     </main>
   </div>
