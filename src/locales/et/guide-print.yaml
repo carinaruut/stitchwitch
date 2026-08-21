@@ -49,7 +49,7 @@ guide:
     redo: tee uuesti
   selection:
     title: Valikutööriistad
-    intro: Vali valikutööriist ja lohista ristkülik, kasuta võlukeppi, et valida ühise servaga ühendatud sama värvi ruudud, või klõpsa tõstuklahvi all hoides kahte nummerdatud rea- või veerupäist, et valida kogu vahemik. Liigutamise, kopeerimise, kleepimise, pööramise, täitmise ja kustutamise toimingud leiad valiku sees paremklõpsates. Valikut saab ka otse liigutada, alustades lohistamist selle seest. Valikutööriistaga väljaspool valikut klõpsamine tühistab valiku.
+    intro: Vali valikutööriist ja lohista ristkülik, kasuta võlukeppi, et valida ühise servaga ühendatud sama värvi ruudud, või klõpsa tõstuklahvi all hoides kahte nummerdatud rea- või veerupäist, et valida kogu vahemik. Liigutamise, kopeerimise, kleepimise, peegeldamise, pööramise, täitmise ja kustutamise toimingud leiad valiku sees paremklõpsates. Valikut saab ka otse liigutada, alustades lohistamist selle seest. Valikutööriistaga väljaspool valikut klõpsamine tühistab valiku.
     copyTitle: Kopeeri
     copyText: Talletab valitud ruudud sisemisele lõikelauale.
     pasteTitle: Kleebi
@@ -58,7 +58,11 @@ guide:
     flipHorizontalText: Pöörab valiku vasakult paremale ümber.
     flipVerticalTitle: Pööra püstsuunas
     flipVerticalText: Pöörab valiku ülevalt alla ümber.
-    note: Kopeerimine, kleepimine, liigutamine ja pööramine arvestavad kordusalade lähteruutudega. Kleepida ja liigutada saab kuni 500 rea või veeru piires.
+    rotateClockwiseTitle: Pööra päripäeva
+    rotateClockwiseText: Pöörab valikut 90 kraadi päripäeva.
+    rotateCounterclockwiseTitle: Pööra vastupäeva
+    rotateCounterclockwiseText: Pöörab valikut 90 kraadi vastupäeva.
+    note: Kopeerimine, kleepimine, liigutamine, peegeldamine ja pööramine arvestavad kordusalade lähteruutudega. Ristkülikukujulise valiku pööramisel vahetuvad selle laius ja kõrgus ning lõuend võib suureneda. Kleepida, liigutada ja pöörata saab kuni 500 rea või veeru piires.
   mirrors:
     title: Reaalajas peegeldusjooned
     verticalTitle: Püstjoon

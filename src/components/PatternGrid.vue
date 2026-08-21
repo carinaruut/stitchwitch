@@ -5,7 +5,7 @@ import type { DrawingTool, GridSelection, PatternGrid } from '../types/pattern'
 import { contrastColor } from '../utils/colors'
 import { followsCenterBoundary, isCenterHeader, repeatOutlineColor, REPEAT_BOTTOM, REPEAT_COPY, REPEAT_LEFT, REPEAT_RIGHT, REPEAT_TOP } from '../utils/grid'
 
-type SelectionAction = 'move' | 'copy' | 'paste' | 'flip-horizontal' | 'flip-vertical' | 'fill' | 'erase'
+type SelectionAction = 'move' | 'copy' | 'paste' | 'flip-horizontal' | 'flip-vertical' | 'rotate-clockwise' | 'rotate-counterclockwise' | 'fill' | 'erase'
 
 const props = defineProps<{
   cells: PatternGrid
@@ -305,7 +305,7 @@ function openSelectionMenu(row: number, column: number, event: MouseEvent) {
   columnMenu.value = null
   selectionMenu.value = {
     x: Math.max(8, Math.min(event.clientX, window.innerWidth - 224)),
-    y: Math.max(8, Math.min(event.clientY, window.innerHeight - 296)),
+    y: Math.max(8, Math.min(event.clientY, window.innerHeight - 368)),
   }
 }
 
@@ -526,6 +526,30 @@ onBeforeUnmount(() => {
             class="mdi mdi-flip-vertical"
             aria-hidden="true"
           />{{ t('controls.patternGrid.flipVertical') }}
+        </button>
+      </li>
+      <li>
+        <button
+          type="button"
+          role="menuitem"
+          @click="runSelectionAction('rotate-clockwise')"
+        >
+          <span
+            class="mdi mdi-rotate-right"
+            aria-hidden="true"
+          />{{ t('controls.patternGrid.rotateClockwise') }}
+        </button>
+      </li>
+      <li>
+        <button
+          type="button"
+          role="menuitem"
+          @click="runSelectionAction('rotate-counterclockwise')"
+        >
+          <span
+            class="mdi mdi-rotate-left"
+            aria-hidden="true"
+          />{{ t('controls.patternGrid.rotateCounterclockwise') }}
         </button>
       </li>
       <li class="my-1 border-t border-base-300" />

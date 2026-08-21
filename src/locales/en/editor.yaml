@@ -2,6 +2,8 @@ editor:
   directions:
     horizontal: horizontally
     vertical: vertically
+    clockwise: clockwise
+    counterclockwise: counterclockwise
   status:
     error: Backup failed
     saving: Saving locally
@@ -65,6 +67,7 @@ editor:
     selectionCopied: Selection copied.
     selectionPasted: Selection pasted.
     selectionFlipped: Selection flipped {direction}.
+    selectionRotated: Selection rotated {direction}.
     selectionMoved: Selection moved.
     referenceColorPicked: Selected {color} from the reference photo.
     backupFailed: Local backup failed. Download the project to avoid losing changes.

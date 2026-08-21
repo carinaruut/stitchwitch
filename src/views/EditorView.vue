@@ -218,12 +218,14 @@ function handleColumnAction(action: 'before' | 'after' | 'multiple' | 'delete' |
   if (action === 'erase') pattern.eraseSelectedColumns()
 }
 
-function handleSelectionAction(action: 'move' | 'copy' | 'paste' | 'flip-horizontal' | 'flip-vertical' | 'fill' | 'erase') {
+function handleSelectionAction(action: 'move' | 'copy' | 'paste' | 'flip-horizontal' | 'flip-vertical' | 'rotate-clockwise' | 'rotate-counterclockwise' | 'fill' | 'erase') {
   if (action === 'move') startMoveSelection()
   if (action === 'copy') copySelection()
   if (action === 'paste') pasteSelection()
   if (action === 'flip-horizontal') mirrorSelection('horizontal')
   if (action === 'flip-vertical') mirrorSelection('vertical')
+  if (action === 'rotate-clockwise') rotateSelection('clockwise')
+  if (action === 'rotate-counterclockwise') rotateSelection('counterclockwise')
   if (action === 'fill') pattern.fillSelection(pattern.selectedColor.value)
   if (action === 'erase') pattern.eraseSelection()
 }
@@ -351,6 +353,11 @@ function startMoveSelection() {
 
 function mirrorSelection(direction: 'horizontal' | 'vertical') {
   if (pattern.mirrorSelection(direction)) notify(t('editor.notifications.selectionFlipped', { direction: t(`editor.directions.${direction}`) }), 'success')
+}
+
+function rotateSelection(direction: 'clockwise' | 'counterclockwise') {
+  if (pattern.rotateSelection(direction)) notify(t('editor.notifications.selectionRotated', { direction: t(`editor.directions.${direction}`) }), 'success')
+  else notify(t('editor.errors.selectionLimit'), 'error')
 }
 
 function toggleMirror(direction: 'horizontal' | 'vertical') {

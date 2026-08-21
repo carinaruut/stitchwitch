@@ -185,6 +185,8 @@ controls:
     pasteSelection: Kleebi valikusse
     flipHorizontal: Peegelda horisontaalselt
     flipVertical: Peegelda vertikaalselt
+    rotateClockwise: Pööra päripäeva
+    rotateCounterclockwise: Pööra vastupäeva
     fillSelection: Täida valik
     eraseSelection: Kustuta valik
     rowActions: Rea {number} toimingud

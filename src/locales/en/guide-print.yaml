@@ -49,7 +49,7 @@ guide:
     redo: Redo
   selection:
     title: Selection tools
-    intro: Choose Select and drag a rectangle, use Magic wand to select matching-color cells connected by shared edges, or Shift-click two numbered row or column headers to select the complete range. Right-click inside the selection for move, copy, paste, flip, fill, and erase actions. You can also drag from inside a selection to move it directly. Clicking outside with Select cancels the selection.
+    intro: Choose Select and drag a rectangle, use Magic wand to select matching-color cells connected by shared edges, or Shift-click two numbered row or column headers to select the complete range. Right-click inside the selection for move, copy, paste, flip, rotate, fill, and erase actions. You can also drag from inside a selection to move it directly. Clicking outside with Select cancels the selection.
     copyTitle: Copy
     copyText: Stores the selected cells in the internal clipboard.
     pasteTitle: Paste
@@ -58,7 +58,11 @@ guide:
     flipHorizontalText: Reverses the selection left to right.
     flipVerticalTitle: Flip vertically
     flipVerticalText: Reverses the selection top to bottom.
-    note: Copy, paste, move, and flip respect repeat-box source cells. Paste and move are limited to 500 rows or columns.
+    rotateClockwiseTitle: Rotate clockwise
+    rotateClockwiseText: Rotates the selection 90 degrees clockwise.
+    rotateCounterclockwiseTitle: Rotate counterclockwise
+    rotateCounterclockwiseText: Rotates the selection 90 degrees counterclockwise.
+    note: Copy, paste, move, flip, and rotate respect repeat-box source cells. Rectangular rotations swap the selection's width and height and may expand the canvas. Paste, move, and rotate are limited to 500 rows or columns.
   mirrors:
     title: Live mirror lines
     verticalTitle: Vertical line

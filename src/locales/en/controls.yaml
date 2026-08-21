@@ -185,6 +185,8 @@ controls:
     pasteSelection: Paste into selection
     flipHorizontal: Flip horizontally
     flipVertical: Flip vertically
+    rotateClockwise: Rotate clockwise
+    rotateCounterclockwise: Rotate counterclockwise
     fillSelection: Fill selection
     eraseSelection: Erase selection
     rowActions: Actions for row {number}

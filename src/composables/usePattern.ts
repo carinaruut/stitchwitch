@@ -391,6 +391,30 @@ export function usePattern() {
     return true
   }
 
+  function rotateSelection(direction: 'clockwise' | 'counterclockwise'): boolean {
+    if (!selection.value) return false
+    const source = { ...selection.value }
+    const copied = selectionClipboard(source)
+    const rotate = <T>(grid: T[][]): T[][] => Array.from({ length: grid[0].length }, (_, row) => (
+      Array.from({ length: grid.length }, (_, column) => direction === 'clockwise'
+        ? grid[grid.length - column - 1][row]
+        : grid[column][grid[0].length - row - 1])
+    ))
+    copied.cells = rotate(copied.cells)
+    if (copied.mask) copied.mask = rotate(copied.mask)
+    if (source.top + copied.cells.length > 500 || source.left + copied.cells[0].length > 500) return false
+
+    beginGridChange()
+    const next = cloneGrid(project.value.cells)
+    for (const [sourceRow, sourceColumn] of selectionCoordinates(source)) {
+      const [mappedRow, mappedColumn] = sourceCellFor(project.value.repeatBoxes, sourceRow, sourceColumn)
+      next[mappedRow][mappedColumn] = project.value.backgroundColor
+    }
+    project.value.cells = writeClipboard(next, copied.cells, source.top, source.left, copied.mask)
+    setClipboardSelection(source.top, source.left, copied)
+    return true
+  }
+
   function adjustBoxesForInsert(axis: 'row' | 'column', index: number, count: number, excludedIds: string[] = []) {
     for (const box of project.value.repeatBoxes) {
       if (excludedIds.includes(box.id)) continue
@@ -880,6 +904,7 @@ export function usePattern() {
     pasteSelection,
     moveSelectionTo,
     mirrorSelection,
+    rotateSelection,
     hasSelection: computed(() => selection.value !== null),
     hasClipboard: computed(() => clipboard.value !== null),
     saveRepeatBox,

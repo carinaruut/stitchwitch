@@ -203,7 +203,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleEscape))
             <p class="text-sm text-base-content/70">
               {{ t('guide.selection.intro') }}
             </p>
-            <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               <div class="rounded-box bg-base-200 p-3 text-sm">
                 <strong class="block">{{ t('guide.selection.copyTitle') }}</strong>{{ t('guide.selection.copyText') }}
               </div>
@@ -215,6 +215,12 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleEscape))
               </div>
               <div class="rounded-box bg-base-200 p-3 text-sm">
                 <strong class="block">{{ t('guide.selection.flipVerticalTitle') }}</strong>{{ t('guide.selection.flipVerticalText') }}
+              </div>
+              <div class="rounded-box bg-base-200 p-3 text-sm">
+                <strong class="block">{{ t('guide.selection.rotateClockwiseTitle') }}</strong>{{ t('guide.selection.rotateClockwiseText') }}
+              </div>
+              <div class="rounded-box bg-base-200 p-3 text-sm">
+                <strong class="block">{{ t('guide.selection.rotateCounterclockwiseTitle') }}</strong>{{ t('guide.selection.rotateCounterclockwiseText') }}
               </div>
             </div>
             <p class="mt-3 text-xs text-base-content/55">

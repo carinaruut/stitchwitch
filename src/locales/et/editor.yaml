@@ -2,6 +2,8 @@ editor:
   directions:
     horizontal: horisontaalselt
     vertical: vertikaalselt
+    clockwise: päripäeva
+    counterclockwise: vastupäeva
   status:
     error: Varundamine nurjus
     saving: Salvestamine brauserisse
@@ -65,6 +67,7 @@ editor:
     selectionCopied: Valik on kopeeritud.
     selectionPasted: Valik on kleebitud.
     selectionFlipped: Valik peegeldati {direction}.
+    selectionRotated: Valikut pöörati {direction}.
     selectionMoved: Valik on teisaldatud.
     referenceColorPicked: Viitepildilt valiti värv {color}.
     backupFailed: Kohalik varundamine nurjus. Muudatuste kaotsimineku vältimiseks laadi projekt alla.
