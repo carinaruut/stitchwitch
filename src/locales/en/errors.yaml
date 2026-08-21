@@ -26,6 +26,8 @@ tracker:
   unsupportedFile: This is not a supported stitch-tracker file.
   progressMissing: The tracker progress is missing.
   completedCount: The completed stitch count is invalid.
+  completedCells: The individually completed stitches are invalid.
+  completionMode: The tracker marking mode is invalid.
   startRow: The tracker start row is invalid.
   rowDirection: The tracker row direction is invalid.
   alternateRows: The tracker row alternation setting is invalid.

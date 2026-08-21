@@ -11,11 +11,11 @@ import { useTheme } from '../composables/useTheme'
 import { useTracker } from '../composables/useTracker'
 import { downloadTracker, readTrackerInput } from '../composables/useTrackerFiles'
 import type { PatternDisplay, PatternProject } from '../types/pattern'
-import type { TrackerDirection, TrackerPreferences, TrackerProject, TrackerStartRow } from '../types/tracker'
+import type { TrackerCompletionMode, TrackerDirection, TrackerPreferences, TrackerProject, TrackerStartRow } from '../types/tracker'
 import { localizedErrorMessage } from '../utils/appError'
 import { colorSymbolMap } from '../utils/colors'
 import { renderGrid } from '../utils/grid'
-import { MAX_TRACKER_STITCHES, renderedDimensions, stitchOrdinal, trackerElapsedMilliseconds } from '../utils/tracker'
+import { isStitchCompleted, MAX_TRACKER_STITCHES, renderedDimensions, trackerElapsedMilliseconds } from '../utils/tracker'
 
 const TRACKER_PREFERENCES_KEY = 'stitch-tracker-preferences'
 
@@ -77,7 +77,7 @@ const completedColorCounts = computed(() => {
   const rows = pattern.cells.length
   const columns = pattern.cells[0].length
   pattern.cells.forEach((row, rowIndex) => row.forEach((color, columnIndex) => {
-    if (stitchOrdinal(rowIndex, columnIndex, rows, columns, progress) >= progress.completedCount) return
+    if (!isStitchCompleted(rowIndex, columnIndex, rows, columns, progress)) return
     counts[color] = (counts[color] ?? 0) + 1
   }))
   return counts
@@ -196,6 +196,10 @@ function changeDirection(event: Event) {
 function changeAlternation(event: Event) {
   if (!state.tracker.value) return
   state.setOrder(state.tracker.value.progress.startRow, state.tracker.value.progress.firstRowDirection, (event.target as HTMLInputElement).checked)
+}
+
+function changeCompletionMode(event: Event) {
+  state.setCompletionMode((event.target as HTMLSelectElement).value as TrackerCompletionMode)
 }
 
 async function requestWakeLock() {
@@ -556,6 +560,18 @@ function cancelActiveModal() {
           <div class="card-body gap-4 p-3 sm:p-5">
             <div class="flex flex-wrap items-end justify-between gap-3">
               <div class="flex flex-wrap items-end gap-3">
+                <label class="form-control w-48">
+                  <span class="label py-1 text-xs font-semibold">{{ t('tracker.mode.label') }}</span>
+                  <select
+                    class="select select-bordered select-sm"
+                    :value="state.tracker.value.progress.completionMode"
+                    :disabled="state.completedCount.value > 0"
+                    @change="changeCompletionMode"
+                  >
+                    <option value="sequential">{{ t('tracker.mode.sequential') }}</option>
+                    <option value="individual">{{ t('tracker.mode.individual') }}</option>
+                  </select>
+                </label>
                 <label class="form-control w-40">
                   <span class="label py-1 text-xs font-semibold">{{ t('tracker.order.startRow') }}</span>
                   <select
@@ -770,7 +786,7 @@ function cancelActiveModal() {
               {{ t('tracker.instructions.resetOrder') }}
             </p>
             <p class="text-sm text-base-content/65">
-              {{ t('tracker.instructions.usage') }}
+              {{ t(state.tracker.value.progress.completionMode === 'individual' ? 'tracker.instructions.individualUsage' : 'tracker.instructions.usage') }}
             </p>
 
             <div

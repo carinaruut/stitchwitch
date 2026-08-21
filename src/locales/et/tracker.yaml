@@ -43,6 +43,10 @@ tracker:
     leftToRight: Vasakult paremale
     rightToLeft: Paremalt vasakule
     alternate: Vaheta suunda igal real
+  mode:
+    label: Märkimisviis
+    sequential: Märgi valitud pisteni tehtuks
+    individual: Lülita üksikuid pisteid
   controls:
     settings: Seaded
     display: Vaade
@@ -58,8 +62,9 @@ tracker:
     fullscreen: Ava täisekraan
     exitFullscreen: Välju täisekraanilt
   instructions:
-    resetOrder: Jälgimisjärjekorra muutmiseks lähtesta edenemine.
+    resetOrder: Märkimisviisi või jälgimisjärjekorra muutmiseks lähtesta edenemine.
     usage: Kõigi pistete märkimiseks kuni valitud pisteni klõpsa pistet. Kogu rea lõpetamiseks või taasavamiseks klõpsa rea numbrit.
+    individualUsage: Ainult ühe piste märkimiseks klõpsa seda pistet. Kogu rea lõpetamiseks või taasavamiseks klõpsa rea numbrit.
   notifications:
     trackerOpened: Tööjärg avatud.
     designOpened: Kavand avatud. Enne alustamist vali jälgimisjärjekord.
@@ -93,6 +98,7 @@ tracker:
   grid:
     label: Mustri edenemise jälgija
     reopenRow: Ava rida {row} uuesti
+    completeRow: Märgi rida {row} tehtuks
     completeThroughRow: Märgi kuni reani {row} tehtuks
     cell: 'Rida {row}, veerg {column}, {status}'
     completed: tehtud

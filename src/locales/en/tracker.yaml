@@ -43,6 +43,10 @@ tracker:
     leftToRight: Left to right
     rightToLeft: Right to left
     alternate: Alternate direction each row
+  mode:
+    label: Marking mode
+    sequential: Complete through selected cell
+    individual: Toggle individual cells
   controls:
     settings: Settings
     display: Display
@@ -58,8 +62,9 @@ tracker:
     fullscreen: Enter fullscreen
     exitFullscreen: Exit fullscreen
   instructions:
-    resetOrder: Reset progress to change the tracking order.
+    resetOrder: Reset progress to change the marking mode or tracking order.
     usage: Click a stitch to complete everything through it. Click a row number to complete or reopen that entire row.
+    individualUsage: Click a stitch to toggle only that stitch. Click a row number to complete or reopen that entire row.
   notifications:
     trackerOpened: Tracker progress opened.
     designOpened: Design opened. Choose the tracking order before starting.
@@ -93,6 +98,7 @@ tracker:
   grid:
     label: Pattern progress tracker
     reopenRow: Reopen row {row}
+    completeRow: Complete row {row}
     completeThroughRow: Complete through row {row}
     cell: 'Row {row}, column {column}, {status}'
     completed: completed

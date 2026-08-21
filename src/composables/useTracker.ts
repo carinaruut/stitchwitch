@@ -1,6 +1,6 @@
 import { computed, ref } from 'vue'
 import type { PatternProject } from '../types/pattern'
-import type { TrackerDirection, TrackerPreferences, TrackerProgress, TrackerProject, TrackerStartRow } from '../types/tracker'
+import type { TrackerCompletionMode, TrackerDirection, TrackerPreferences, TrackerProgress, TrackerProject, TrackerStartRow } from '../types/tracker'
 import { asTrackerProject, createTracker, rowCompletionRange, stitchOrdinal, trackerElapsedMilliseconds, trackerTotal } from '../utils/tracker'
 
 const STORAGE_KEY = 'stitch-tracker-autosave'
@@ -15,6 +15,8 @@ type ProgressSnapshot = Omit<TrackerProgress, 'updatedAt'>
 function progressSnapshot(progress: TrackerProgress): ProgressSnapshot {
   return {
     completedCount: progress.completedCount,
+    completedCells: [...progress.completedCells],
+    completionMode: progress.completionMode,
     startRow: progress.startRow,
     firstRowDirection: progress.firstRowDirection,
     alternateRows: progress.alternateRows,
@@ -47,7 +49,11 @@ export function useTracker() {
   const redoStack = ref<ProgressSnapshot[]>([])
   let autosaveTimer: ReturnType<typeof setTimeout> | null = null
 
-  const completedCount = computed(() => tracker.value?.progress.completedCount ?? 0)
+  const completedCount = computed(() => {
+    const progress = tracker.value?.progress
+    if (!progress) return 0
+    return progress.completionMode === 'individual' ? progress.completedCells.length : progress.completedCount
+  })
   const totalCount = computed(() => tracker.value ? trackerTotal(tracker.value.pattern) : 0)
   const canUndo = computed(() => undoStack.value.length > 0)
   const canRedo = computed(() => redoStack.value.length > 0)
@@ -123,8 +129,26 @@ export function useTracker() {
     changed()
   }
 
+  function setCompletionMode(mode: TrackerCompletionMode) {
+    if (!tracker.value || completedCount.value > 0 || tracker.value.progress.completionMode === mode) return
+    recordProgress()
+    tracker.value.progress.completionMode = mode
+    tracker.value.progress.completedCount = 0
+    tracker.value.progress.completedCells = []
+    changed()
+  }
+
   function selectStitch(row: number, column: number, rows: number, columns: number) {
     if (!tracker.value) return
+    if (tracker.value.progress.completionMode === 'individual') {
+      const cell = row * columns + column
+      recordProgress()
+      tracker.value.progress.completedCells = tracker.value.progress.completedCells.includes(cell)
+        ? tracker.value.progress.completedCells.filter((completed) => completed !== cell)
+        : [...tracker.value.progress.completedCells, cell].sort((a, b) => a - b)
+      changed()
+      return
+    }
     const ordinal = stitchOrdinal(row, column, rows, columns, tracker.value.progress)
     recordProgress()
     tracker.value.progress.completedCount = completedCount.value === ordinal + 1 ? ordinal : ordinal + 1
@@ -133,6 +157,17 @@ export function useTracker() {
 
   function selectRow(row: number, rows: number, columns: number) {
     if (!tracker.value) return
+    if (tracker.value.progress.completionMode === 'individual') {
+      const firstCell = row * columns
+      const rowCells = Array.from({ length: columns }, (_, column) => firstCell + column)
+      const completed = new Set(tracker.value.progress.completedCells)
+      const rowIsComplete = rowCells.every((cell) => completed.has(cell))
+      recordProgress()
+      rowCells.forEach((cell) => rowIsComplete ? completed.delete(cell) : completed.add(cell))
+      tracker.value.progress.completedCells = [...completed].sort((a, b) => a - b)
+      changed()
+      return
+    }
     const range = rowCompletionRange(row, rows, columns, tracker.value.progress.startRow)
     recordProgress()
     tracker.value.progress.completedCount = completedCount.value >= range.through ? range.before : range.through
@@ -143,6 +178,7 @@ export function useTracker() {
     if (!tracker.value || completedCount.value === 0) return
     recordProgress()
     tracker.value.progress.completedCount = 0
+    tracker.value.progress.completedCells = []
     changed()
   }
 
@@ -233,6 +269,7 @@ export function useTracker() {
     openPattern,
     openTracker,
     setPreferences,
+    setCompletionMode,
     setOrder,
     selectStitch,
     selectRow,

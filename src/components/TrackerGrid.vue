@@ -5,7 +5,7 @@ import type { PatternDisplay, PatternGrid } from '../types/pattern'
 import type { TrackerProgress } from '../types/tracker'
 import { contrastColor } from '../utils/colors'
 import { followsCenterBoundary, isCenterHeader, repeatOutlineColor, REPEAT_COPY } from '../utils/grid'
-import { rowCompletionRange, stitchOrdinal } from '../utils/tracker'
+import { isStitchCompleted, rowCompletionRange, stitchOrdinal } from '../utils/tracker'
 
 const props = defineProps<{
   cells: PatternGrid
@@ -61,7 +61,18 @@ function ordinal(row: number, column: number) {
 }
 
 function rowComplete(row: number) {
+  if (props.progress.completionMode === 'individual') {
+    return props.cells[row].every((_, column) => isStitchCompleted(row, column, props.cells.length, props.cells[0].length, props.progress))
+  }
   return props.progress.completedCount >= rowCompletionRange(row, props.cells.length, props.cells[0].length, props.progress.startRow).through
+}
+
+function cellComplete(row: number, column: number) {
+  return isStitchCompleted(row, column, props.cells.length, props.cells[0].length, props.progress)
+}
+
+function nextStitch(row: number, column: number) {
+  return props.progress.completionMode === 'sequential' && ordinal(row, column) === props.progress.completedCount
 }
 
 function rowDirection(row: number) {
@@ -125,7 +136,7 @@ function scrollAfterStitch(row: number, column: number) {
 }
 
 function selectStitch(row: number, column: number) {
-  const movesProgressForward = ordinal(row, column) >= props.progress.completedCount
+  const movesProgressForward = props.progress.completionMode === 'sequential' && ordinal(row, column) >= props.progress.completedCount
   emit('stitch', row, column)
   if (props.autoScroll && movesProgressForward) void nextTick(() => scrollAfterStitch(row, column))
 }
@@ -221,7 +232,7 @@ function moveRowHeader(row: number, event: KeyboardEvent) {
             role="rowheader"
             aria-colindex="1"
             :tabindex="activeRowHeader === rowIndex ? 0 : -1"
-            :aria-label="rowComplete(rowIndex) ? t('tracker.grid.reopenRow', { row: rowHeaders[rowIndex] + 1 }) : t('tracker.grid.completeThroughRow', { row: rowHeaders[rowIndex] + 1 })"
+            :aria-label="rowComplete(rowIndex) ? t('tracker.grid.reopenRow', { row: rowHeaders[rowIndex] + 1 }) : t(progress.completionMode === 'individual' ? 'tracker.grid.completeRow' : 'tracker.grid.completeThroughRow', { row: rowHeaders[rowIndex] + 1 })"
             @focus="activeRowHeader = rowIndex"
             @click="$emit('row', rowIndex)"
             @keydown="moveRowHeader(rowIndex, $event)"
@@ -236,8 +247,8 @@ function moveRowHeader(row: number, event: KeyboardEvent) {
             class="pattern-cell tracker-cell relative"
             :class="{
               'bg-transparent': display !== 'canvas',
-              'tracker-cell-complete': ordinal(rowIndex, columnIndex) < progress.completedCount,
-              'tracker-cell-next': ordinal(rowIndex, columnIndex) === progress.completedCount,
+              'tracker-cell-complete': cellComplete(rowIndex, columnIndex),
+              'tracker-cell-next': nextStitch(rowIndex, columnIndex),
               'section-column-end': (columnHeaders[columnIndex] + 1) % 5 === 0 && columnIndex < row.length - 1,
               'section-row-end': (rowHeaders[rowIndex] + 1) % 5 === 0 && rowIndex < cells.length - 1,
               'repeat-copy-cell': (repeatFlags[rowIndex][columnIndex] & REPEAT_COPY) !== 0,
@@ -248,8 +259,8 @@ function moveRowHeader(row: number, event: KeyboardEvent) {
             :aria-rowindex="rowIndex + 2"
             :aria-colindex="columnIndex + 2"
             :tabindex="activeCell.row === rowIndex && activeCell.column === columnIndex ? 0 : -1"
-            :aria-selected="ordinal(rowIndex, columnIndex) < progress.completedCount"
-            :aria-label="t('tracker.grid.cell', { row: rowHeaders[rowIndex] + 1, column: columnHeaders[columnIndex] + 1, status: ordinal(rowIndex, columnIndex) < progress.completedCount ? t('tracker.grid.completed') : ordinal(rowIndex, columnIndex) === progress.completedCount ? t('tracker.grid.nextStitch') : t('tracker.grid.notCompleted') })"
+            :aria-selected="cellComplete(rowIndex, columnIndex)"
+            :aria-label="t('tracker.grid.cell', { row: rowHeaders[rowIndex] + 1, column: columnHeaders[columnIndex] + 1, status: cellComplete(rowIndex, columnIndex) ? t('tracker.grid.completed') : nextStitch(rowIndex, columnIndex) ? t('tracker.grid.nextStitch') : t('tracker.grid.notCompleted') })"
             @focus="activeCell = { row: rowIndex, column: columnIndex }"
             @click="selectStitch(rowIndex, columnIndex)"
             @keydown="moveCell(rowIndex, columnIndex, $event)"

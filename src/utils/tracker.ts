@@ -30,6 +30,8 @@ export function createTracker(pattern: PatternProject, preferences?: TrackerPref
     pattern: asPatternProject(pattern),
     progress: {
       completedCount: 0,
+      completedCells: [],
+      completionMode: 'sequential',
       startRow: 'top',
       firstRowDirection: 'left-to-right',
       alternateRows: false,
@@ -50,6 +52,12 @@ export function asTrackerProject(value: unknown): TrackerProject {
   const total = trackerTotal(pattern)
   if (!Number.isInteger(progress.completedCount) || (progress.completedCount as number) < 0 || (progress.completedCount as number) > total) {
     throw appError('tracker.completedCount')
+  }
+  const completionMode = progress.completionMode === undefined ? 'sequential' : progress.completionMode
+  if (completionMode !== 'sequential' && completionMode !== 'individual') throw appError('tracker.completionMode')
+  const completedCells = progress.completedCells === undefined ? [] : progress.completedCells
+  if (!Array.isArray(completedCells) || completedCells.some((cell) => !Number.isInteger(cell) || cell < 0 || cell >= total) || new Set(completedCells).size !== completedCells.length) {
+    throw appError('tracker.completedCells')
   }
   if (progress.startRow !== 'top' && progress.startRow !== 'bottom') throw appError('tracker.startRow')
   if (progress.firstRowDirection !== 'left-to-right' && progress.firstRowDirection !== 'right-to-left') {
@@ -74,6 +82,8 @@ export function asTrackerProject(value: unknown): TrackerProject {
     pattern,
     progress: {
       completedCount: progress.completedCount as number,
+      completedCells: (completedCells as number[]).slice().sort((a, b) => a - b),
+      completionMode,
       startRow: progress.startRow,
       firstRowDirection: progress.firstRowDirection,
       alternateRows: progress.alternateRows,
@@ -96,6 +106,11 @@ export function stitchOrdinal(row: number, column: number, rows: number, columns
   const direction = rowDirection(logicalRow, progress.firstRowDirection, progress.alternateRows)
   const logicalColumn = direction === 'left-to-right' ? column : columns - column - 1
   return logicalRow * columns + logicalColumn
+}
+
+export function isStitchCompleted(row: number, column: number, rows: number, columns: number, progress: TrackerProgress) {
+  if (progress.completionMode === 'individual') return progress.completedCells.includes(row * columns + column)
+  return stitchOrdinal(row, column, rows, columns, progress) < progress.completedCount
 }
 
 export function rowCompletionRange(row: number, rows: number, columns: number, startRow: TrackerStartRow) {

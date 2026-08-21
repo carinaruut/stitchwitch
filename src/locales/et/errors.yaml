@@ -26,6 +26,8 @@ tracker:
   unsupportedFile: See fail ei ole toetatud stitch-tracker-vormingus.
   progressMissing: Rea jälgimise edenemisandmed puuduvad.
   completedCount: Lõpetatud pistete arv ei sobi.
+  completedCells: Üksikult lõpetatud pisted ei sobi.
+  completionMode: Tööjärje märkimisviis ei sobi.
   startRow: Rea jälgimise algusrida ei sobi.
   rowDirection: Rea jälgimise suund ei sobi.
   alternateRows: Ridade vahelduva suuna seade ei sobi.
