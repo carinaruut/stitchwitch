@@ -18,6 +18,7 @@ editor:
     oneStitch: '{count} piste'
     stitches: '{count} pistet'
     entryLabel: 'Värv {color}: {stitches}'
+    progress: '{done}/{total} pistet'
   print:
     button: Laadi alla
     canvasPng: Lõuend PNG-failina

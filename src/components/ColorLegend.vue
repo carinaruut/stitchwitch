@@ -4,10 +4,11 @@ import { useI18n } from 'vue-i18n'
 import type { PatternGrid } from '../types/pattern'
 import { countColors } from '../utils/grid'
 
-const props = defineProps<{ cells: PatternGrid }>()
+const props = defineProps<{ cells: PatternGrid; completedCounts?: Record<string, number> }>()
 const { n, t } = useI18n({ useScope: 'global' })
 const entries = computed(() => countColors(props.cells))
 const total = computed(() => props.cells.reduce((count, row) => count + row.length, 0))
+const completedTotal = computed(() => Object.values(props.completedCounts ?? {}).reduce((count, value) => count + value, 0))
 
 function stitchCount(count: number) {
   return t(count === 1 ? 'editor.legend.oneStitch' : 'editor.legend.stitches', { count: n(count, 'integer') })
@@ -15,6 +16,10 @@ function stitchCount(count: number) {
 
 function totalCount(count: number) {
   return t(count === 1 ? 'editor.legend.oneTotal' : 'editor.legend.total', { count: n(count, 'integer') })
+}
+
+function progressCount(done: number, count: number) {
+  return t('editor.legend.progress', { done: n(done, 'integer'), total: n(count, 'integer') })
 }
 </script>
 
@@ -31,14 +36,14 @@ function totalCount(count: number) {
         >
           {{ t('editor.legend.title') }}
         </h2>
-        <span class="badge badge-outline">{{ totalCount(total) }}</span>
+        <span class="badge badge-outline">{{ completedCounts ? progressCount(completedTotal, total) : totalCount(total) }}</span>
       </div>
       <ul class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         <li
           v-for="entry in entries"
           :key="entry.color"
           class="flex items-center gap-3 rounded-box border border-base-300 bg-base-200/50 px-3 py-2"
-          :aria-label="t('editor.legend.entryLabel', { color: entry.color.toUpperCase(), stitches: stitchCount(entry.count) })"
+          :aria-label="t('editor.legend.entryLabel', { color: entry.color.toUpperCase(), stitches: completedCounts ? progressCount(completedCounts[entry.color] ?? 0, entry.count) : stitchCount(entry.count) })"
         >
           <span
             class="size-7 shrink-0 rounded-md border border-base-content/25 shadow-sm"
@@ -46,7 +51,7 @@ function totalCount(count: number) {
             aria-hidden="true"
           />
           <code class="min-w-0 text-xs font-semibold">{{ entry.color.toUpperCase() }}</code>
-          <span class="ml-auto whitespace-nowrap text-sm tabular-nums text-base-content/70">{{ stitchCount(entry.count) }}</span>
+          <span class="ml-auto whitespace-nowrap text-sm tabular-nums text-base-content/70">{{ completedCounts ? progressCount(completedCounts[entry.color] ?? 0, entry.count) : stitchCount(entry.count) }}</span>
         </li>
       </ul>
     </div>

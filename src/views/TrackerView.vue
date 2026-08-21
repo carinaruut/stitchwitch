@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { onBeforeRouteLeave, RouterLink } from 'vue-router'
 import LanguageSwitcher from '../components/LanguageSwitcher.vue'
 import ThemeToggle from '../components/ThemeToggle.vue'
+import ColorLegend from '../components/ColorLegend.vue'
 import TrackerGrid from '../components/TrackerGrid.vue'
 import { useNotifications } from '../composables/useNotifications'
 import { useTheme } from '../composables/useTheme'
@@ -14,7 +15,7 @@ import type { TrackerDirection, TrackerPreferences, TrackerProject, TrackerStart
 import { localizedErrorMessage } from '../utils/appError'
 import { colorSymbolMap } from '../utils/colors'
 import { renderGrid } from '../utils/grid'
-import { MAX_TRACKER_STITCHES, renderedDimensions, trackerElapsedMilliseconds } from '../utils/tracker'
+import { MAX_TRACKER_STITCHES, renderedDimensions, stitchOrdinal, trackerElapsedMilliseconds } from '../utils/tracker'
 
 const TRACKER_PREFERENCES_KEY = 'stitch-tracker-preferences'
 
@@ -68,6 +69,19 @@ const renderedPattern = computed(() => {
   return renderGrid(pattern.cells, pattern.horizontalRepeats, pattern.verticalRepeats, pattern.repeatBoxes)
 })
 const trackerSymbolMap = computed(() => showSymbols.value && renderedPattern.value ? colorSymbolMap(renderedPattern.value.cells.flat()) : undefined)
+const completedColorCounts = computed(() => {
+  const pattern = renderedPattern.value
+  const progress = state.tracker.value?.progress
+  if (!pattern || !progress) return {}
+  const counts: Record<string, number> = {}
+  const rows = pattern.cells.length
+  const columns = pattern.cells[0].length
+  pattern.cells.forEach((row, rowIndex) => row.forEach((color, columnIndex) => {
+    if (stitchOrdinal(rowIndex, columnIndex, rows, columns, progress) >= progress.completedCount) return
+    counts[color] = (counts[color] ?? 0) + 1
+  }))
+  return counts
+})
 const percentage = computed(() => state.totalCount.value === 0 ? 0 : Math.round((state.completedCount.value / state.totalCount.value) * 100))
 const timerRunning = computed(() => state.tracker.value?.timer.startedAt != null)
 const elapsedMilliseconds = computed(() => state.tracker.value ? trackerElapsedMilliseconds(state.tracker.value.timer, timerNow.value) : 0)
@@ -715,6 +729,7 @@ function cancelActiveModal() {
             />
           </div>
         </section>
+        <ColorLegend v-if="renderedPattern" :cells="renderedPattern.cells" :completed-counts="completedColorCounts" />
       </template>
     </main>
   </div>
