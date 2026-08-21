@@ -11,6 +11,11 @@ export interface TrackerProgress {
   updatedAt: string
 }
 
+export interface TrackerTimer {
+  elapsedMilliseconds: number
+  startedAt: string | null
+}
+
 export interface TrackerPreferences {
   display: PatternDisplay
   cellSize: number
@@ -24,5 +29,6 @@ export interface TrackerProject {
   version: 1
   pattern: PatternProject
   progress: TrackerProgress
+  timer: TrackerTimer
   preferences?: TrackerPreferences
 }

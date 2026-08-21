@@ -19,6 +19,10 @@ tracker:
     completed: '{completed} pistet {total}-st tehtud'
     percentComplete: '{percentage} tehtud'
     updated: Uuendatud {date}
+  timer:
+    elapsed: 'Kulunud aeg: {time}'
+    start: Käivita taimer
+    pause: Peata taimer
   autosave:
     failed: Automaatne salvestamine nurjus
     saving: Salvestamine brauserisse

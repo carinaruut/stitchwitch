@@ -30,6 +30,7 @@ tracker:
   rowDirection: Rea jälgimise suund ei sobi.
   alternateRows: Ridade vahelduva suuna seade ei sobi.
   updatedAt: Rea jälgimise uuendamise aeg ei sobi.
+  timer: Rea jälgimise taimer ei sobi.
 files:
   projectTooLarge: Projektifail on liiga suur.
   selectedTooLarge: Valitud fail on liiga suur.

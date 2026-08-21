@@ -1,7 +1,7 @@
 import { computed, ref } from 'vue'
 import type { PatternProject } from '../types/pattern'
 import type { TrackerDirection, TrackerPreferences, TrackerProject, TrackerStartRow } from '../types/tracker'
-import { asTrackerProject, createTracker, rowCompletionRange, stitchOrdinal, trackerTotal } from '../utils/tracker'
+import { asTrackerProject, createTracker, rowCompletionRange, stitchOrdinal, trackerElapsedMilliseconds, trackerTotal } from '../utils/tracker'
 
 const STORAGE_KEY = 'stitch-tracker-autosave'
 
@@ -111,8 +111,32 @@ export function useTracker() {
     changed()
   }
 
+  function startTimer() {
+    if (!tracker.value || tracker.value.timer.startedAt) return
+    tracker.value.timer.startedAt = new Date().toISOString()
+    changed()
+  }
+
+  function pauseTimer() {
+    if (!tracker.value?.timer.startedAt) return
+    tracker.value.timer.elapsedMilliseconds = trackerElapsedMilliseconds(tracker.value.timer)
+    tracker.value.timer.startedAt = null
+    changed()
+  }
+
+  function downloadSnapshot(): TrackerProject {
+    if (!tracker.value) throw new Error('No tracker is open')
+    return {
+      ...tracker.value,
+      timer: {
+        elapsedMilliseconds: trackerElapsedMilliseconds(tracker.value.timer),
+        startedAt: null,
+      },
+    }
+  }
+
   function markDownloaded() {
-    backupNeeded.value = false
+    backupNeeded.value = tracker.value?.timer.startedAt !== null
     flushAutosave()
   }
 
@@ -146,6 +170,9 @@ export function useTracker() {
     selectStitch,
     selectRow,
     resetProgress,
+    startTimer,
+    pauseTimer,
+    downloadSnapshot,
     markDownloaded,
     clearTracker,
     flushAutosave,

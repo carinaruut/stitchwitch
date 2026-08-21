@@ -1,5 +1,5 @@
 import type { PatternProject } from '../types/pattern'
-import type { TrackerDirection, TrackerPreferences, TrackerProgress, TrackerProject, TrackerStartRow } from '../types/tracker'
+import type { TrackerDirection, TrackerPreferences, TrackerProgress, TrackerProject, TrackerStartRow, TrackerTimer } from '../types/tracker'
 import { asPatternProject } from './validation'
 import { appError } from './appError'
 
@@ -18,6 +18,11 @@ export function trackerTotal(pattern: PatternProject) {
   return dimensions.rows * dimensions.columns
 }
 
+export function trackerElapsedMilliseconds(timer: TrackerTimer, now = Date.now()) {
+  if (!timer.startedAt) return timer.elapsedMilliseconds
+  return timer.elapsedMilliseconds + Math.max(0, now - Date.parse(timer.startedAt))
+}
+
 export function createTracker(pattern: PatternProject, preferences?: TrackerPreferences): TrackerProject {
   return {
     format: 'stitch-tracker',
@@ -30,6 +35,7 @@ export function createTracker(pattern: PatternProject, preferences?: TrackerPref
       alternateRows: false,
       updatedAt: new Date().toISOString(),
     },
+    timer: { elapsedMilliseconds: 0, startedAt: null },
     ...(preferences ? { preferences: { ...preferences } } : {}),
   }
 }
@@ -51,6 +57,10 @@ export function asTrackerProject(value: unknown): TrackerProject {
   }
   if (typeof progress.alternateRows !== 'boolean') throw appError('tracker.alternateRows')
   if (typeof progress.updatedAt !== 'string' || Number.isNaN(Date.parse(progress.updatedAt))) throw appError('tracker.updatedAt')
+  const timer = source.timer as Partial<TrackerTimer> | undefined
+  if (timer !== undefined && (!Number.isSafeInteger(timer.elapsedMilliseconds) || timer.elapsedMilliseconds! < 0 || (timer.startedAt !== null && (typeof timer.startedAt !== 'string' || Number.isNaN(Date.parse(timer.startedAt)))))) {
+    throw appError('tracker.timer')
+  }
   const preferences = source.preferences as Partial<TrackerPreferences> | undefined
   const validPreferences = preferences
     && (preferences.display === 'canvas' || preferences.display === 'knit' || preferences.display === 'cross-stitch' || preferences.display === 'single-crochet')
@@ -69,6 +79,9 @@ export function asTrackerProject(value: unknown): TrackerProject {
       alternateRows: progress.alternateRows,
       updatedAt: progress.updatedAt,
     },
+    timer: timer === undefined
+      ? { elapsedMilliseconds: 0, startedAt: null }
+      : { elapsedMilliseconds: timer.elapsedMilliseconds!, startedAt: timer.startedAt ?? null },
     ...(validPreferences ? { preferences: validPreferences } : {}),
   }
 }

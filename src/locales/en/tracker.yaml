@@ -19,6 +19,10 @@ tracker:
     completed: '{completed} of {total} stitches completed'
     percentComplete: '{percentage} complete'
     updated: Updated {date}
+  timer:
+    elapsed: 'Elapsed time: {time}'
+    start: Start timer
+    pause: Pause timer
   autosave:
     failed: Autosave failed
     saving: Saving in browser

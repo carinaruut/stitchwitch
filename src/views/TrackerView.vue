@@ -14,7 +14,7 @@ import type { TrackerDirection, TrackerPreferences, TrackerProject, TrackerStart
 import { localizedErrorMessage } from '../utils/appError'
 import { colorSymbolMap } from '../utils/colors'
 import { renderGrid } from '../utils/grid'
-import { MAX_TRACKER_STITCHES, renderedDimensions } from '../utils/tracker'
+import { MAX_TRACKER_STITCHES, renderedDimensions, trackerElapsedMilliseconds } from '../utils/tracker'
 
 const TRACKER_PREFERENCES_KEY = 'stitch-tracker-preferences'
 
@@ -54,9 +54,11 @@ const showSymbols = ref(savedPreferences.showSymbols ?? false)
 const wakeLockSupported = typeof navigator !== 'undefined' && 'wakeLock' in navigator
 const fullscreenSupported = typeof document !== 'undefined' && document.fullscreenEnabled
 const trackerFullscreen = ref(false)
+const timerNow = ref(Date.now())
 let wakeLock: WakeLockSentinel | null = null
 let wakeLockRequestPending = false
 let hasCellSizePreference = state.tracker.value?.preferences?.cellSize !== undefined || browserPreferences.cellSize !== undefined
+let timerFrame: number | null = null
 
 const dimensions = computed(() => state.tracker.value ? renderedDimensions(state.tracker.value.pattern) : null)
 const tooLarge = computed(() => dimensions.value ? dimensions.value.rows * dimensions.value.columns > MAX_TRACKER_STITCHES : false)
@@ -67,6 +69,16 @@ const renderedPattern = computed(() => {
 })
 const trackerSymbolMap = computed(() => showSymbols.value && renderedPattern.value ? colorSymbolMap(renderedPattern.value.cells.flat()) : undefined)
 const percentage = computed(() => state.totalCount.value === 0 ? 0 : Math.round((state.completedCount.value / state.totalCount.value) * 100))
+const timerRunning = computed(() => state.tracker.value?.timer.startedAt != null)
+const elapsedMilliseconds = computed(() => state.tracker.value ? trackerElapsedMilliseconds(state.tracker.value.timer, timerNow.value) : 0)
+const formattedTime = computed(() => {
+  const milliseconds = Math.max(0, Math.floor(elapsedMilliseconds.value))
+  const hours = Math.floor(milliseconds / 3_600_000)
+  const minutes = Math.floor(milliseconds / 60_000) % 60
+  const seconds = Math.floor(milliseconds / 1_000) % 60
+  const centiseconds = Math.floor(milliseconds / 10) % 100
+  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}.${String(centiseconds).padStart(2, '0')}`
+})
 const alertClasses = {
   success: 'alert-success',
   error: 'alert-error',
@@ -137,13 +149,25 @@ function cancelReplacement() {
 function saveTracker() {
   if (!state.tracker.value) return
   try {
-    downloadTracker(state.tracker.value)
+    downloadTracker(state.downloadSnapshot())
     state.markDownloaded()
     notify(t('tracker.notifications.saved'), 'success')
   } catch (error) {
     notify(localizedFileError(error, 'save'), 'error')
   }
 }
+
+function updateTimer() {
+  timerNow.value = Date.now()
+  timerFrame = requestAnimationFrame(updateTimer)
+}
+
+watch(timerRunning, (running) => {
+  if (timerFrame !== null) cancelAnimationFrame(timerFrame)
+  timerFrame = null
+  timerNow.value = Date.now()
+  if (running) timerFrame = requestAnimationFrame(updateTimer)
+}, { immediate: true })
 
 function changeStartRow(event: Event) {
   if (!state.tracker.value) return
@@ -278,6 +302,7 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+  if (timerFrame !== null) cancelAnimationFrame(timerFrame)
   state.flushAutosave()
   keepAwake.value = false
   releaseWakeLock()
@@ -533,6 +558,12 @@ function cancelActiveModal() {
                 </label>
               </div>
               <div class="flex flex-wrap items-center gap-2">
+                <div class="flex items-center gap-1 rounded-box border border-base-300 bg-base-200/60 p-1 pl-2">
+                  <time class="font-mono text-sm font-semibold tabular-nums" :aria-label="t('tracker.timer.elapsed', { time: formattedTime })">{{ formattedTime }}</time>
+                  <button class="btn btn-primary btn-square btn-sm" type="button" :aria-label="t(timerRunning ? 'tracker.timer.pause' : 'tracker.timer.start')" :title="t(timerRunning ? 'tracker.timer.pause' : 'tracker.timer.start')" @click="timerRunning ? state.pauseTimer() : state.startTimer()">
+                    <span class="mdi text-lg" :class="timerRunning ? 'mdi-pause' : 'mdi-play'" aria-hidden="true" />
+                  </button>
+                </div>
                 <details class="dropdown dropdown-end">
                   <summary
                     class="btn btn-ghost btn-square btn-sm"
