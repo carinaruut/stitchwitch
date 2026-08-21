@@ -6,8 +6,8 @@ import LanguageSwitcher from './LanguageSwitcher.vue'
 import type { Theme } from '../composables/useTheme'
 import type { PrintMode } from '../types/pattern'
 
-defineProps<{ canUndo: boolean; canRedo: boolean; theme: Theme }>()
-const emit = defineEmits<{ new: []; open: []; save: []; png: []; print: [mode: PrintMode]; undo: []; redo: []; theme: []; guide: [] }>()
+defineProps<{ theme: Theme }>()
+const emit = defineEmits<{ new: []; open: []; save: []; png: []; print: [mode: PrintMode]; theme: []; guide: [] }>()
 const { t } = useI18n({ useScope: 'global' })
 
 function requestPrint(mode: PrintMode, event: MouseEvent) {
@@ -122,32 +122,6 @@ function requestPng(event: MouseEvent) {
       </RouterLink>
     </nav>
     <div class="navbar-end gap-1">
-      <button
-        class="btn btn-ghost btn-square btn-sm"
-        type="button"
-        :disabled="!canUndo"
-        :aria-label="t('editor.nav.undo')"
-        aria-keyshortcuts="Control+Z Meta+Z"
-        @click="$emit('undo')"
-      >
-        <span
-          class="mdi mdi-undo text-lg"
-          aria-hidden="true"
-        />
-      </button>
-      <button
-        class="btn btn-ghost btn-square btn-sm"
-        type="button"
-        :disabled="!canRedo"
-        :aria-label="t('editor.nav.redo')"
-        aria-keyshortcuts="Control+Y Control+Shift+Z Meta+Shift+Z"
-        @click="$emit('redo')"
-      >
-        <span
-          class="mdi mdi-redo text-lg"
-          aria-hidden="true"
-        />
-      </button>
       <button
         class="btn btn-ghost btn-square btn-sm"
         type="button"

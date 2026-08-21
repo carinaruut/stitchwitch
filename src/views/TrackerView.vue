@@ -277,6 +277,21 @@ function handleVisibilityChange() {
   if (keepAwake.value) void requestWakeLock()
 }
 
+function handleKeyboardShortcuts(event: KeyboardEvent) {
+  const target = event.target as HTMLElement | null
+  if (target?.closest('input, textarea, select, [contenteditable="true"]')) return
+  if (confirmation.value || event.altKey || (!event.metaKey && !event.ctrlKey)) return
+  const key = event.key.toLowerCase()
+  if (key === 'z') {
+    event.preventDefault()
+    if (event.shiftKey) state.redo()
+    else state.undo()
+  } else if (key === 'y' && !event.shiftKey) {
+    event.preventDefault()
+    state.redo()
+  }
+}
+
 onBeforeRouteLeave(() => {
   state.flushAutosave()
   if (!state.backupNeeded.value) return true
@@ -308,6 +323,7 @@ watch([display, cellSize, autoScroll, keepAwake, showSymbols], () => {
 })
 
 onMounted(() => {
+  window.addEventListener('keydown', handleKeyboardShortcuts)
   window.addEventListener('beforeunload', warnBeforeUnload)
   window.addEventListener('pagehide', state.flushAutosave)
   document.addEventListener('visibilitychange', handleVisibilityChange)
@@ -320,6 +336,7 @@ onBeforeUnmount(() => {
   state.flushAutosave()
   keepAwake.value = false
   releaseWakeLock()
+  window.removeEventListener('keydown', handleKeyboardShortcuts)
   window.removeEventListener('beforeunload', warnBeforeUnload)
   window.removeEventListener('pagehide', state.flushAutosave)
   document.removeEventListener('visibilitychange', handleVisibilityChange)
@@ -572,6 +589,36 @@ function cancelActiveModal() {
                 </label>
               </div>
               <div class="flex flex-wrap items-center gap-2">
+                <div class="flex items-center gap-1">
+                  <button
+                    class="btn btn-ghost btn-square btn-sm"
+                    type="button"
+                    :disabled="!state.canUndo.value"
+                    :aria-label="t('tracker.actions.undo')"
+                    :title="t('tracker.actions.undo')"
+                    aria-keyshortcuts="Control+Z Meta+Z"
+                    @click="state.undo"
+                  >
+                    <span
+                      class="mdi mdi-undo text-lg"
+                      aria-hidden="true"
+                    />
+                  </button>
+                  <button
+                    class="btn btn-ghost btn-square btn-sm"
+                    type="button"
+                    :disabled="!state.canRedo.value"
+                    :aria-label="t('tracker.actions.redo')"
+                    :title="t('tracker.actions.redo')"
+                    aria-keyshortcuts="Control+Y Control+Shift+Z Meta+Shift+Z"
+                    @click="state.redo"
+                  >
+                    <span
+                      class="mdi mdi-redo text-lg"
+                      aria-hidden="true"
+                    />
+                  </button>
+                </div>
                 <div class="flex items-center gap-1 rounded-box border border-base-300 bg-base-200/60 p-1 pl-2">
                   <time
                     class="font-mono text-sm font-semibold tabular-nums"

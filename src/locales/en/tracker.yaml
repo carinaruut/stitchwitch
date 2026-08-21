@@ -9,6 +9,8 @@ tracker:
     openEditor: Open editor
     openDesignOrTracker: Open design or tracker
     saveAria: Save tracker
+    undo: Undo
+    redo: Redo
     reset: Reset progress
     close: Close tracker
   empty:

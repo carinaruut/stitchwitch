@@ -471,16 +471,12 @@ onBeforeUnmount(() => {
 <template>
   <div class="screen-only min-h-screen bg-base-200 text-base-content">
     <TopNavbar
-      :can-undo="pattern.canUndo.value"
-      :can-redo="pattern.canRedo.value"
       :theme="theme"
       @new="newModalOpen = true"
       @open="fileInput?.click()"
       @save="saveProject"
       @png="downloadCanvasPng"
       @print="printPattern"
-      @undo="pattern.undo"
-      @redo="pattern.redo"
       @theme="toggleTheme"
       @guide="guideOpen = true"
     />
@@ -566,6 +562,34 @@ onBeforeUnmount(() => {
                 />
               </template>
               <template #controls>
+                <button
+                  class="btn btn-ghost btn-square btn-sm"
+                  type="button"
+                  :disabled="!pattern.canUndo.value"
+                  :aria-label="t('editor.nav.undo')"
+                  :title="t('editor.nav.undo')"
+                  aria-keyshortcuts="Control+Z Meta+Z"
+                  @click="pattern.undo"
+                >
+                  <span
+                    class="mdi mdi-undo text-lg"
+                    aria-hidden="true"
+                  />
+                </button>
+                <button
+                  class="btn btn-ghost btn-square btn-sm"
+                  type="button"
+                  :disabled="!pattern.canRedo.value"
+                  :aria-label="t('editor.nav.redo')"
+                  :title="t('editor.nav.redo')"
+                  aria-keyshortcuts="Control+Y Control+Shift+Z Meta+Shift+Z"
+                  @click="pattern.redo"
+                >
+                  <span
+                    class="mdi mdi-redo text-lg"
+                    aria-hidden="true"
+                  />
+                </button>
                 <RepeatMenu
                   :horizontal="pattern.project.value.horizontalRepeats"
                   :vertical="pattern.project.value.verticalRepeats"

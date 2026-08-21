@@ -9,6 +9,8 @@ tracker:
     openEditor: Ava redaktor
     openDesignOrTracker: Ava kavand või tööjärg
     saveAria: Salvesta tööjärg
+    undo: Võta tagasi
+    redo: Tee uuesti
     reset: Lähtesta edenemine
     close: Sulge tööjärg
   empty:

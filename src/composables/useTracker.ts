@@ -1,6 +1,6 @@
 import { computed, ref } from 'vue'
 import type { PatternProject } from '../types/pattern'
-import type { TrackerDirection, TrackerPreferences, TrackerProject, TrackerStartRow } from '../types/tracker'
+import type { TrackerDirection, TrackerPreferences, TrackerProgress, TrackerProject, TrackerStartRow } from '../types/tracker'
 import { asTrackerProject, createTracker, rowCompletionRange, stitchOrdinal, trackerElapsedMilliseconds, trackerTotal } from '../utils/tracker'
 
 const STORAGE_KEY = 'stitch-tracker-autosave'
@@ -8,6 +8,17 @@ const STORAGE_KEY = 'stitch-tracker-autosave'
 interface StoredTracker {
   tracker: TrackerProject
   backupNeeded: boolean
+}
+
+type ProgressSnapshot = Omit<TrackerProgress, 'updatedAt'>
+
+function progressSnapshot(progress: TrackerProgress): ProgressSnapshot {
+  return {
+    completedCount: progress.completedCount,
+    startRow: progress.startRow,
+    firstRowDirection: progress.firstRowDirection,
+    alternateRows: progress.alternateRows,
+  }
 }
 
 function readAutosave(): { tracker: TrackerProject | null; backupNeeded: boolean; restored: boolean } {
@@ -32,10 +43,26 @@ export function useTracker() {
   const autosaveStatus = ref<'idle' | 'saving' | 'saved' | 'error'>(saved.tracker ? 'saved' : 'idle')
   const backupNeeded = ref(saved.backupNeeded)
   const restoredAutosave = ref(saved.restored)
+  const undoStack = ref<ProgressSnapshot[]>([])
+  const redoStack = ref<ProgressSnapshot[]>([])
   let autosaveTimer: ReturnType<typeof setTimeout> | null = null
 
   const completedCount = computed(() => tracker.value?.progress.completedCount ?? 0)
   const totalCount = computed(() => tracker.value ? trackerTotal(tracker.value.pattern) : 0)
+  const canUndo = computed(() => undoStack.value.length > 0)
+  const canRedo = computed(() => redoStack.value.length > 0)
+
+  function resetHistory() {
+    undoStack.value = []
+    redoStack.value = []
+  }
+
+  function recordProgress() {
+    if (!tracker.value) return
+    undoStack.value.push(progressSnapshot(tracker.value.progress))
+    if (undoStack.value.length > 100) undoStack.value.shift()
+    redoStack.value = []
+  }
 
   function flushAutosave() {
     if (autosaveTimer) clearTimeout(autosaveTimer)
@@ -64,6 +91,7 @@ export function useTracker() {
 
   function openPattern(pattern: PatternProject, preferences?: TrackerPreferences) {
     tracker.value = createTracker(pattern, preferences)
+    resetHistory()
     backupNeeded.value = true
     scheduleAutosave()
   }
@@ -71,6 +99,7 @@ export function useTracker() {
   function openTracker(value: TrackerProject, fallbackPreferences?: TrackerPreferences) {
     tracker.value = asTrackerProject(value)
     if (!tracker.value.preferences && fallbackPreferences) tracker.value.preferences = { ...fallbackPreferences }
+    resetHistory()
     backupNeeded.value = false
     scheduleAutosave()
   }
@@ -85,15 +114,19 @@ export function useTracker() {
 
   function setOrder(startRow: TrackerStartRow, firstRowDirection: TrackerDirection, alternateRows: boolean) {
     if (!tracker.value || completedCount.value > 0) return
-    tracker.value.progress.startRow = startRow
-    tracker.value.progress.firstRowDirection = firstRowDirection
-    tracker.value.progress.alternateRows = alternateRows
+    const progress = tracker.value.progress
+    if (progress.startRow === startRow && progress.firstRowDirection === firstRowDirection && progress.alternateRows === alternateRows) return
+    recordProgress()
+    progress.startRow = startRow
+    progress.firstRowDirection = firstRowDirection
+    progress.alternateRows = alternateRows
     changed()
   }
 
   function selectStitch(row: number, column: number, rows: number, columns: number) {
     if (!tracker.value) return
     const ordinal = stitchOrdinal(row, column, rows, columns, tracker.value.progress)
+    recordProgress()
     tracker.value.progress.completedCount = completedCount.value === ordinal + 1 ? ordinal : ordinal + 1
     changed()
   }
@@ -101,14 +134,38 @@ export function useTracker() {
   function selectRow(row: number, rows: number, columns: number) {
     if (!tracker.value) return
     const range = rowCompletionRange(row, rows, columns, tracker.value.progress.startRow)
+    recordProgress()
     tracker.value.progress.completedCount = completedCount.value >= range.through ? range.before : range.through
     changed()
   }
 
   function resetProgress() {
-    if (!tracker.value) return
+    if (!tracker.value || completedCount.value === 0) return
+    recordProgress()
     tracker.value.progress.completedCount = 0
     changed()
+  }
+
+  function restoreProgress(snapshot: ProgressSnapshot) {
+    if (!tracker.value) return
+    Object.assign(tracker.value.progress, snapshot)
+    changed()
+  }
+
+  function undo() {
+    if (!tracker.value) return
+    const snapshot = undoStack.value.pop()
+    if (!snapshot) return
+    redoStack.value.push(progressSnapshot(tracker.value.progress))
+    restoreProgress(snapshot)
+  }
+
+  function redo() {
+    if (!tracker.value) return
+    const snapshot = redoStack.value.pop()
+    if (!snapshot) return
+    undoStack.value.push(progressSnapshot(tracker.value.progress))
+    restoreProgress(snapshot)
   }
 
   function startTimer() {
@@ -157,6 +214,7 @@ export function useTracker() {
       return false
     }
     tracker.value = null
+    resetHistory()
     backupNeeded.value = false
     restoredAutosave.value = false
     autosaveStatus.value = 'idle'
@@ -167,6 +225,8 @@ export function useTracker() {
     tracker,
     completedCount,
     totalCount,
+    canUndo,
+    canRedo,
     autosaveStatus,
     backupNeeded,
     restoredAutosave,
@@ -177,6 +237,8 @@ export function useTracker() {
     selectStitch,
     selectRow,
     resetProgress,
+    undo,
+    redo,
     startTimer,
     pauseTimer,
     resetTimer,
