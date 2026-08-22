@@ -2,12 +2,14 @@
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { hexToRgb, normalizeColor, rgbToHex } from '../utils/colors'
+import { pickScreenColor } from '../utils/eyeDropper'
 import { MAX_PROJECT_SWATCHES } from '../types/pattern'
 import VisualColorPicker from './VisualColorPicker.vue'
 
 const props = defineProps<{ color: string; recentColors: string[]; swatches: string[] }>()
-const emit = defineEmits<{ select: [color: string]; eyedropper: []; addSwatch: []; removeSwatch: [color: string] }>()
+const emit = defineEmits<{ select: [color: string]; screenPick: [color: string]; eyedropper: []; addSwatch: []; removeSwatch: [color: string] }>()
 const { t } = useI18n({ useScope: 'global' })
+const pickingFromScreen = ref(false)
 const hexValue = ref(props.color)
 const initialRgb = hexToRgb(props.color)!
 const rgbValues = ref({ red: String(initialRgb.red), green: String(initialRgb.green), blue: String(initialRgb.blue) })
@@ -44,6 +46,14 @@ function submitHex() {
 function submitRgb() {
   if (rgbColor.value) selectColor(rgbColor.value)
 }
+
+async function pickFromScreen() {
+  pickingFromScreen.value = true
+  const result = await pickScreenColor()
+  pickingFromScreen.value = false
+  if (result.status === 'picked') emit('screenPick', result.color)
+  else if (result.status === 'unavailable') emit('eyedropper')
+}
 </script>
 
 <template>
@@ -62,10 +72,13 @@ function submitRgb() {
         <button
           class="btn btn-sm btn-outline ml-auto"
           type="button"
-          @click="$emit('eyedropper')"
+          :disabled="pickingFromScreen"
+          :aria-busy="pickingFromScreen"
+          @click="pickFromScreen"
         >
           <span
-            class="mdi mdi-eyedropper"
+            class="mdi"
+            :class="pickingFromScreen ? 'mdi-loading mdi-spin' : 'mdi-eyedropper'"
             aria-hidden="true"
           />{{ t('controls.color.eyedropper') }}
         </button>

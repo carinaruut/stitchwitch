@@ -4,7 +4,7 @@ import ClickPopover from './ClickPopover.vue'
 import ColorPicker from './ColorPicker.vue'
 
 defineProps<{ color: string; recentColors: string[]; swatches: string[] }>()
-defineEmits<{ select: [color: string]; eyedropper: []; addSwatch: []; removeSwatch: [color: string] }>()
+defineEmits<{ select: [color: string]; screenPick: [color: string]; eyedropper: []; addSwatch: []; removeSwatch: [color: string] }>()
 const { t } = useI18n({ useScope: 'global' })
 </script>
 
@@ -37,6 +37,7 @@ const { t } = useI18n({ useScope: 'global' })
       :recent-colors="recentColors"
       :swatches="swatches"
       @select="$emit('select', $event)"
+      @screen-pick="$emit('screenPick', $event)"
       @eyedropper="$emit('eyedropper')"
       @add-swatch="$emit('addSwatch')"
       @remove-swatch="$emit('removeSwatch', $event)"

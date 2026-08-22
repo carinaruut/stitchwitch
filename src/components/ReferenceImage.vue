@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { pickScreenColor } from '../utils/eyeDropper'
 
 const props = defineProps<{ picking: boolean }>()
 const emit = defineEmits<{ pick: [color: string]; requestPick: []; close: []; error: [message: string] }>()
@@ -15,6 +16,7 @@ const zoom = ref(100)
 const dragging = ref(false)
 const marker = ref<{ x: number; y: number; color: string } | null>(null)
 const errorMessage = ref('')
+const pickingFromScreen = ref(false)
 let sourceImage: HTMLImageElement | null = null
 const sampleCanvas = document.createElement('canvas')
 sampleCanvas.width = 1
@@ -110,6 +112,14 @@ function sampleColor(event: MouseEvent) {
   emit('pick', color)
 }
 
+async function requestColorPick() {
+  pickingFromScreen.value = true
+  const result = await pickScreenColor()
+  pickingFromScreen.value = false
+  if (result.status === 'picked') emit('pick', result.color)
+  else if (result.status === 'unavailable') emit('requestPick')
+}
+
 function adjustZoom(change: number) {
   fit.value = false
   zoom.value = Math.max(25, Math.min(400, zoom.value + change))
@@ -186,15 +196,18 @@ onBeforeUnmount(clearImage)
         <div class="flex items-center gap-1">
           <button
             class="btn btn-sm"
-            :class="picking ? 'btn-primary' : 'btn-ghost'"
+            :class="picking || pickingFromScreen ? 'btn-primary' : 'btn-ghost'"
             type="button"
-            :aria-pressed="picking"
+            :disabled="pickingFromScreen"
+            :aria-busy="pickingFromScreen"
+            :aria-pressed="picking || pickingFromScreen"
             :aria-label="t('controls.reference.pick')"
             :title="t('controls.reference.pick')"
-            @click="$emit('requestPick')"
+            @click="requestColorPick"
           >
             <span
-              class="mdi mdi-eyedropper text-xl"
+              class="mdi text-xl"
+              :class="pickingFromScreen ? 'mdi-loading mdi-spin' : 'mdi-eyedropper'"
               aria-hidden="true"
             />
           </button>

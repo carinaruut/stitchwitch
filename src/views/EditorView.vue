@@ -25,6 +25,7 @@ import { downloadProject, readProjectFile, safeFilename } from '../composables/u
 import type { DrawingTool, NewPatternProject, PatternProject, PrintMode, RepeatBoxInput } from '../types/pattern'
 import { localizedErrorMessage } from '../utils/appError'
 import { colorSymbolMap } from '../utils/colors'
+import { pickScreenColor } from '../utils/eyeDropper'
 import { renderGrid } from '../utils/grid'
 import { orderedColorCounts } from '../utils/palette'
 
@@ -333,7 +334,16 @@ function saveRepeatBox(input: RepeatBoxInput, id: string | null, complete: (erro
   if (!error) notify(t(id ? 'editor.notifications.repeatBoxUpdated' : 'editor.notifications.repeatBoxAdded'), 'success')
 }
 
-function selectTool(tool: typeof pattern.tool.value) {
+async function selectTool(tool: typeof pattern.tool.value) {
+  if (tool === 'eyedropper') {
+    const result = await pickScreenColor()
+    if (result.status === 'picked') {
+      pattern.chooseColor(result.color, true)
+      pattern.tool.value = 'pencil'
+      return
+    }
+    if (result.status === 'cancelled') return
+  }
   pattern.tool.value = tool
   if (tool === 'move') pattern.clearSelection()
   if (tool !== 'select') placingSelection.value = false
@@ -572,6 +582,7 @@ onBeforeUnmount(() => {
                   :recent-colors="pattern.recentColors.value"
                   :swatches="pattern.project.value.swatches"
                   @select="pattern.chooseColor($event)"
+                  @screen-pick="pattern.chooseColor($event, true)"
                   @eyedropper="pattern.tool.value = 'eyedropper'"
                   @add-swatch="pattern.addSwatch()"
                   @remove-swatch="pattern.removeSwatch($event)"
