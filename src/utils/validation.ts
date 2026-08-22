@@ -1,4 +1,4 @@
-import { MAX_PALETTE_ENTRIES, MAX_PROJECT_SWATCHES, MAX_REPEAT_COUNT, type PaletteEntry, type PatternGrid, type PatternProject, type RepeatBox } from '../types/pattern'
+import { MAX_ANNOTATIONS, MAX_PALETTE_ENTRIES, MAX_PROJECT_SWATCHES, MAX_REPEAT_COUNT, type PaletteEntry, type PatternAnnotation, type PatternGrid, type PatternProject, type RepeatBox } from '../types/pattern'
 import { boxesOverlap } from './grid'
 import { isHexColor } from './colors'
 import { appError, type AppError } from './appError'
@@ -93,6 +93,25 @@ export function validateProject(value: unknown): ValidationResult {
       }
     }
   }
+  if (project.annotations !== undefined) {
+    if (!Array.isArray(project.annotations) || project.annotations.length > MAX_ANNOTATIONS) return { valid: false, error: appError('validation.annotations') }
+    const ids = new Set<string>()
+    for (const value of project.annotations) {
+      if (!value || typeof value !== 'object') return { valid: false, error: appError('validation.annotations') }
+      const annotation = value as Record<string, unknown>
+      if (typeof annotation.id !== 'string' || !annotation.id || ids.has(annotation.id)) return { valid: false, error: appError('validation.annotations') }
+      ids.add(annotation.id)
+      if (annotation.type !== 'text' && annotation.type !== 'marker' && annotation.type !== 'arrow') return { valid: false, error: appError('validation.annotations') }
+      if (!Number.isInteger(annotation.row) || !Number.isInteger(annotation.column)
+        || (annotation.row as number) < 0 || (annotation.row as number) >= (project.rows as number)
+        || (annotation.column as number) < 0 || (annotation.column as number) >= columns
+        || !isHexColor(annotation.color)) return { valid: false, error: appError('validation.annotations') }
+      if (annotation.type === 'text' && (typeof annotation.text !== 'string' || !annotation.text.trim() || annotation.text.length > 500)) return { valid: false, error: appError('validation.annotations') }
+      if (annotation.type === 'arrow' && (!Number.isInteger(annotation.endRow) || !Number.isInteger(annotation.endColumn)
+        || (annotation.endRow as number) < 0 || (annotation.endRow as number) >= (project.rows as number)
+        || (annotation.endColumn as number) < 0 || (annotation.endColumn as number) >= columns)) return { valid: false, error: appError('validation.annotations') }
+    }
+  }
   return { valid: true }
 }
 
@@ -148,6 +167,7 @@ export function asPatternProject(value: unknown): PatternProject {
     swatches: Array.isArray(source.swatches) ? (source.swatches as string[]).map((color) => color.toLowerCase()) : [],
     palette,
     repeatBoxes: Array.isArray(source.repeatBoxes) ? (source.repeatBoxes as RepeatBox[]).map((box) => ({ ...box })) : [],
+    annotations: Array.isArray(source.annotations) ? (source.annotations as PatternAnnotation[]).map((annotation) => ({ ...annotation, color: annotation.color.toLowerCase() })) : [],
     cells,
   }
 }

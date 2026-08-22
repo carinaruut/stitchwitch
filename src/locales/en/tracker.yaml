@@ -58,6 +58,7 @@ tracker:
     cellSize: Cell size
     autoScroll: Auto-scroll
     showSymbols: Show color symbols
+    showAnnotations: Show annotations
     keepAwake: Keep screen awake
     fullscreen: Enter fullscreen
     exitFullscreen: Exit fullscreen

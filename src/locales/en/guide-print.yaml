@@ -122,6 +122,9 @@ guide:
 print:
   dimensions: "{columns} columns by {rows} rows"
   fullChart: Full stitch chart
+  commentsTitle: "Pattern comments · Page {page} of {total}"
+  commentsDescription: Comment markers on the chart refer to these source coordinates.
+  commentCoordinates: "Row {row}, column {column}"
   fullChartDetail: Full stitch chart detail
   detailDescription: Full-size chart split into consecutive sections
   partTitle: "{title} · Part {part} of {total}"

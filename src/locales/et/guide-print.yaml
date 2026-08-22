@@ -122,6 +122,9 @@ guide:
 print:
   dimensions: "Veerge: {columns} · ridu: {rows}"
   fullChart: Kogu pisteskeem
+  commentsTitle: "Mustri kommentaarid · Lehekülg {page}/{total}"
+  commentsDescription: Skeemil olevad kommentaarimärgid viitavad nendele lähtekoha koordinaatidele.
+  commentCoordinates: "Rida {row}, veerg {column}"
   fullChartDetail: Kogu pisteskeemi detailvaade
   detailDescription: Täissuuruses skeem on jagatud järjestikusteks osadeks
   partTitle: "{title} · Osa {part}/{total}"

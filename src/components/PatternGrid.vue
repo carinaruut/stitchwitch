@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import type { DrawingTool, GridSelection, PatternGrid } from '../types/pattern'
+import type { DrawingTool, GridSelection, PatternAnnotation, PatternGrid } from '../types/pattern'
 import { contrastColor } from '../utils/colors'
 import { followsCenterBoundary, isCenterHeader, repeatOutlineColor, REPEAT_BOTTOM, REPEAT_COPY, REPEAT_LEFT, REPEAT_RIGHT, REPEAT_TOP } from '../utils/grid'
+import { renderAnnotations } from '../utils/annotations'
+import AnnotationLayer from './AnnotationLayer.vue'
 
 type SelectionAction = 'move' | 'copy' | 'paste' | 'flip-horizontal' | 'flip-vertical' | 'rotate-clockwise' | 'rotate-counterclockwise' | 'fill' | 'erase'
 
@@ -32,6 +34,8 @@ const props = defineProps<{
   mirrorHorizontal: boolean
   mirrorVertical: boolean
   symbols?: Record<string, string>
+  annotations: PatternAnnotation[]
+  selectedAnnotationId: string | null
 }>()
 const emit = defineEmits<{
   strokeStart: []
@@ -47,6 +51,10 @@ const emit = defineEmits<{
   clearSelection: []
   placeSelection: [row: number, column: number]
   moveSelection: [row: number, column: number]
+  createAnnotation: [type: 'text' | 'marker' | 'arrow', row: number, column: number, endRow: number, endColumn: number]
+  selectAnnotation: [id: string]
+  moveAnnotation: [id: string, rowDelta: number, columnDelta: number]
+  moveAnnotationEndpoint: [id: string, rowDelta: number, columnDelta: number]
 }>()
 const { t } = useI18n({ useScope: 'global' })
 const viewport = ref<HTMLElement | null>(null)
@@ -60,6 +68,7 @@ const columnMenu = ref<{ column: number; x: number; y: number } | null>(null)
 const selectionMenu = ref<{ x: number; y: number } | null>(null)
 const multipleCount = ref(5)
 const multipleColumnCount = ref(5)
+const renderedAnnotations = computed(() => renderAnnotations(props.annotations, props.cellSourceRows, props.cellSourceColumns))
 let panStartX = 0
 let panStartY = 0
 let scrollStartX = 0
@@ -68,6 +77,8 @@ let selectionStartRow = 0
 let selectionStartColumn = 0
 let dragRowOffset = 0
 let dragColumnOffset = 0
+let arrowStart: { row: number; column: number } | null = null
+let arrowEnd: { row: number; column: number } | null = null
 
 const visibleSelection = computed(() => dragPreview.value ?? props.selection)
 const selectedCellKeys = computed(() => new Set(props.selection?.cells?.map(([row, column]) => `${row}:${column}`) ?? []))
@@ -164,6 +175,17 @@ function start(row: number, column: number, displayRow: number, displayColumn: n
     emit('magicSelect', row, column, event.shiftKey)
     return
   }
+  if (props.tool === 'text' || props.tool === 'marker') {
+    event.preventDefault()
+    emit('createAnnotation', props.tool, row, column, row, column)
+    return
+  }
+  if (props.tool === 'arrow') {
+    event.preventDefault()
+    arrowStart = { row, column }
+    arrowEnd = { row, column }
+    return
+  }
   if (props.tool === 'select') {
     event.preventDefault()
     const actualRow = props.rowHeaders[displayRow]
@@ -203,6 +225,10 @@ function start(row: number, column: number, displayRow: number, displayColumn: n
 }
 
 function enter(row: number, column: number, displayRow: number, displayColumn: number, event: PointerEvent) {
+  if (arrowStart && event.buttons === 1) {
+    arrowEnd = { row, column }
+    return
+  }
   if (draggingSelection.value && event.buttons === 1 && props.selection) {
     const top = Math.max(0, props.rowHeaders[displayRow] - dragRowOffset)
     const left = Math.max(0, props.columnHeaders[displayColumn] - dragColumnOffset)
@@ -239,6 +265,14 @@ function stop(event?: PointerEvent) {
   draggingSelection.value = false
   dragPreview.value = null
   selecting.value = false
+  if (arrowStart && arrowEnd) {
+    let { row, column } = arrowEnd
+    if (row === arrowStart.row && column === arrowStart.column) column = Math.min(props.sourceColumns - 1, column + 1)
+    if (row === arrowStart.row && column === arrowStart.column) column = Math.max(0, column - 1)
+    emit('createAnnotation', 'arrow', arrowStart.row, arrowStart.column, row, column)
+  }
+  arrowStart = null
+  arrowEnd = null
 }
 
 function openRowMenu(row: number, event: MouseEvent | KeyboardEvent) {
@@ -326,6 +360,11 @@ function handleEscape(event: KeyboardEvent) {
 
 function keyboardPaint(row: number, column: number) {
   if (props.tool === 'move') return
+  if (props.tool === 'text' || props.tool === 'marker' || props.tool === 'arrow') {
+    const endColumn = props.tool === 'arrow' ? Math.min(props.sourceColumns - 1, column + 1) : column
+    emit('createAnnotation', props.tool, row, column, row, endColumn === column && props.tool === 'arrow' ? Math.max(0, column - 1) : endColumn)
+    return
+  }
   emit('strokeStart')
   emit('paint', row, column)
   emit('strokeEnd')
@@ -366,7 +405,7 @@ onBeforeUnmount(() => {
     @pointercancel="stop"
   >
     <div
-      class="grid w-max border border-base-300/70 bg-base-100"
+      class="relative grid w-max border border-base-300/70 bg-base-100"
       :style="{ gridTemplateColumns: `28px repeat(${cells[0].length}, ${cellSize}px)`, gridTemplateRows: `28px repeat(${cells.length}, ${cellSize}px)` }"
       role="grid"
       :aria-rowcount="cells.length"
@@ -455,6 +494,16 @@ onBeforeUnmount(() => {
           >{{ symbols[color] }}</span>
         </div>
       </template>
+      <AnnotationLayer
+        :annotations="renderedAnnotations"
+        :rows="cells.length"
+        :columns="cells[0].length"
+        :selected-id="selectedAnnotationId"
+        editable
+        @select="$emit('selectAnnotation', $event)"
+        @move="(id, rowDelta, columnDelta) => $emit('moveAnnotation', id, rowDelta, columnDelta)"
+        @move-endpoint="(id, rowDelta, columnDelta) => $emit('moveAnnotationEndpoint', id, rowDelta, columnDelta)"
+      />
     </div>
   </div>
 

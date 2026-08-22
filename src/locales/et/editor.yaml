@@ -32,6 +32,7 @@ editor:
     colorDescription: Prindi või salvesta värvilise PDF-ina
     symbolChart: Mustvalged sümbolid
     symbolDescription: Prindi või salvesta sümbolite legendiga mustvalge PDF
+    includeAnnotations: Lisa märkused
   nav:
     projectActions: Projekti toimingud
     new: Uus

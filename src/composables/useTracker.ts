@@ -116,7 +116,7 @@ export function useTracker() {
   function setPreferences(preferences: TrackerPreferences) {
     if (!tracker.value) return
     const current = tracker.value.preferences
-    if (current?.display === preferences.display && current.cellSize === preferences.cellSize && current.autoScroll === preferences.autoScroll && current.keepAwake === preferences.keepAwake && current.showSymbols === preferences.showSymbols) return
+    if (current?.display === preferences.display && current.cellSize === preferences.cellSize && current.autoScroll === preferences.autoScroll && current.keepAwake === preferences.keepAwake && current.showSymbols === preferences.showSymbols && current.showAnnotations === preferences.showAnnotations) return
     tracker.value.preferences = { ...preferences }
     changed()
   }

@@ -22,6 +22,7 @@ validation:
   repeatBoxBounds: A repeat box is outside the pattern.
   repeatBoxSections: A repeat box does not divide evenly into sections.
   repeatBoxOverlap: Repeat boxes overlap.
+  annotations: The pattern annotations are invalid.
 tracker:
   projectObject: The file does not contain a tracker project.
   unsupportedFile: This is not a supported stitch-tracker file.
@@ -40,6 +41,7 @@ files:
   invalidJson: The selected file is not valid JSON.
 defaults:
   projectName: My pattern
+  annotationText: Comment
 repeatSave:
   settings: The repeat box settings are invalid.
   bounds: Repeat boxes cannot extend beyond 500 rows or columns.

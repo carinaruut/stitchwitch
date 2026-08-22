@@ -15,6 +15,9 @@ controls:
       select: Vali ala
       wand: Võlukepp
       move: Nihuta lõuendit
+      text: Kommentaar
+      marker: Märgis
+      arrow: Nool
     clearGrid: Tühjenda ruudustik
     mirrorLines: Lõuendi peegeldusteljed
     verticalMirrorTooltip: "Vertikaalne peegeldustelg: joonista vasakule ja paremale"
@@ -25,6 +28,18 @@ controls:
     horizontal: Horisontaalne
     chooseDestination: Vali sihtkoht
     patternSettings: Mustri sätted
+  annotations:
+    layerLabel: Mustri märkused
+    selected: Valitud märkus
+    text: Kommentaari tekst
+    color: Märkuse värv
+    useSelectedColor: Kasuta joonistusvärvi
+    defaultText: Kommentaar
+    commentLabel: "Kommentaar: {text}"
+    types:
+      text: Kommentaar
+      marker: Märgis
+      arrow: Nool
   axis:
     rows: Read
     columns: Veerud

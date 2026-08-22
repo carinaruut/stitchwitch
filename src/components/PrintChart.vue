@@ -1,15 +1,28 @@
 <script setup lang="ts">
-import type { CSSProperties } from 'vue'
-import type { PatternGrid } from '../types/pattern'
+import { computed, type CSSProperties } from 'vue'
+import type { PatternAnnotation, PatternGrid } from '../types/pattern'
+import { identitySourceMaps, renderAnnotations } from '../utils/annotations'
+import AnnotationLayer from './AnnotationLayer.vue'
 
-defineProps<{
+const props = defineProps<{
   cells: PatternGrid
   rowHeaders: number[]
   columnHeaders: number[]
   chartStyle: CSSProperties
   label: string
   symbols?: Record<string, string>
+  annotations?: PatternAnnotation[]
+  sourceRows?: number[][]
+  sourceColumns?: number[][]
+  cellSize: number
 }>()
+const renderedAnnotations = computed(() => {
+  if (!props.annotations?.length) return []
+  const maps = props.sourceRows && props.sourceColumns
+    ? { sourceRows: props.sourceRows, sourceColumns: props.sourceColumns }
+    : identitySourceMaps(props.rowHeaders, props.columnHeaders)
+  return renderAnnotations(props.annotations, maps.sourceRows, maps.sourceColumns)
+})
 </script>
 
 <template>
@@ -45,5 +58,13 @@ defineProps<{
         :style="symbols ? undefined : { backgroundColor: color }"
       >{{ symbols?.[color] }}</span>
     </template>
+    <AnnotationLayer
+      v-if="renderedAnnotations.length"
+      :annotations="renderedAnnotations"
+      :rows="cells.length"
+      :columns="cells[0].length"
+      :header-size="cellSize"
+      header-unit="mm"
+    />
   </div>
 </template>

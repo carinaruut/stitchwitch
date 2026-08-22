@@ -1,5 +1,5 @@
 import { computed, ref, watch } from 'vue'
-import { MAX_PROJECT_SWATCHES, MAX_REPEAT_COUNT, type DrawingTool, type GridSelection, type NewPatternProject, type PaletteEntry, type PatternGrid, type PatternProject, type RepeatBox, type RepeatBoxInput } from '../types/pattern'
+import { MAX_ANNOTATIONS, MAX_PROJECT_SWATCHES, MAX_REPEAT_COUNT, type AnnotationType, type DrawingTool, type GridSelection, type NewPatternProject, type PaletteEntry, type PatternAnnotation, type PatternGrid, type PatternProject, type RepeatBox, type RepeatBoxInput } from '../types/pattern'
 import { addColumn, addRow, boxesOverlap, cloneGrid, createGrid, ensureGridSize, removeColumn, removeRow, renderGrid, sourceCellFor, synchronizeRepeatBox } from '../utils/grid'
 import { normalizeColor } from '../utils/colors'
 import { parseAxisSelection } from '../utils/axisSelection'
@@ -29,8 +29,9 @@ const DEFAULT_PROJECT: PatternProject = {
   recentColors: [],
   swatches: [],
   palette: [],
-  repeatBoxes: [],
-  cells: createGrid(20, 20, '#ffffff'),
+    repeatBoxes: [],
+    annotations: [],
+    cells: createGrid(20, 20, '#ffffff'),
 }
 
 export function usePattern() {
@@ -56,6 +57,7 @@ export function usePattern() {
     swatches: [...initialProject.swatches],
     palette: initialProject.palette.map((entry) => ({ ...entry })),
     repeatBoxes: initialProject.repeatBoxes.map((box) => ({ ...box })),
+    annotations: initialProject.annotations.map((annotation) => ({ ...annotation })),
     cells: cloneGrid(initialProject.cells),
   })
   const tool = ref<DrawingTool>('pencil')
@@ -64,6 +66,7 @@ export function usePattern() {
   const selectedRows = ref<number[]>([0])
   const selectedColumns = ref<number[]>([0])
   const selection = ref<GridSelection | null>(null)
+  const selectedAnnotationId = ref<string | null>(null)
   const clipboard = ref<SelectionClipboard | null>(null)
   const mirrorHorizontal = ref(false)
   const mirrorVertical = ref(false)
@@ -198,24 +201,26 @@ export function usePattern() {
   }
 
   function replaceProject(next: PatternProject) {
-    project.value = { ...next, recentColors: [...next.recentColors], swatches: [...next.swatches], palette: next.palette.map((entry) => ({ ...entry })), repeatBoxes: next.repeatBoxes.map((box) => ({ ...box })), cells: cloneGrid(next.cells) }
+    project.value = { ...next, recentColors: [...next.recentColors], swatches: [...next.swatches], palette: next.palette.map((entry) => ({ ...entry })), repeatBoxes: next.repeatBoxes.map((box) => ({ ...box })), annotations: next.annotations.map((annotation) => ({ ...annotation })), cells: cloneGrid(next.cells) }
     recentColors.value = [...next.recentColors]
     persistColors()
     selectRow(0)
     selectColumn(0)
     selection.value = null
+    selectedAnnotationId.value = null
     clipboard.value = null
     history.reset()
   }
 
   function createProject(input: NewPatternProject) {
-    replaceProject({ ...input, format: 'stitch-pattern', version: 1, previewStitch: 'knit', recentColors: [...recentColors.value], swatches: [], palette: [], repeatBoxes: [], cells: createGrid(input.rows, input.columns, input.backgroundColor) })
+    replaceProject({ ...input, format: 'stitch-pattern', version: 1, previewStitch: 'knit', recentColors: [...recentColors.value], swatches: [], palette: [], repeatBoxes: [], annotations: [], cells: createGrid(input.rows, input.columns, input.backgroundColor) })
   }
 
   function beginGridChange() {
     history.record({
       cells: project.value.cells,
       repeatBoxes: project.value.repeatBoxes,
+      annotations: project.value.annotations,
       palette: project.value.palette,
       backgroundColor: project.value.backgroundColor,
       swatches: project.value.swatches,
@@ -514,6 +519,7 @@ export function usePattern() {
   }
 
   function adjustBoxesForInsert(axis: 'row' | 'column', index: number, count: number, excludedIds: string[] = []) {
+    adjustAnnotationsForInsert(axis, index, count)
     for (const box of project.value.repeatBoxes) {
       if (excludedIds.includes(box.id)) continue
       const start = axis === 'row' ? 'top' : 'left'
@@ -528,6 +534,7 @@ export function usePattern() {
   }
 
   function adjustBoxesForDelete(axis: 'row' | 'column', index: number, excludedIds: string[] = []) {
+    adjustAnnotationsForDelete(axis, index)
     project.value.repeatBoxes = project.value.repeatBoxes.flatMap((box) => {
       if (excludedIds.includes(box.id)) return [box]
       const start = axis === 'row' ? 'top' : 'left'
@@ -537,6 +544,83 @@ export function usePattern() {
       if (box[end] - box[start] === 1) return []
       return [{ ...box, [end]: box[end] - 1 }]
     })
+  }
+
+  function adjustAnnotationsForInsert(axis: 'row' | 'column', index: number, count: number) {
+    const coordinate = axis === 'row' ? 'row' : 'column'
+    const endCoordinate = axis === 'row' ? 'endRow' : 'endColumn'
+    for (const annotation of project.value.annotations) {
+      if (annotation[coordinate] >= index) annotation[coordinate] += count
+      if (annotation.type === 'arrow' && annotation[endCoordinate] >= index) annotation[endCoordinate] += count
+    }
+  }
+
+  function adjustAnnotationsForDelete(axis: 'row' | 'column', index: number) {
+    const coordinate = axis === 'row' ? 'row' : 'column'
+    const endCoordinate = axis === 'row' ? 'endRow' : 'endColumn'
+    const finalCoordinate = (axis === 'row' ? project.value.cells.length : project.value.cells[0].length) - 2
+    for (const annotation of project.value.annotations) {
+      if (annotation[coordinate] > index) annotation[coordinate] -= 1
+      else if (annotation[coordinate] === index) annotation[coordinate] = Math.min(index, finalCoordinate)
+      if (annotation.type === 'arrow' && annotation[endCoordinate] > index) annotation[endCoordinate] -= 1
+      else if (annotation.type === 'arrow' && annotation[endCoordinate] === index) annotation[endCoordinate] = Math.min(index, finalCoordinate)
+    }
+  }
+
+  function addAnnotation(type: AnnotationType, row: number, column: number, endRow = row, endColumn = column, text = translateError('defaults.annotationText')) {
+    if (project.value.annotations.length >= MAX_ANNOTATIONS) return null
+    const boundedRow = Math.max(0, Math.min(project.value.cells.length - 1, row))
+    const boundedColumn = Math.max(0, Math.min(project.value.cells[0].length - 1, column))
+    const base = { id: crypto.randomUUID(), row: boundedRow, column: boundedColumn, color: selectedColor.value }
+    const annotation: PatternAnnotation = type === 'text'
+      ? { ...base, type, text }
+      : type === 'arrow'
+        ? { ...base, type, endRow: Math.max(0, Math.min(project.value.cells.length - 1, endRow)), endColumn: Math.max(0, Math.min(project.value.cells[0].length - 1, endColumn)) }
+        : { ...base, type }
+    beginGridChange()
+    project.value.annotations.push(annotation)
+    selectedAnnotationId.value = annotation.id
+    return annotation.id
+  }
+
+  function updateAnnotation(id: string, updates: { text?: string; color?: string; row?: number; column?: number; endRow?: number; endColumn?: number }) {
+    const annotation = project.value.annotations.find((candidate) => candidate.id === id)
+    if (!annotation) return false
+    const color = updates.color === undefined ? undefined : normalizeColor(updates.color)
+    if (updates.color !== undefined && !color) return false
+    const rows = project.value.cells.length
+    const columns = project.value.cells[0].length
+    const next = {
+      ...annotation,
+      ...(updates.text !== undefined && annotation.type === 'text' ? { text: updates.text.trim().slice(0, 500) || annotation.text } : {}),
+      ...(color ? { color } : {}),
+      ...(updates.row !== undefined ? { row: Math.max(0, Math.min(rows - 1, Math.round(updates.row))) } : {}),
+      ...(updates.column !== undefined ? { column: Math.max(0, Math.min(columns - 1, Math.round(updates.column))) } : {}),
+      ...(updates.endRow !== undefined && annotation.type === 'arrow' ? { endRow: Math.max(0, Math.min(rows - 1, Math.round(updates.endRow))) } : {}),
+      ...(updates.endColumn !== undefined && annotation.type === 'arrow' ? { endColumn: Math.max(0, Math.min(columns - 1, Math.round(updates.endColumn))) } : {}),
+    } as PatternAnnotation
+    if (JSON.stringify(annotation) === JSON.stringify(next)) return false
+    beginGridChange()
+    Object.assign(annotation, next)
+    return true
+  }
+
+  function moveAnnotation(id: string, rowDelta: number, columnDelta: number) {
+    const annotation = project.value.annotations.find((candidate) => candidate.id === id)
+    if (!annotation || (!rowDelta && !columnDelta)) return false
+    return updateAnnotation(id, {
+      row: annotation.row + rowDelta,
+      column: annotation.column + columnDelta,
+      ...(annotation.type === 'arrow' ? { endRow: annotation.endRow + rowDelta, endColumn: annotation.endColumn + columnDelta } : {}),
+    })
+  }
+
+  function removeAnnotation(id: string) {
+    if (!project.value.annotations.some((annotation) => annotation.id === id)) return false
+    beginGridChange()
+    project.value.annotations = project.value.annotations.filter((annotation) => annotation.id !== id)
+    if (selectedAnnotationId.value === id) selectedAnnotationId.value = null
+    return true
   }
 
   function repeatBoxesConflict(candidate: RepeatBox): boolean {
@@ -922,10 +1006,11 @@ export function usePattern() {
   }
 
   function undo() {
-    const snapshot = history.undo({ cells: project.value.cells, repeatBoxes: project.value.repeatBoxes, palette: project.value.palette, backgroundColor: project.value.backgroundColor, swatches: project.value.swatches, recentColors: recentColors.value })
+    const snapshot = history.undo({ cells: project.value.cells, repeatBoxes: project.value.repeatBoxes, annotations: project.value.annotations, palette: project.value.palette, backgroundColor: project.value.backgroundColor, swatches: project.value.swatches, recentColors: recentColors.value })
     if (snapshot) {
       project.value.cells = snapshot.cells
       project.value.repeatBoxes = snapshot.repeatBoxes
+      project.value.annotations = snapshot.annotations
       project.value.palette = snapshot.palette
       project.value.backgroundColor = snapshot.backgroundColor
       project.value.swatches = snapshot.swatches
@@ -937,10 +1022,11 @@ export function usePattern() {
   }
 
   function redo() {
-    const snapshot = history.redo({ cells: project.value.cells, repeatBoxes: project.value.repeatBoxes, palette: project.value.palette, backgroundColor: project.value.backgroundColor, swatches: project.value.swatches, recentColors: recentColors.value })
+    const snapshot = history.redo({ cells: project.value.cells, repeatBoxes: project.value.repeatBoxes, annotations: project.value.annotations, palette: project.value.palette, backgroundColor: project.value.backgroundColor, swatches: project.value.swatches, recentColors: recentColors.value })
     if (snapshot) {
       project.value.cells = snapshot.cells
       project.value.repeatBoxes = snapshot.repeatBoxes
+      project.value.annotations = snapshot.annotations
       project.value.palette = snapshot.palette
       project.value.backgroundColor = snapshot.backgroundColor
       project.value.swatches = snapshot.swatches
@@ -959,6 +1045,7 @@ export function usePattern() {
     selectedRows,
     selectedColumns,
     selection,
+    selectedAnnotationId,
     mirrorHorizontal,
     mirrorVertical,
     selectedColor,
@@ -1023,6 +1110,10 @@ export function usePattern() {
     saveRepeatBox,
     toggleRepeatBox,
     removeRepeatBox,
+    addAnnotation,
+    updateAnnotation,
+    moveAnnotation,
+    removeAnnotation,
     undo,
     redo,
   }

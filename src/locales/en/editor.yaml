@@ -32,6 +32,7 @@ editor:
     colorDescription: Print or save a color PDF
     symbolChart: B&W symbols
     symbolDescription: Print or save a B&W PDF with a symbol key
+    includeAnnotations: Include annotations
   nav:
     projectActions: Project actions
     new: New

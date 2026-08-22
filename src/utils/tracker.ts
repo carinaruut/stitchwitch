@@ -74,7 +74,7 @@ export function asTrackerProject(value: unknown): TrackerProject {
     && (preferences.display === 'canvas' || preferences.display === 'knit' || preferences.display === 'cross-stitch' || preferences.display === 'single-crochet')
     && Number.isInteger(preferences.cellSize) && preferences.cellSize! >= 16 && preferences.cellSize! <= 48
     && typeof preferences.autoScroll === 'boolean'
-    ? { display: preferences.display, cellSize: preferences.cellSize!, autoScroll: preferences.autoScroll, keepAwake: typeof preferences.keepAwake === 'boolean' ? preferences.keepAwake : false, showSymbols: typeof preferences.showSymbols === 'boolean' ? preferences.showSymbols : false }
+    ? { display: preferences.display, cellSize: preferences.cellSize!, autoScroll: preferences.autoScroll, keepAwake: typeof preferences.keepAwake === 'boolean' ? preferences.keepAwake : false, showSymbols: typeof preferences.showSymbols === 'boolean' ? preferences.showSymbols : false, showAnnotations: typeof preferences.showAnnotations === 'boolean' ? preferences.showAnnotations : true }
     : undefined
   return {
     format: 'stitch-tracker',

@@ -25,6 +25,7 @@ export interface TrackerPreferences {
   autoScroll: boolean
   keepAwake: boolean
   showSymbols: boolean
+  showAnnotations: boolean
 }
 
 export interface TrackerProject {

@@ -6,8 +6,8 @@ import LanguageSwitcher from './LanguageSwitcher.vue'
 import type { Theme } from '../composables/useTheme'
 import type { PrintMode } from '../types/pattern'
 
-defineProps<{ theme: Theme }>()
-const emit = defineEmits<{ new: []; open: []; save: []; png: []; print: [mode: PrintMode]; theme: []; guide: [] }>()
+defineProps<{ theme: Theme; includeAnnotations: boolean }>()
+const emit = defineEmits<{ new: []; open: []; save: []; png: []; print: [mode: PrintMode]; theme: []; guide: []; 'update:includeAnnotations': [value: boolean] }>()
 const { t } = useI18n({ useScope: 'global' })
 
 function requestPrint(mode: PrintMode, event: MouseEvent) {
@@ -76,6 +76,18 @@ function requestPng(event: MouseEvent) {
           />
         </summary>
         <ul class="menu dropdown-content z-50 mt-2 w-48 rounded-box border border-base-300 bg-base-100 p-2 shadow-lg">
+          <li>
+            <label class="flex-row justify-between gap-3">
+              <span>{{ t('editor.print.includeAnnotations') }}</span>
+              <input
+                class="checkbox checkbox-primary checkbox-sm"
+                type="checkbox"
+                :checked="includeAnnotations"
+                @change="$emit('update:includeAnnotations', ($event.target as HTMLInputElement).checked)"
+              >
+            </label>
+          </li>
+          <li class="my-1 border-t border-base-300" />
           <li>
             <button
               type="button"
@@ -186,6 +198,17 @@ function requestPng(event: MouseEvent) {
           </li>
           <li class="menu-title">
             {{ t('editor.nav.download') }}
+          </li>
+          <li>
+            <label class="flex-row justify-between gap-3">
+              <span>{{ t('editor.print.includeAnnotations') }}</span>
+              <input
+                class="checkbox checkbox-primary checkbox-sm"
+                type="checkbox"
+                :checked="includeAnnotations"
+                @change="$emit('update:includeAnnotations', ($event.target as HTMLInputElement).checked)"
+              >
+            </label>
           </li>
           <li>
             <button

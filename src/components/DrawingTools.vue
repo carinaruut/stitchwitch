@@ -9,6 +9,7 @@ defineProps<{
   mirrorHorizontal: boolean
   mirrorVertical: boolean
   referenceOpen: boolean
+  includeAnnotations: boolean
 }>()
 defineEmits<{
   select: [tool: DrawingTool]
@@ -20,6 +21,7 @@ defineEmits<{
   toggleMirrorVertical: []
   toggleReference: []
   cancelPlacement: []
+  'update:includeAnnotations': [value: boolean]
 }>()
 
 const { t } = useI18n({ useScope: 'global' })
@@ -31,6 +33,9 @@ const tools = computed<Array<{ value: DrawingTool; icon: string; label: string; 
   { value: 'select', icon: 'mdi-select-drag', label: t('controls.drawing.tools.select'), shortcut: 'S' },
   { value: 'wand', icon: 'mdi-auto-fix', label: t('controls.drawing.tools.wand'), shortcut: 'W' },
   { value: 'move', icon: 'mdi-hand-back-right-outline', label: t('controls.drawing.tools.move'), shortcut: 'H' },
+  { value: 'text', icon: 'mdi-format-text', label: t('controls.drawing.tools.text'), shortcut: 'T' },
+  { value: 'marker', icon: 'mdi-map-marker-outline', label: t('controls.drawing.tools.marker'), shortcut: 'M' },
+  { value: 'arrow', icon: 'mdi-arrow-top-right', label: t('controls.drawing.tools.arrow'), shortcut: 'A' },
 ])
 
 function requestDownload(event: MouseEvent, action: () => void) {
@@ -198,6 +203,18 @@ function requestDownload(event: MouseEvent, action: () => void) {
           />
         </summary>
         <ul class="menu dropdown-content z-50 mt-2 w-52 rounded-box border border-base-300 bg-base-100 p-2 shadow-lg">
+          <li>
+            <label class="flex-row justify-between gap-3">
+              <span>{{ t('editor.print.includeAnnotations') }}</span>
+              <input
+                class="checkbox checkbox-primary checkbox-sm"
+                type="checkbox"
+                :checked="includeAnnotations"
+                @change="$emit('update:includeAnnotations', ($event.target as HTMLInputElement).checked)"
+              >
+            </label>
+          </li>
+          <li class="my-1 border-t border-base-300" />
           <li>
             <button
               type="button"

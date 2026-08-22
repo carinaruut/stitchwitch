@@ -15,6 +15,9 @@ controls:
       select: Select area
       wand: Magic wand
       move: Pan canvas
+      text: Comment
+      marker: Marker
+      arrow: Arrow
     clearGrid: Clear grid
     mirrorLines: Live canvas mirror lines
     verticalMirrorTooltip: "Vertical mirror line: draw left and right"
@@ -25,6 +28,18 @@ controls:
     horizontal: Horizontal
     chooseDestination: Choose destination
     patternSettings: Pattern settings
+  annotations:
+    layerLabel: Pattern annotations
+    selected: Selected annotation
+    text: Comment text
+    color: Annotation color
+    useSelectedColor: Use drawing color
+    defaultText: Comment
+    commentLabel: "Comment: {text}"
+    types:
+      text: Comment
+      marker: Marker
+      arrow: Arrow
   axis:
     rows: Rows
     columns: Columns

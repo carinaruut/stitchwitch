@@ -250,6 +250,7 @@ body {
   .print-detail-page,
   .print-symbol-key-page,
   .print-color-key-page,
+  .print-comment-page,
   .print-repeat-page {
     background: white !important;
     color: black !important;
@@ -292,6 +293,7 @@ body {
   .print-detail-page,
   .print-symbol-key-page,
   .print-color-key-page,
+  .print-comment-page,
   .print-repeat-page {
     break-inside: avoid;
   }
@@ -300,6 +302,7 @@ body {
   .print-detail-page h2,
   .print-symbol-key-page h2,
   .print-color-key-page h2,
+  .print-comment-page h2,
   .print-repeat-page h2 {
     font-size: 14pt;
     font-weight: 700;
@@ -324,6 +327,7 @@ body {
   .print-detail-page p,
   .print-symbol-key-page p,
   .print-color-key-page p,
+  .print-comment-page p,
   .print-repeat-chart p {
     font-size: 9pt;
     margin: -1mm 0 3mm;
@@ -334,6 +338,30 @@ body {
     display: flex;
     gap: 6mm;
     margin-bottom: 6mm;
+  }
+
+  .print-comment-group {
+    break-inside: auto;
+  }
+
+  .print-comment-list {
+    display: grid;
+    gap: 2mm;
+  }
+
+  .print-comment-entry {
+    align-items: baseline;
+    border-bottom: 0.18mm solid #d4d4d4;
+    display: grid;
+    font-size: 10pt;
+    gap: 4mm;
+    grid-template-columns: 42mm 1fr;
+    padding: 1.5mm 0;
+  }
+
+  .print-comment-entry strong {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    white-space: nowrap;
   }
 
   .print-repeat-row:last-child {
@@ -354,6 +382,7 @@ body {
 
   .print-chart {
     display: grid;
+    position: relative;
     width: max-content;
     max-width: 100%;
   }

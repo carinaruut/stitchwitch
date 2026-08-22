@@ -58,6 +58,7 @@ tracker:
     cellSize: Ruudu suurus
     autoScroll: Automaatne kerimine
     showSymbols: Näita värvisümboleid
+    showAnnotations: Näita märkusi
     keepAwake: Hoia ekraan ärkvel
     fullscreen: Ava täisekraan
     exitFullscreen: Välju täisekraanilt

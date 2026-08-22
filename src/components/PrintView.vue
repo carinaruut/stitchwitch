@@ -17,6 +17,7 @@ const TILE_COLUMNS = 55
 const TILE_ROWS = 35
 const REPEAT_GAP_MM = 6
 const KEY_ENTRIES_PER_PAGE = 39
+const COMMENTS_PER_PAGE = 32
 
 interface PrintableChart {
   id: string
@@ -42,7 +43,7 @@ interface PrintPage {
   height: number
 }
 
-const props = defineProps<{ project: PatternProject; mode: PrintMode }>()
+const props = defineProps<{ project: PatternProject; mode: PrintMode; includeAnnotations: boolean }>()
 const { n, t } = useI18n({ useScope: 'global' })
 const renderedPattern = computed(() => renderGrid(props.project.cells, props.project.horizontalRepeats, props.project.verticalRepeats, props.project.repeatBoxes))
 const pattern = computed(() => renderedPattern.value.cells)
@@ -74,6 +75,16 @@ const symbolKeyPages = computed(() => {
   return Array.from(
     { length: Math.ceil(symbolEntries.value.length / KEY_ENTRIES_PER_PAGE) },
     (_, index) => symbolEntries.value.slice(index * KEY_ENTRIES_PER_PAGE, (index + 1) * KEY_ENTRIES_PER_PAGE),
+  )
+})
+const commentPages = computed(() => {
+  if (!props.includeAnnotations) return []
+  const comments = props.project.annotations
+    .filter((annotation) => annotation.type === 'text')
+    .sort((first, second) => first.row - second.row || first.column - second.column)
+  return Array.from(
+    { length: Math.ceil(comments.length / COMMENTS_PER_PAGE) },
+    (_, index) => comments.slice(index * COMMENTS_PER_PAGE, (index + 1) * COMMENTS_PER_PAGE),
   )
 })
 
@@ -254,8 +265,37 @@ const repeatPages = computed(() => packCharts(repeatCharts.value))
         :chart-style="chartStyle"
         :label="t(`print.overviewLabel.${mode === 'symbols' ? 'symbols' : 'color'}`)"
         :symbols="symbolMap"
+        :cell-size="chartCellSize"
+        :annotations="includeAnnotations ? project.annotations : undefined"
+        :source-rows="renderedPattern.sourceRows"
+        :source-columns="renderedPattern.sourceColumns"
       />
     </section>
+
+    <div
+      v-if="commentPages.length"
+      class="print-comment-group print-start-page"
+    >
+      <section
+        v-for="(comments, pageIndex) in commentPages"
+        :key="`comments-${pageIndex}`"
+        class="print-comment-page"
+        :class="{ 'print-start-page': pageIndex > 0 }"
+      >
+        <h2>{{ t('print.commentsTitle', { page: pageIndex + 1, total: commentPages.length }) }}</h2>
+        <p>{{ t('print.commentsDescription') }}</p>
+        <div class="print-comment-list">
+          <article
+            v-for="comment in comments"
+            :key="comment.id"
+            class="print-comment-entry"
+          >
+            <strong>{{ t('print.commentCoordinates', { row: comment.row + 1, column: comment.column + 1 }) }}</strong>
+            <span>{{ comment.text }}</span>
+          </article>
+        </div>
+      </section>
+    </div>
 
     <div
       v-if="symbolKeyPages.length"
@@ -347,6 +387,8 @@ const repeatPages = computed(() => packCharts(repeatCharts.value))
             :chart-style="detail.style"
             :label="detail.title"
             :symbols="symbolMap"
+            :cell-size="detail.cellSize"
+            :annotations="includeAnnotations ? project.annotations : undefined"
           />
         </article>
       </div>
@@ -384,6 +426,8 @@ const repeatPages = computed(() => packCharts(repeatCharts.value))
               :chart-style="repeat.style"
               :label="repeat.title"
               :symbols="symbolMap"
+              :cell-size="repeat.cellSize"
+              :annotations="includeAnnotations ? project.annotations : undefined"
             />
           </article>
         </div>

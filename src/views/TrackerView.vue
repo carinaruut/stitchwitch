@@ -30,6 +30,7 @@ function readTrackerPreferences(): Partial<TrackerPreferences> {
       autoScroll: typeof value.autoScroll === 'boolean' ? value.autoScroll : undefined,
       keepAwake: typeof value.keepAwake === 'boolean' ? value.keepAwake : undefined,
       showSymbols: typeof value.showSymbols === 'boolean' ? value.showSymbols : undefined,
+      showAnnotations: typeof value.showAnnotations === 'boolean' ? value.showAnnotations : undefined,
     }
   } catch {
     return {}
@@ -53,6 +54,7 @@ const display = ref<PatternDisplay>(savedPreferences.display ?? 'canvas')
 const autoScroll = ref(savedPreferences.autoScroll ?? true)
 const keepAwake = ref(savedPreferences.keepAwake ?? false)
 const showSymbols = ref(savedPreferences.showSymbols ?? false)
+const showAnnotations = ref(savedPreferences.showAnnotations ?? true)
 const wakeLockSupported = typeof navigator !== 'undefined' && 'wakeLock' in navigator
 const fullscreenSupported = typeof document !== 'undefined' && document.fullscreenEnabled
 const trackerFullscreen = ref(false)
@@ -139,7 +141,7 @@ function applyInput(input: { tracker?: TrackerProject; pattern?: PatternProject 
     const pattern = input.tracker?.pattern ?? input.pattern
     if (pattern) cellSize.value = Math.min(40, Math.max(18, pattern.cellSize))
   }
-  const preferences = { display: display.value, cellSize: cellSize.value, autoScroll: autoScroll.value, keepAwake: keepAwake.value, showSymbols: showSymbols.value }
+  const preferences = { display: display.value, cellSize: cellSize.value, autoScroll: autoScroll.value, keepAwake: keepAwake.value, showSymbols: showSymbols.value, showAnnotations: showAnnotations.value }
   if (input.tracker) {
     state.openTracker(input.tracker, preferences)
     const trackerPreferences = state.tracker.value?.preferences
@@ -149,6 +151,7 @@ function applyInput(input: { tracker?: TrackerProject; pattern?: PatternProject 
       autoScroll.value = trackerPreferences.autoScroll
       keepAwake.value = trackerPreferences.keepAwake
       showSymbols.value = trackerPreferences.showSymbols
+      showAnnotations.value = trackerPreferences.showAnnotations
       if (keepAwake.value) void requestWakeLock()
       else releaseWakeLock()
     }
@@ -318,7 +321,7 @@ watch(state.autosaveStatus, (status) => {
     notify(t('tracker.notifications.autosaveFailed'), 'error', 8000)
   }
 })
-watch([display, cellSize, autoScroll, keepAwake, showSymbols], () => {
+watch([display, cellSize, autoScroll, keepAwake, showSymbols, showAnnotations], () => {
   hasCellSizePreference = true
   const preferences = {
     display: display.value,
@@ -326,6 +329,7 @@ watch([display, cellSize, autoScroll, keepAwake, showSymbols], () => {
     autoScroll: autoScroll.value,
     keepAwake: keepAwake.value,
     showSymbols: showSymbols.value,
+    showAnnotations: showAnnotations.value,
   } satisfies TrackerPreferences
   try {
     localStorage.setItem(TRACKER_PREFERENCES_KEY, JSON.stringify(preferences))
@@ -724,6 +728,11 @@ function cancelActiveModal() {
                         class="toggle toggle-primary toggle-sm"
                         type="checkbox"
                       ></label>
+                      <label class="flex items-center justify-between gap-3 text-sm"><span>{{ t('tracker.controls.showAnnotations') }}</span><input
+                        v-model="showAnnotations"
+                        class="toggle toggle-primary toggle-sm"
+                        type="checkbox"
+                      ></label>
                       <label
                         v-if="wakeLockSupported"
                         class="flex items-center justify-between gap-3 text-sm"
@@ -823,6 +832,10 @@ function cancelActiveModal() {
               :auto-scroll="autoScroll"
               :symbols="trackerSymbolMap"
               :focused-color="focusedColor"
+              :annotations="state.tracker.value.pattern.annotations"
+              :cell-source-rows="renderedPattern.sourceRows"
+              :cell-source-columns="renderedPattern.sourceColumns"
+              :show-annotations="showAnnotations"
               @stitch="selectStitch"
               @row="state.selectRow($event, renderedPattern.cells.length, renderedPattern.cells[0].length)"
               @fullscreen-change="trackerFullscreen = $event"

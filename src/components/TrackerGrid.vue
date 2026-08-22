@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import type { PatternDisplay, PatternGrid } from '../types/pattern'
+import type { PatternAnnotation, PatternDisplay, PatternGrid } from '../types/pattern'
 import type { TrackerProgress } from '../types/tracker'
 import { contrastColor } from '../utils/colors'
 import { followsCenterBoundary, isCenterHeader, repeatOutlineColor, REPEAT_COPY } from '../utils/grid'
 import { isStitchCompleted, rowCompletionRange, stitchOrdinal } from '../utils/tracker'
+import { renderAnnotations } from '../utils/annotations'
+import AnnotationLayer from './AnnotationLayer.vue'
 
 const props = defineProps<{
   cells: PatternGrid
@@ -19,6 +21,10 @@ const props = defineProps<{
   autoScroll: boolean
   symbols?: Record<string, string>
   focusedColor?: string | null
+  annotations: PatternAnnotation[]
+  cellSourceRows: number[][]
+  cellSourceColumns: number[][]
+  showAnnotations: boolean
 }>()
 
 const { t } = useI18n({ useScope: 'global' })
@@ -36,6 +42,7 @@ const activeRowHeader = ref(0)
 const isFullscreen = ref(false)
 const marking = ref(false)
 const markedCells = new Set<string>()
+const renderedAnnotations = computed(() => props.showAnnotations ? renderAnnotations(props.annotations, props.cellSourceRows, props.cellSourceColumns) : [])
 
 function handleFullscreenChange() {
   isFullscreen.value = document.fullscreenElement === fullscreenTarget.value
@@ -226,7 +233,7 @@ function moveRowHeader(row: number, event: KeyboardEvent) {
       :aria-label="t('tracker.grid.label')"
     >
       <div
-        class="grid w-max border border-base-300/70 bg-base-100"
+        class="relative grid w-max border border-base-300/70 bg-base-100"
         :style="{ gridTemplateColumns: `32px repeat(${cells[0].length}, ${cellSize}px)`, gridTemplateRows: `32px repeat(${cells.length}, ${cellSize}px)` }"
         role="grid"
         :aria-rowcount="cells.length + 1"
@@ -327,6 +334,13 @@ function moveRowHeader(row: number, event: KeyboardEvent) {
             >{{ symbols[color] }}</span>
           </button>
         </div>
+        <AnnotationLayer
+          v-if="showAnnotations"
+          :annotations="renderedAnnotations"
+          :rows="cells.length"
+          :columns="cells[0].length"
+          :header-size="32"
+        />
       </div>
     </div>
     <button

@@ -1,10 +1,11 @@
 import { computed, ref } from 'vue'
-import type { PaletteEntry, PatternGrid, RepeatBox } from '../types/pattern'
+import type { PaletteEntry, PatternAnnotation, PatternGrid, RepeatBox } from '../types/pattern'
 import { cloneGrid } from '../utils/grid'
 
 export interface PatternSnapshot {
   cells: PatternGrid
   repeatBoxes: RepeatBox[]
+  annotations: PatternAnnotation[]
   palette: PaletteEntry[]
   backgroundColor: string
   swatches: string[]
@@ -15,6 +16,7 @@ function cloneSnapshot(snapshot: PatternSnapshot): PatternSnapshot {
   return {
     cells: cloneGrid(snapshot.cells),
     repeatBoxes: snapshot.repeatBoxes.map((box) => ({ ...box })),
+    annotations: snapshot.annotations.map((annotation) => ({ ...annotation })),
     palette: snapshot.palette.map((entry) => ({ ...entry })),
     backgroundColor: snapshot.backgroundColor,
     swatches: [...snapshot.swatches],

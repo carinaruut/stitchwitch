@@ -22,6 +22,7 @@ validation:
   repeatBoxBounds: Kordusala ulatub mustrist väljapoole.
   repeatBoxSections: Kordusala ei jagune võrdseteks osadeks.
   repeatBoxOverlap: Kordusalad kattuvad.
+  annotations: Mustri märkused ei sobi.
 tracker:
   projectObject: Fail ei sisalda rea jälgimise projekti.
   unsupportedFile: See fail ei ole toetatud stitch-tracker-vormingus.
@@ -40,6 +41,7 @@ files:
   invalidJson: Valitud fail ei ole korrektne JSON.
 defaults:
   projectName: Minu muster
+  annotationText: Kommentaar
 repeatSave:
   settings: Kordusala seaded ei sobi.
   bounds: Kordusala ei saa ulatuda üle 500 rea ega veeru.

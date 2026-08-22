@@ -18,6 +18,7 @@ import ConfirmModal from '../components/ConfirmModal.vue'
 import NotificationToast from '../components/NotificationToast.vue'
 import PrintView from '../components/PrintView.vue'
 import UserGuideModal from '../components/UserGuideModal.vue'
+import AnnotationEditor from '../components/AnnotationEditor.vue'
 import { usePattern } from '../composables/usePattern'
 import { useTheme } from '../composables/useTheme'
 import { useNotifications } from '../composables/useNotifications'
@@ -28,9 +29,11 @@ import { colorSymbolMap } from '../utils/colors'
 import { pickScreenColor } from '../utils/eyeDropper'
 import { renderGrid } from '../utils/grid'
 import { orderedColorCounts } from '../utils/palette'
+import { renderAnnotations as renderPatternAnnotations } from '../utils/annotations'
 
 const CANVAS_FULL_HEIGHT_KEY = 'stitch-canvas-full-height'
 const CANVAS_SYMBOLS_KEY = 'stitch-canvas-symbols'
+const EXPORT_ANNOTATIONS_KEY = 'stitch-export-annotations'
 
 function readCanvasFullHeight() {
   try {
@@ -45,6 +48,14 @@ function readCanvasSymbols() {
     return localStorage.getItem(CANVAS_SYMBOLS_KEY) === 'true'
   } catch {
     return false
+  }
+}
+
+function readExportAnnotations() {
+  try {
+    return localStorage.getItem(EXPORT_ANNOTATIONS_KEY) !== 'false'
+  } catch {
+    return true
   }
 }
 
@@ -64,6 +75,7 @@ const printMode = ref<PrintMode>('color')
 const printMenu = ref<HTMLDetailsElement | null>(null)
 const canvasFullHeight = ref(readCanvasFullHeight())
 const canvasSymbols = ref(readCanvasSymbols())
+const includeAnnotations = ref(readExportAnnotations())
 const downloadBackupNeeded = ref(pattern.restoredAutosave.value)
 const patternName = ref(pattern.project.value.name)
 const toolShortcuts: Record<string, DrawingTool> = {
@@ -74,6 +86,9 @@ const toolShortcuts: Record<string, DrawingTool> = {
   s: 'select',
   w: 'wand',
   h: 'move',
+  t: 'text',
+  m: 'marker',
+  a: 'arrow',
 }
 const renderedPattern = computed(() => renderGrid(
   pattern.project.value.cells,
@@ -82,6 +97,7 @@ const renderedPattern = computed(() => renderGrid(
   pattern.project.value.repeatBoxes,
 ))
 const canvasSymbolMap = computed(() => canvasSymbols.value ? colorSymbolMap(orderedColorCounts(renderedPattern.value.cells, pattern.paletteEntries.value).map((entry) => entry.color)) : undefined)
+const selectedAnnotation = computed(() => pattern.project.value.annotations.find((annotation) => annotation.id === pattern.selectedAnnotationId.value) ?? null)
 
 watch(canvasFullHeight, (value) => {
   try {
@@ -95,6 +111,13 @@ watch(canvasSymbols, (value) => {
     localStorage.setItem(CANVAS_SYMBOLS_KEY, String(value))
   } catch {
     // Symbols remain usable when browser storage is unavailable.
+  }
+})
+watch(includeAnnotations, (value) => {
+  try {
+    localStorage.setItem(EXPORT_ANNOTATIONS_KEY, String(value))
+  } catch {
+    // Export preferences are optional when browser storage is unavailable.
   }
 })
 
@@ -315,6 +338,73 @@ async function downloadCanvasPng() {
       }
     })
 
+    if (includeAnnotations.value) {
+      const annotations = renderPatternAnnotations(pattern.project.value.annotations, renderedPattern.value.sourceRows, renderedPattern.value.sourceColumns)
+      for (const annotation of annotations) {
+        const x = headerPixels + (annotation.displayColumn + 0.5) * cellPixels
+        const y = headerPixels + (annotation.displayRow + 0.5) * cellPixels
+        context.save()
+        context.strokeStyle = '#ffffff'
+        context.fillStyle = annotation.color
+        context.lineCap = 'round'
+        context.lineJoin = 'round'
+        if (annotation.type === 'text') {
+          const left = x - cellPixels * 0.32
+          const top = y - cellPixels * 0.3
+          const width = cellPixels * 0.64
+          const height = cellPixels * 0.48
+          const drawComment = (color: string, lineWidth: number) => {
+            context.strokeStyle = color
+            context.lineWidth = lineWidth
+            context.beginPath()
+            context.roundRect(left, top, width, height, cellPixels * 0.1)
+            context.moveTo(left + cellPixels * 0.18, top + height)
+            context.lineTo(left + cellPixels * 0.12, top + height + cellPixels * 0.16)
+            context.lineTo(left + cellPixels * 0.3, top + height)
+            context.stroke()
+          }
+          context.fillStyle = '#ffffff'
+          context.beginPath()
+          context.roundRect(left, top, width, height, cellPixels * 0.1)
+          context.fill()
+          drawComment('#ffffff', Math.max(3, cellPixels * 0.28))
+          drawComment(annotation.color, Math.max(1.5, cellPixels * 0.12))
+        } else if (annotation.type === 'marker') {
+          context.beginPath()
+          context.arc(x, y, cellPixels * 0.3, 0, Math.PI * 2)
+          context.lineWidth = Math.max(2, cellPixels * 0.12)
+          context.stroke()
+          context.fill()
+          context.beginPath()
+          context.fillStyle = '#ffffff'
+          context.arc(x, y, cellPixels * 0.09, 0, Math.PI * 2)
+          context.fill()
+        } else {
+          const endX = headerPixels + ((annotation.displayEndColumn ?? annotation.displayColumn) + 0.5) * cellPixels
+          const endY = headerPixels + ((annotation.displayEndRow ?? annotation.displayRow) + 0.5) * cellPixels
+          const angle = Math.atan2(endY - y, endX - x)
+          const drawArrow = (color: string, width: number, head: number) => {
+            context.strokeStyle = color
+            context.fillStyle = color
+            context.lineWidth = width
+            context.beginPath()
+            context.moveTo(x, y)
+            context.lineTo(endX, endY)
+            context.stroke()
+            context.beginPath()
+            context.moveTo(endX, endY)
+            context.lineTo(endX - head * Math.cos(angle - Math.PI / 6), endY - head * Math.sin(angle - Math.PI / 6))
+            context.lineTo(endX - head * Math.cos(angle + Math.PI / 6), endY - head * Math.sin(angle + Math.PI / 6))
+            context.closePath()
+            context.fill()
+          }
+          drawArrow('#ffffff', Math.max(3, cellPixels * 0.28), cellPixels * 0.42)
+          drawArrow(annotation.color, Math.max(1.5, cellPixels * 0.14), cellPixels * 0.32)
+        }
+        context.restore()
+      }
+    }
+
     const blob = await new Promise<Blob>((resolve, reject) => canvas.toBlob(value => value ? resolve(value) : reject(new Error('PNG creation failed')), 'image/png'))
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
@@ -395,6 +485,15 @@ function moveSelectionDirectly(row: number, column: number) {
   else notify(t('editor.errors.selectionLimit'), 'error')
 }
 
+function createAnnotation(type: 'text' | 'marker' | 'arrow', row: number, column: number, endRow: number, endColumn: number) {
+  pattern.addAnnotation(type, row, column, endRow, endColumn, t('controls.annotations.defaultText'))
+}
+
+function moveAnnotationEndpoint(id: string, rowDelta: number, columnDelta: number) {
+  const annotation = pattern.project.value.annotations.find((candidate) => candidate.id === id)
+  if (annotation?.type === 'arrow') pattern.updateAnnotation(id, { endRow: annotation.endRow + rowDelta, endColumn: annotation.endColumn + columnDelta })
+}
+
 function handleKeyboardShortcuts(event: KeyboardEvent) {
   if ((event.metaKey || event.ctrlKey) && !event.altKey && event.key.toLowerCase() === 's') {
     event.preventDefault()
@@ -406,11 +505,20 @@ function handleKeyboardShortcuts(event: KeyboardEvent) {
   const target = event.target as HTMLElement | null
   if (target?.closest('input, textarea, select, [contenteditable="true"]')) return
   if (newModalOpen.value || clearModalOpen.value || importModalOpen.value || guideOpen.value) return
+  if (event.key === 'Escape' && pattern.selectedAnnotationId.value) {
+    pattern.selectedAnnotationId.value = null
+    return
+  }
   if (event.key === 'Escape' && (placingSelection.value || pattern.hasSelection.value || pattern.selectedRows.value.length > 0 || pattern.selectedColumns.value.length > 0)) {
     placingSelection.value = false
     pattern.clearSelection()
     pattern.clearRowSelection()
     pattern.clearColumnSelection()
+    return
+  }
+  if ((event.key === 'Delete' || event.key === 'Backspace') && pattern.selectedAnnotationId.value) {
+    event.preventDefault()
+    pattern.removeAnnotation(pattern.selectedAnnotationId.value)
     return
   }
   if (!event.metaKey && !event.ctrlKey && !event.altKey) {
@@ -497,6 +605,8 @@ onBeforeUnmount(() => {
   <div class="screen-only min-h-screen bg-base-200 text-base-content">
     <TopNavbar
       :theme="theme"
+      :include-annotations="includeAnnotations"
+      @update:include-annotations="includeAnnotations = $event"
       @new="newModalOpen = true"
       @open="fileInput?.click()"
       @save="saveProject"
@@ -566,6 +676,8 @@ onBeforeUnmount(() => {
               :mirror-horizontal="pattern.mirrorHorizontal.value"
               :mirror-vertical="pattern.mirrorVertical.value"
               :reference-open="referenceOpen"
+              :include-annotations="includeAnnotations"
+              @update:include-annotations="includeAnnotations = $event"
               @select="selectTool"
               @toggle-mirror-horizontal="toggleMirror('horizontal')"
               @toggle-mirror-vertical="toggleMirror('vertical')"
@@ -667,6 +779,13 @@ onBeforeUnmount(() => {
                 />
               </template>
             </DrawingTools>
+            <AnnotationEditor
+              v-if="selectedAnnotation"
+              :annotation="selectedAnnotation"
+              :selected-color="pattern.selectedColor.value"
+              @update="pattern.updateAnnotation(selectedAnnotation.id, $event)"
+              @delete="pattern.removeAnnotation(selectedAnnotation.id)"
+            />
             <div
               class="grid min-w-0"
               :class="referenceOpen ? 'gap-3 lg:grid-cols-[minmax(0,1fr)_22rem]' : 'grid-cols-1'"
@@ -709,6 +828,8 @@ onBeforeUnmount(() => {
                   :mirror-horizontal="pattern.mirrorHorizontal.value"
                   :mirror-vertical="pattern.mirrorVertical.value"
                   :symbols="canvasSymbolMap"
+                  :annotations="pattern.project.value.annotations"
+                  :selected-annotation-id="pattern.selectedAnnotationId.value"
                   @stroke-start="beginStroke"
                   @paint="pattern.paintCell"
                   @stroke-end="endStroke"
@@ -722,6 +843,10 @@ onBeforeUnmount(() => {
                   @clear-selection="pattern.clearSelection"
                   @place-selection="placeSelection"
                   @move-selection="moveSelectionDirectly"
+                  @create-annotation="createAnnotation"
+                  @select-annotation="pattern.selectedAnnotationId.value = $event"
+                  @move-annotation="pattern.moveAnnotation"
+                  @move-annotation-endpoint="moveAnnotationEndpoint"
                 />
               </div>
             </div>
@@ -781,5 +906,6 @@ onBeforeUnmount(() => {
   <PrintView
     :project="pattern.project.value"
     :mode="printMode"
+    :include-annotations="includeAnnotations"
   />
 </template>
