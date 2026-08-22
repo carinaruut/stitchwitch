@@ -2,6 +2,7 @@
 import { reactive, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { MAX_REPEAT_COUNT, type NewPatternProject } from '../types/pattern'
+import VisualColorPicker from './VisualColorPicker.vue'
 
 const props = defineProps<{ open: boolean }>()
 const emit = defineEmits<{ create: [project: NewPatternProject]; cancel: [] }>()
@@ -51,7 +52,7 @@ function submit() {
     @keydown.esc="$emit('cancel')"
   >
     <form
-      class="modal-box"
+      class="modal-box max-h-[calc(100dvh-2rem)] overflow-y-auto"
       @submit.prevent="submit"
     >
       <h2
@@ -98,6 +99,22 @@ function submit() {
           min="8"
           max="64"
         ></label>
+        <fieldset class="sm:col-span-2">
+          <legend class="label-text mb-2">
+            {{ t('controls.newProject.backgroundColor') }}
+          </legend>
+          <div class="rounded-box border border-base-300 bg-base-200/40 p-3">
+            <div class="mb-3 flex items-center gap-2">
+              <span
+                class="size-9 rounded-box border border-base-content/25 shadow-sm"
+                :style="{ backgroundColor: form.backgroundColor }"
+                aria-hidden="true"
+              />
+              <strong class="font-mono text-sm">{{ form.backgroundColor.toUpperCase() }}</strong>
+            </div>
+            <VisualColorPicker v-model="form.backgroundColor" />
+          </div>
+        </fieldset>
         <label class="form-control"><span class="label-text mb-1">{{ t('controls.newProject.horizontalRepeats') }}</span><input
           v-model.number="form.horizontalRepeats"
           class="input input-bordered w-full"

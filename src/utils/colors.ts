@@ -26,6 +26,12 @@ export interface RgbColor {
   blue: number
 }
 
+export interface HsvColor {
+  hue: number
+  saturation: number
+  value: number
+}
+
 export function normalizeColor(value: string): string | null {
   const color = value.trim().toLowerCase()
   if (HEX_COLOR.test(color)) return color
@@ -53,6 +59,47 @@ export function rgbToHex(red: number, green: number, blue: number): string | nul
   const channels = [red, green, blue]
   if (!channels.every((channel) => Number.isInteger(channel) && channel >= 0 && channel <= 255)) return null
   return `#${channels.map((channel) => channel.toString(16).padStart(2, '0')).join('')}`
+}
+
+export function hexToHsv(value: string): HsvColor | null {
+  const rgb = hexToRgb(value)
+  if (!rgb) return null
+  const red = rgb.red / 255
+  const green = rgb.green / 255
+  const blue = rgb.blue / 255
+  const maximum = Math.max(red, green, blue)
+  const minimum = Math.min(red, green, blue)
+  const difference = maximum - minimum
+  let hue = 0
+  if (difference > 0) {
+    if (maximum === red) hue = 60 * (((green - blue) / difference) % 6)
+    else if (maximum === green) hue = 60 * ((blue - red) / difference + 2)
+    else hue = 60 * ((red - green) / difference + 4)
+  }
+  if (hue < 0) hue += 360
+  return {
+    hue,
+    saturation: maximum === 0 ? 0 : difference / maximum,
+    value: maximum,
+  }
+}
+
+export function hsvToHex(hue: number, saturation: number, value: number): string {
+  const normalizedHue = ((hue % 360) + 360) % 360
+  const normalizedSaturation = Math.min(1, Math.max(0, saturation))
+  const normalizedValue = Math.min(1, Math.max(0, value))
+  const chroma = normalizedValue * normalizedSaturation
+  const section = normalizedHue / 60
+  const intermediate = chroma * (1 - Math.abs((section % 2) - 1))
+  const match = normalizedValue - chroma
+  let channels: [number, number, number]
+  if (section < 1) channels = [chroma, intermediate, 0]
+  else if (section < 2) channels = [intermediate, chroma, 0]
+  else if (section < 3) channels = [0, chroma, intermediate]
+  else if (section < 4) channels = [0, intermediate, chroma]
+  else if (section < 5) channels = [intermediate, 0, chroma]
+  else channels = [chroma, 0, intermediate]
+  return `#${channels.map((channel) => Math.round((channel + match) * 255).toString(16).padStart(2, '0')).join('')}`
 }
 
 export function colorSymbolMap(colors: string[]): Record<string, string> {

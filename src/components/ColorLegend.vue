@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import type { PaletteEntry, PatternGrid } from '../types/pattern'
 import { contrastColor } from '../utils/colors'
 import { orderedColorCounts, paletteDetails, paletteLabel, paletteMap } from '../utils/palette'
+import VisualColorPicker from './VisualColorPicker.vue'
 
 const props = defineProps<{
   cells: PatternGrid
@@ -39,6 +40,8 @@ const completedTotal = computed(() => Object.values(props.completedCounts ?? {})
 const draggedColor = ref<string | null>(null)
 const dropTarget = ref<{ color: string; after: boolean } | null>(null)
 const openColor = ref<string | null>(null)
+const pickerSource = ref<string | null>(null)
+const draftColor = ref('')
 
 function stitchCount(count: number) {
   return t(count === 1 ? 'editor.legend.oneStitch' : 'editor.legend.stitches', { count: n(count, 'integer') })
@@ -66,12 +69,14 @@ function updateField(color: string, field: 'name' | 'brand' | 'code' | 'notes', 
   emit('update', color, { [field]: (event.target as HTMLInputElement | HTMLTextAreaElement).value })
 }
 
-function chooseNewColor(source: string, event: Event) {
-  switchColor(source, (event.target as HTMLInputElement).value)
+function openPicker(source: string) {
+  draftColor.value = source
+  pickerSource.value = pickerSource.value === source ? null : source
 }
 
 function switchColor(source: string, target: string) {
   openColor.value = null
+  pickerSource.value = null
   emit('switchColor', source, target)
 }
 
@@ -264,10 +269,14 @@ function endDrag() {
                     {{ t('controls.palette.switchColor') }}
                   </p>
                   <div class="flex flex-wrap gap-2 pb-1">
-                    <label
+                    <button
                       class="tooltip tooltip-top z-10 shrink-0 hover:z-20"
                       :data-tip="t('controls.palette.chooseNewColor')"
                       :title="t('controls.palette.chooseNewColor')"
+                      type="button"
+                      :aria-label="t('controls.palette.chooseNewColor')"
+                      :aria-expanded="pickerSource === entry.color"
+                      @click="openPicker(entry.color)"
                     >
                       <span class="grid size-12 cursor-pointer place-items-center rounded-box border-2 border-dashed border-base-content/35 bg-base-200 text-base-content/70 transition-colors hover:border-primary hover:text-primary">
                         <span
@@ -275,14 +284,7 @@ function endDrag() {
                           aria-hidden="true"
                         />
                       </span>
-                      <input
-                        class="sr-only"
-                        type="color"
-                        :value="entry.color"
-                        :aria-label="t('controls.palette.chooseNewColor')"
-                        @change="chooseNewColor(entry.color, $event)"
-                      >
-                    </label>
+                    </button>
                     <button
                       v-for="target in entries.filter((candidate) => candidate.color !== entry.color)"
                       :key="target.color"
@@ -294,6 +296,35 @@ function endDrag() {
                       :aria-label="t('controls.palette.switchTo', { color: paletteLabel(metadata.get(target.color), target.color.toUpperCase()) })"
                       @click="switchColor(entry.color, target.color)"
                     />
+                  </div>
+                  <div
+                    v-if="pickerSource === entry.color"
+                    class="mt-3 rounded-box border border-base-300 bg-base-200/40 p-3"
+                  >
+                    <VisualColorPicker v-model="draftColor" />
+                    <div class="mt-3 flex items-center gap-2">
+                      <span
+                        class="size-9 rounded-box border border-base-content/25 shadow-sm"
+                        :style="{ backgroundColor: draftColor }"
+                        aria-hidden="true"
+                      />
+                      <span class="font-mono text-xs">{{ draftColor.toUpperCase() }}</span>
+                      <button
+                        class="btn btn-ghost btn-sm ml-auto"
+                        type="button"
+                        @click="pickerSource = null"
+                      >
+                        {{ t('controls.common.cancel') }}
+                      </button>
+                      <button
+                        class="btn btn-primary btn-sm"
+                        type="button"
+                        :disabled="draftColor === entry.color"
+                        @click="switchColor(entry.color, draftColor)"
+                      >
+                        {{ t('controls.palette.applyColor') }}
+                      </button>
+                    </div>
                   </div>
                 </div>
               </template>

@@ -65,6 +65,18 @@ controls:
     removeSwatch: Remove saved color {color}
     recent: Recent colors
     selectRecent: Select recent color {color}
+    pickerModes: Color picker style
+    spectrum: Spectrum
+    wheel: Wheel
+    harmony: Harmony
+    saturationValue: Color saturation and brightness
+    hueSaturation: Color hue and saturation
+    hue: Hue
+    brightness: Brightness
+    complementary: Complement
+    analogous: Analogous
+    triadic: Triadic
+    selectHarmony: Select harmony color {color}
   palette:
     description: Name colors, record yarn or thread details, reorder the legend, or switch a stitch color.
     metadataDescription: Add yarn or thread details and reorder the legend.
@@ -76,6 +88,7 @@ controls:
     switchColor: Switch color
     chooseNewColor: Choose a new color
     switchTo: Switch to {color}
+    applyColor: Switch color
   reference:
     title: Reference photo
     toggle: Toggle reference photo
@@ -127,6 +140,7 @@ controls:
     rows: Rows
     columns: Columns
     cellSize: "Cell size: {size} px"
+    backgroundColor: Background color
     horizontalRepeats: Horizontal repeats
     verticalRepeats: Vertical repeats
     create: Create pattern

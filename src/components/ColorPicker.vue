@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { hexToRgb, normalizeColor, rgbToHex } from '../utils/colors'
 import { MAX_PROJECT_SWATCHES } from '../types/pattern'
+import VisualColorPicker from './VisualColorPicker.vue'
 
 const props = defineProps<{ color: string; recentColors: string[]; swatches: string[] }>()
 const emit = defineEmits<{ select: [color: string]; eyedropper: []; addSwatch: []; removeSwatch: [color: string] }>()
@@ -52,21 +53,14 @@ function submitRgb() {
         {{ t('controls.color.title') }}
       </h2>
       <div class="flex items-center gap-3">
-        <label
-          class="relative h-11 w-11 shrink-0 cursor-pointer rounded border-2 border-base-content"
+        <span
+          class="h-11 w-11 shrink-0 rounded-box border-2 border-base-content shadow-sm"
           :style="{ backgroundColor: color }"
-        >
-          <span class="sr-only">{{ t('controls.color.choose') }}</span>
-          <input
-            class="absolute inset-0 h-full w-full cursor-pointer opacity-0"
-            type="color"
-            :value="color"
-            :aria-label="t('controls.color.choose')"
-            @input="selectColor(($event.target as HTMLInputElement).value)"
-          >
-        </label>
+          aria-hidden="true"
+        />
+        <strong class="font-mono text-sm">{{ color.toUpperCase() }}</strong>
         <button
-          class="btn btn-sm btn-outline"
+          class="btn btn-sm btn-outline ml-auto"
           type="button"
           @click="$emit('eyedropper')"
         >
@@ -76,6 +70,10 @@ function submitRgb() {
           />{{ t('controls.color.eyedropper') }}
         </button>
       </div>
+      <VisualColorPicker
+        :model-value="color"
+        @update:model-value="selectColor"
+      />
       <label class="form-control">
         <span class="label-text mb-1">{{ t('controls.color.hex') }}</span>
         <input

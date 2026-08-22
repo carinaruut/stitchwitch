@@ -65,6 +65,18 @@ controls:
     removeSwatch: Eemalda salvestatud värv {color}
     recent: Hiljutised värvid
     selectRecent: Vali hiljutine värv {color}
+    pickerModes: Värvivalija laad
+    spectrum: Spekter
+    wheel: Värviring
+    harmony: Harmoonia
+    saturationValue: Värvi küllastus ja heledus
+    hueSaturation: Värvitoon ja küllastus
+    hue: Värvitoon
+    brightness: Heledus
+    complementary: Täiendvärv
+    analogous: Analoogne
+    triadic: Kolmkõla
+    selectHarmony: Vali harmooniavärv {color}
   palette:
     description: Anna värvidele nimed, lisa lõnga või niidi andmed, muuda legendi järjekorda või vaheta pistevärvi.
     metadataDescription: Lisa lõnga või niidi andmed ja muuda legendi järjekorda.
@@ -76,6 +88,7 @@ controls:
     switchColor: Vaheta värvi
     chooseNewColor: Vali uus värv
     switchTo: Vaheta värviks {color}
+    applyColor: Vaheta värv
   reference:
     title: Viitepilt
     toggle: Näita või peida viitepilt
@@ -127,6 +140,7 @@ controls:
     rows: Read
     columns: Veerud
     cellSize: "Ruudu suurus: {size} px"
+    backgroundColor: Taustavärv
     horizontalRepeats: Horisontaalsed kordused
     verticalRepeats: Vertikaalsed kordused
     create: Loo muster
