@@ -56,6 +56,7 @@ const showSymbols = ref(savedPreferences.showSymbols ?? false)
 const wakeLockSupported = typeof navigator !== 'undefined' && 'wakeLock' in navigator
 const fullscreenSupported = typeof document !== 'undefined' && document.fullscreenEnabled
 const trackerFullscreen = ref(false)
+const focusedColor = ref<string | null>(null)
 const timerNow = ref(Date.now())
 let wakeLock: WakeLockSentinel | null = null
 let wakeLockRequestPending = false
@@ -133,6 +134,7 @@ async function selectFile(event: Event) {
 }
 
 function applyInput(input: { tracker?: TrackerProject; pattern?: PatternProject }) {
+  focusedColor.value = null
   if (!hasCellSizePreference) {
     const pattern = input.tracker?.pattern ?? input.pattern
     if (pattern) cellSize.value = Math.min(40, Math.max(18, pattern.cellSize))
@@ -250,6 +252,10 @@ async function toggleFullscreen() {
 function selectStitch(row: number, column: number) {
   if (!renderedPattern.value) return
   state.selectStitch(row, column, renderedPattern.value.cells.length, renderedPattern.value.cells[0].length)
+}
+
+function toggleFocusedColor(color: string) {
+  focusedColor.value = focusedColor.value === color ? null : color
 }
 
 function confirmReset() {
@@ -816,6 +822,7 @@ function cancelActiveModal() {
               :progress="state.tracker.value.progress"
               :auto-scroll="autoScroll"
               :symbols="trackerSymbolMap"
+              :focused-color="focusedColor"
               @stitch="selectStitch"
               @row="state.selectRow($event, renderedPattern.cells.length, renderedPattern.cells[0].length)"
               @fullscreen-change="trackerFullscreen = $event"
@@ -830,10 +837,13 @@ function cancelActiveModal() {
           :palette="state.paletteEntries.value"
           editable
           allow-color-switch
+          selectable
+          :selected-color="focusedColor"
           @update="state.updatePaletteEntry"
           @move="state.movePaletteEntry"
           @switch-color="state.switchPaletteColor"
           @reorder="state.reorderPaletteEntry"
+          @select-color="toggleFocusedColor"
         />
       </template>
     </main>

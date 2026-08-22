@@ -18,6 +18,7 @@ const props = defineProps<{
   progress: TrackerProgress
   autoScroll: boolean
   symbols?: Record<string, string>
+  focusedColor?: string | null
 }>()
 
 const { t } = useI18n({ useScope: 'global' })
@@ -75,6 +76,10 @@ function rowComplete(row: number) {
 
 function cellComplete(row: number, column: number) {
   return isStitchCompleted(row, column, props.cells.length, props.cells[0].length, props.progress)
+}
+
+function colorFocused(row: number, column: number) {
+  return props.focusedColor != null && props.cells[row]?.[column] === props.focusedColor
 }
 
 function nextStitch(row: number, column: number) {
@@ -283,6 +288,11 @@ function moveRowHeader(row: number, event: KeyboardEvent) {
               'bg-transparent': display !== 'canvas',
               'tracker-cell-complete': cellComplete(rowIndex, columnIndex),
               'tracker-cell-next': nextStitch(rowIndex, columnIndex),
+              'tracker-color-focused': colorFocused(rowIndex, columnIndex),
+              'tracker-color-focus-top': colorFocused(rowIndex, columnIndex) && !colorFocused(rowIndex - 1, columnIndex),
+              'tracker-color-focus-bottom': colorFocused(rowIndex, columnIndex) && !colorFocused(rowIndex + 1, columnIndex),
+              'tracker-color-focus-left': colorFocused(rowIndex, columnIndex) && !colorFocused(rowIndex, columnIndex - 1),
+              'tracker-color-focus-right': colorFocused(rowIndex, columnIndex) && !colorFocused(rowIndex, columnIndex + 1),
               'section-column-end': (columnHeaders[columnIndex] + 1) % 5 === 0 && columnIndex < row.length - 1,
               'section-row-end': (rowHeaders[rowIndex] + 1) % 5 === 0 && rowIndex < cells.length - 1,
               'repeat-copy-cell': (repeatFlags[rowIndex][columnIndex] & REPEAT_COPY) !== 0,
@@ -373,6 +383,35 @@ function moveRowHeader(row: number, event: KeyboardEvent) {
   inset: 0;
   mix-blend-mode: multiply;
   position: absolute;
+}
+
+.tracker-color-focused {
+  z-index: 2;
+}
+
+.tracker-color-focused::before {
+  background: color-mix(in oklab, var(--color-secondary) 25%, transparent);
+  content: '';
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+  z-index: 2;
+}
+
+.tracker-color-focus-top {
+  border-top: 3px solid var(--color-secondary) !important;
+}
+
+.tracker-color-focus-bottom {
+  border-bottom: 3px solid var(--color-secondary) !important;
+}
+
+.tracker-color-focus-left {
+  border-left: 3px solid var(--color-secondary) !important;
+}
+
+.tracker-color-focus-right {
+  border-right: 3px solid var(--color-secondary) !important;
 }
 
 .tracker-stitch-knit::after {

@@ -13,12 +13,15 @@ const props = defineProps<{
   palette?: PaletteEntry[]
   editable?: boolean
   allowColorSwitch?: boolean
+  selectable?: boolean
+  selectedColor?: string | null
 }>()
 const emit = defineEmits<{
   update: [color: string, updates: Partial<Pick<PaletteEntry, 'name' | 'brand' | 'code' | 'notes'>>]
   move: [color: string, direction: -1 | 1]
   switchColor: [source: string, target: string]
   reorder: [source: string, target: string, after: boolean]
+  selectColor: [color: string]
 }>()
 const { n, t } = useI18n({ useScope: 'global' })
 const entries = computed(() => {
@@ -160,6 +163,7 @@ function endDrag() {
           class="relative rounded-box border border-base-300 bg-base-200/50"
           :class="{
             'opacity-50': draggedColor === entry.color,
+            'ring-2 ring-secondary ring-offset-2 ring-offset-base-100': selectedColor === entry.color,
           }"
           @dragover="dragOver(entry.color, $event)"
           @drop="drop(entry.color, $event)"
@@ -178,6 +182,8 @@ function endDrag() {
             <summary
               class="grid min-h-12 cursor-pointer list-none grid-cols-[auto_minmax(0,1fr)_auto_auto] items-center gap-3 px-3 py-2 [&::-webkit-details-marker]:hidden"
               :aria-label="entryLabel(entry.color, completedCounts ? progressCount(completedCounts[entry.color] ?? 0, entry.count) : stitchCount(entry.count))"
+              :aria-pressed="selectable ? selectedColor === entry.color : undefined"
+              @click="selectable && emit('selectColor', entry.color)"
             >
               <span
                 class="flex size-7 shrink-0 items-center justify-center rounded-md border border-base-content/25 text-base font-bold leading-none shadow-sm"
