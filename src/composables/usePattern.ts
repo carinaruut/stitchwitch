@@ -351,7 +351,7 @@ export function usePattern() {
     selectColumn(column)
   }
 
-  function setMagicSelection(row: number, column: number) {
+  function setMagicSelection(row: number, column: number, extend = false) {
     if (row < 0 || row >= project.value.cells.length || column < 0 || column >= project.value.cells[0].length) return
     const color = project.value.cells[row][column]
     const cells: Array<[number, number]> = []
@@ -377,6 +377,21 @@ export function usePattern() {
         visited.add(key)
         pending.push([nextRow, nextColumn])
       }
+    }
+
+    if (extend && selection.value) {
+      const combined = new Map<string, [number, number]>()
+      for (const [selectedRow, selectedColumn] of selectionCoordinates(selection.value)) {
+        combined.set(`${selectedRow}:${selectedColumn}`, [selectedRow, selectedColumn])
+      }
+      for (const [selectedRow, selectedColumn] of cells) {
+        combined.set(`${selectedRow}:${selectedColumn}`, [selectedRow, selectedColumn])
+      }
+      cells.splice(0, cells.length, ...combined.values())
+      top = Math.min(top, selection.value.top)
+      left = Math.min(left, selection.value.left)
+      bottom = Math.max(bottom, selection.value.bottom)
+      right = Math.max(right, selection.value.right)
     }
 
     selection.value = { top, left, bottom, right, cells }

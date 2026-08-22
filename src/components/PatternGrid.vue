@@ -42,7 +42,7 @@ const emit = defineEmits<{
   selectColumn: [column: number, extend: boolean, toggle: boolean]
   columnAction: [action: 'before' | 'after' | 'multiple' | 'delete' | 'fill' | 'erase', column: number, count?: number]
   selectArea: [top: number, left: number, bottom: number, right: number]
-  magicSelect: [row: number, column: number]
+  magicSelect: [row: number, column: number, extend: boolean]
   selectionAction: [action: SelectionAction]
   clearSelection: []
   placeSelection: [row: number, column: number]
@@ -161,7 +161,7 @@ function start(row: number, column: number, displayRow: number, displayColumn: n
   }
   if (props.tool === 'wand') {
     event.preventDefault()
-    emit('magicSelect', row, column)
+    emit('magicSelect', row, column, event.shiftKey)
     return
   }
   if (props.tool === 'select') {
@@ -331,9 +331,9 @@ function keyboardPaint(row: number, column: number) {
   emit('strokeEnd')
 }
 
-function keyboardSelect(displayRow: number, displayColumn: number) {
+function keyboardSelect(displayRow: number, displayColumn: number, event: KeyboardEvent) {
   if (props.tool === 'wand') {
-    emit('magicSelect', props.cellSourceRows[displayRow][displayColumn], props.cellSourceColumns[displayRow][displayColumn])
+    emit('magicSelect', props.cellSourceRows[displayRow][displayColumn], props.cellSourceColumns[displayRow][displayColumn], event.shiftKey)
     return
   }
   const row = props.rowHeaders[displayRow]
@@ -444,8 +444,8 @@ onBeforeUnmount(() => {
           @pointerdown="start(cellSourceRows[rowIndex][columnIndex], cellSourceColumns[rowIndex][columnIndex], rowIndex, columnIndex, $event)"
           @pointerenter="enter(cellSourceRows[rowIndex][columnIndex], cellSourceColumns[rowIndex][columnIndex], rowIndex, columnIndex, $event)"
           @contextmenu="openSelectionMenu(rowHeaders[rowIndex], columnHeaders[columnIndex], $event)"
-          @keydown.enter.prevent="tool === 'select' || tool === 'wand' ? keyboardSelect(rowIndex, columnIndex) : keyboardPaint(cellSourceRows[rowIndex][columnIndex], cellSourceColumns[rowIndex][columnIndex])"
-          @keydown.space.prevent="tool === 'select' || tool === 'wand' ? keyboardSelect(rowIndex, columnIndex) : keyboardPaint(cellSourceRows[rowIndex][columnIndex], cellSourceColumns[rowIndex][columnIndex])"
+          @keydown.enter.prevent="tool === 'select' || tool === 'wand' ? keyboardSelect(rowIndex, columnIndex, $event) : keyboardPaint(cellSourceRows[rowIndex][columnIndex], cellSourceColumns[rowIndex][columnIndex])"
+          @keydown.space.prevent="tool === 'select' || tool === 'wand' ? keyboardSelect(rowIndex, columnIndex, $event) : keyboardPaint(cellSourceRows[rowIndex][columnIndex], cellSourceColumns[rowIndex][columnIndex])"
         >
           <span
             v-if="symbols?.[color]"
