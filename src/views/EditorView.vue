@@ -26,6 +26,7 @@ import type { DrawingTool, NewPatternProject, PatternProject, PrintMode, RepeatB
 import { localizedErrorMessage } from '../utils/appError'
 import { colorSymbolMap } from '../utils/colors'
 import { renderGrid } from '../utils/grid'
+import { orderedColorCounts } from '../utils/palette'
 
 const CANVAS_FULL_HEIGHT_KEY = 'stitch-canvas-full-height'
 const CANVAS_SYMBOLS_KEY = 'stitch-canvas-symbols'
@@ -79,7 +80,7 @@ const renderedPattern = computed(() => renderGrid(
   pattern.project.value.verticalRepeats,
   pattern.project.value.repeatBoxes,
 ))
-const canvasSymbolMap = computed(() => canvasSymbols.value ? colorSymbolMap(renderedPattern.value.cells.flat()) : undefined)
+const canvasSymbolMap = computed(() => canvasSymbols.value ? colorSymbolMap(orderedColorCounts(renderedPattern.value.cells, pattern.paletteEntries.value).map((entry) => entry.color)) : undefined)
 
 watch(canvasFullHeight, (value) => {
   try {
@@ -353,6 +354,13 @@ function startMoveSelection() {
 
 function mirrorSelection(direction: 'horizontal' | 'vertical') {
   if (pattern.mirrorSelection(direction)) notify(t('editor.notifications.selectionFlipped', { direction: t(`editor.directions.${direction}`) }), 'success')
+}
+
+function switchPaletteColor(source: string, target: string) {
+  const entries = new Map(pattern.paletteEntries.value.map((entry) => [entry.color, entry]))
+  const sourceLabel = entries.get(source)?.name || source.toUpperCase()
+  const targetLabel = entries.get(target)?.name || target.toUpperCase()
+  if (pattern.switchPaletteColor(source, target)) notify(t('editor.notifications.colorSwitched', { source: sourceLabel, target: targetLabel }), 'success')
 }
 
 function rotateSelection(direction: 'clockwise' | 'counterclockwise') {
@@ -712,6 +720,13 @@ onBeforeUnmount(() => {
         <ColorLegend
           :cells="renderedPattern.cells"
           :symbols="canvasSymbolMap"
+          :palette="pattern.paletteEntries.value"
+          editable
+          allow-color-switch
+          @update="pattern.updatePaletteEntry"
+          @move="pattern.movePaletteEntry"
+          @switch-color="switchPaletteColor"
+          @reorder="pattern.reorderPaletteEntry"
         />
 
         <PatternPreview

@@ -21,6 +21,8 @@ editor:
     stitches: '{count} stitches'
     entryLabel: 'Color {color}: {stitches}'
     entryLabelWithSymbol: 'Color {color}, symbol {symbol}: {stitches}'
+    entryLabelWithMetadata: 'Color {color}, {metadata}: {stitches}'
+    entryLabelWithSymbolAndMetadata: 'Color {color}, symbol {symbol}, {metadata}: {stitches}'
     progress: '{done}/{total} stitches'
   print:
     button: Download
@@ -69,6 +71,7 @@ editor:
     selectionFlipped: Selection flipped {direction}.
     selectionRotated: Selection rotated {direction}.
     selectionMoved: Selection moved.
+    colorSwitched: Changed {source} to {target}.
     referenceColorPicked: Selected {color} from the reference photo.
     backupFailed: Local backup failed. Download the project to avoid losing changes.
     patternRecovered: Recovered your locally saved pattern.

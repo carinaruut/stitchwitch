@@ -389,7 +389,7 @@ body {
   .print-symbol-key {
     display: grid;
     gap: 2mm 4mm;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .print-symbol-key-entry {
@@ -427,6 +427,27 @@ body {
     font-size: 8pt;
     margin-left: auto;
     white-space: nowrap;
+  }
+
+  .print-key-details {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .print-key-details > strong,
+  .print-key-details > span,
+  .print-key-details > small {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .print-key-details > span,
+  .print-key-details > small {
+    color: #525252;
+    font-family: Arial, sans-serif;
+    font-size: 7pt;
   }
 
   .print-chart-corner,

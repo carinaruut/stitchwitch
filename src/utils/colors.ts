@@ -58,7 +58,7 @@ export function rgbToHex(red: number, green: number, blue: number): string | nul
 export function colorSymbolMap(colors: string[]): Record<string, string> {
   const symbols: Record<string, string> = {}
   let symbolIndex = 0
-  for (const color of colors) {
+  for (const color of [...colors].sort()) {
     if (color.toLowerCase() === '#ffffff' || color in symbols) continue
     symbols[color] = COLOR_SYMBOLS[symbolIndex] ?? `#${symbolIndex - COLOR_SYMBOLS.length + 1}`
     symbolIndex += 1

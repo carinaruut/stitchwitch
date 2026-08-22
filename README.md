@@ -5,6 +5,7 @@ Stitch Witch is a free, open-source color-chart designer for knitting, crochet, 
 ## Features
 
 - Draw, fill, select, move, mirror, and repeat pattern sections
+- Name palette colors, record yarn or thread details, reorder entries, and switch stitch colors
 - Preview knit, cross-stitch, and single-crochet stitches
 - Track row and stitch progress with auto-scroll, fullscreen, and wake lock
 - Save editable pattern and Tracker files with automatic local backups

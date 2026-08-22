@@ -16,6 +16,7 @@ import { localizedErrorMessage } from '../utils/appError'
 import { colorSymbolMap } from '../utils/colors'
 import { renderGrid } from '../utils/grid'
 import { isStitchCompleted, MAX_TRACKER_STITCHES, renderedDimensions, trackerElapsedMilliseconds } from '../utils/tracker'
+import { orderedColorCounts } from '../utils/palette'
 
 const TRACKER_PREFERENCES_KEY = 'stitch-tracker-preferences'
 
@@ -68,7 +69,9 @@ const renderedPattern = computed(() => {
   const pattern = state.tracker.value.pattern
   return renderGrid(pattern.cells, pattern.horizontalRepeats, pattern.verticalRepeats, pattern.repeatBoxes)
 })
-const trackerSymbolMap = computed(() => showSymbols.value && renderedPattern.value ? colorSymbolMap(renderedPattern.value.cells.flat()) : undefined)
+const trackerSymbolMap = computed(() => showSymbols.value && renderedPattern.value && state.tracker.value
+  ? colorSymbolMap(orderedColorCounts(renderedPattern.value.cells, state.paletteEntries.value).map((entry) => entry.color))
+  : undefined)
 const completedColorCounts = computed(() => {
   const pattern = renderedPattern.value
   const progress = state.tracker.value?.progress
@@ -824,6 +827,13 @@ function cancelActiveModal() {
           :cells="renderedPattern.cells"
           :completed-counts="completedColorCounts"
           :symbols="trackerSymbolMap"
+          :palette="state.paletteEntries.value"
+          editable
+          allow-color-switch
+          @update="state.updatePaletteEntry"
+          @move="state.movePaletteEntry"
+          @switch-color="state.switchPaletteColor"
+          @reorder="state.reorderPaletteEntry"
         />
       </template>
     </main>

@@ -54,7 +54,7 @@ onBeforeUnmount(() => resizeObserver?.disconnect())
 </script>
 
 <template>
-  <section class="card min-w-0 border border-base-300 bg-base-100">
+  <section class="card isolate min-w-0 border border-base-300 bg-base-100">
     <div class="card-body min-w-0 gap-3 p-4">
       <div class="flex flex-wrap items-center justify-between gap-2">
         <h2 class="card-title text-base">

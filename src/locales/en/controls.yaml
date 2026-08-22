@@ -65,6 +65,17 @@ controls:
     removeSwatch: Remove saved color {color}
     recent: Recent colors
     selectRecent: Select recent color {color}
+  palette:
+    description: Name colors, record yarn or thread details, reorder the legend, or switch a stitch color.
+    metadataDescription: Add yarn or thread details and reorder the legend.
+    name: Color name
+    brand: Yarn or thread brand
+    code: Product code
+    notes: Notes
+    drag: Drag {color} to reorder
+    switchColor: Switch color
+    chooseNewColor: Choose a new color
+    switchTo: Switch to {color}
   reference:
     title: Reference photo
     toggle: Toggle reference photo

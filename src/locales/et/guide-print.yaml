@@ -26,7 +26,7 @@ guide:
   tools:
     title: Joonistamine ja värvid
     colorTitle: Värvivalikud
-    colorText: Brauseri värvivalija avamiseks klõpsa värvinäidist. Võid sisestada ka värvi kuueteistkümnendkoodi, kasutada hiljutist värvi või valida pipeti ja võtta värvi mõnest ruudust. Pliiatsi ja täitmisega kasutatud värvid lisatakse hiljutiste värvide hulka.
+    colorText: Brauseri värvivalija avamiseks klõpsa värvinäidist. Võid sisestada ka värvi kuueteistkümnendkoodi, kasutada hiljutist värvi või valida pipeti ja võtta värvi mõnest ruudust. Pliiatsi ja täitmisega kasutatud värvid lisatakse hiljutiste värvide hulka. Lõuendi all saad värvilegendis kirjeid avada, et lisada värvide nimed, lõnga või niidi tootjad, tootekoodid ja märkmed, lohistada kirjeid järjekorra muutmiseks või vahetada kõik ühe värvi pisted uue või paletis oleva värvi vastu.
     pencilTitle: Pliiats ja kustutuskumm
     pencilName: Pliiats
     eraserName: Kustutuskumm

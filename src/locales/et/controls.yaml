@@ -65,6 +65,17 @@ controls:
     removeSwatch: Eemalda salvestatud värv {color}
     recent: Hiljutised värvid
     selectRecent: Vali hiljutine värv {color}
+  palette:
+    description: Anna värvidele nimed, lisa lõnga või niidi andmed, muuda legendi järjekorda või vaheta pistevärvi.
+    metadataDescription: Lisa lõnga või niidi andmed ja muuda legendi järjekorda.
+    name: Värvi nimi
+    brand: Lõnga või niidi tootja
+    code: Tootekood
+    notes: Märkmed
+    drag: Lohista {color} järjekorra muutmiseks
+    switchColor: Vaheta värvi
+    chooseNewColor: Vali uus värv
+    switchTo: Vaheta värviks {color}
   reference:
     title: Viitepilt
     toggle: Näita või peida viitepilt

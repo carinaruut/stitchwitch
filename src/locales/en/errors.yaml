@@ -15,6 +15,7 @@ validation:
   cellColors: The cell colors or columns are invalid.
   recentColors: The recent colors are invalid.
   swatches: The project swatches are invalid.
+  palette: The project palette metadata is invalid.
   repeatBoxes: The repeat boxes are invalid.
   repeatBoxId: Each repeat box must have a unique ID.
   repeatBoxSettings: A repeat box has invalid settings.

@@ -1,10 +1,11 @@
 import { computed, ref, watch } from 'vue'
-import { MAX_PROJECT_SWATCHES, MAX_REPEAT_COUNT, type DrawingTool, type GridSelection, type NewPatternProject, type PatternGrid, type PatternProject, type RepeatBox, type RepeatBoxInput } from '../types/pattern'
+import { MAX_PROJECT_SWATCHES, MAX_REPEAT_COUNT, type DrawingTool, type GridSelection, type NewPatternProject, type PaletteEntry, type PatternGrid, type PatternProject, type RepeatBox, type RepeatBoxInput } from '../types/pattern'
 import { addColumn, addRow, boxesOverlap, cloneGrid, createGrid, ensureGridSize, removeColumn, removeRow, renderGrid, sourceCellFor, synchronizeRepeatBox } from '../utils/grid'
 import { normalizeColor } from '../utils/colors'
 import { parseAxisSelection } from '../utils/axisSelection'
 import { asPatternProject } from '../utils/validation'
 import { translateError } from '../utils/localizedErrors'
+import { paletteEntries as completePaletteEntries, reorderPaletteEntries } from '../utils/palette'
 import { useHistory } from './useHistory'
 
 const AUTOSAVE_KEY = 'stitch-project-autosave'
@@ -27,6 +28,7 @@ const DEFAULT_PROJECT: PatternProject = {
   previewStitch: 'knit',
   recentColors: [],
   swatches: [],
+  palette: [],
   repeatBoxes: [],
   cells: createGrid(20, 20, '#ffffff'),
 }
@@ -52,6 +54,7 @@ export function usePattern() {
     ...initialProject,
     recentColors: [...initialProject.recentColors],
     swatches: [...initialProject.swatches],
+    palette: initialProject.palette.map((entry) => ({ ...entry })),
     repeatBoxes: initialProject.repeatBoxes.map((box) => ({ ...box })),
     cells: cloneGrid(initialProject.cells),
   })
@@ -195,7 +198,7 @@ export function usePattern() {
   }
 
   function replaceProject(next: PatternProject) {
-    project.value = { ...next, recentColors: [...next.recentColors], swatches: [...next.swatches], repeatBoxes: next.repeatBoxes.map((box) => ({ ...box })), cells: cloneGrid(next.cells) }
+    project.value = { ...next, recentColors: [...next.recentColors], swatches: [...next.swatches], palette: next.palette.map((entry) => ({ ...entry })), repeatBoxes: next.repeatBoxes.map((box) => ({ ...box })), cells: cloneGrid(next.cells) }
     recentColors.value = [...next.recentColors]
     persistColors()
     selectRow(0)
@@ -206,11 +209,91 @@ export function usePattern() {
   }
 
   function createProject(input: NewPatternProject) {
-    replaceProject({ ...input, format: 'stitch-pattern', version: 1, previewStitch: 'knit', recentColors: [...recentColors.value], swatches: [], repeatBoxes: [], cells: createGrid(input.rows, input.columns, input.backgroundColor) })
+    replaceProject({ ...input, format: 'stitch-pattern', version: 1, previewStitch: 'knit', recentColors: [...recentColors.value], swatches: [], palette: [], repeatBoxes: [], cells: createGrid(input.rows, input.columns, input.backgroundColor) })
   }
 
   function beginGridChange() {
-    history.record({ cells: project.value.cells, repeatBoxes: project.value.repeatBoxes })
+    history.record({
+      cells: project.value.cells,
+      repeatBoxes: project.value.repeatBoxes,
+      palette: project.value.palette,
+      backgroundColor: project.value.backgroundColor,
+      swatches: project.value.swatches,
+      recentColors: recentColors.value,
+    })
+  }
+
+  function updatePaletteEntry(colorValue: string, updates: Partial<Pick<PaletteEntry, 'name' | 'brand' | 'code' | 'notes'>>) {
+    const color = normalizeColor(colorValue)
+    if (!color) return
+    const entries = completePaletteEntries(project.value)
+    const index = entries.findIndex((entry) => entry.color === color)
+    if (index < 0) return
+    beginGridChange()
+    entries[index] = { ...entries[index], ...updates }
+    project.value.palette = entries
+  }
+
+  function movePaletteEntry(colorValue: string, direction: -1 | 1) {
+    const color = normalizeColor(colorValue)
+    if (!color) return
+    const entries = completePaletteEntries(project.value)
+    const index = entries.findIndex((entry) => entry.color === color)
+    const destination = index + direction
+    if (index < 0 || destination < 0 || destination >= entries.length) return
+    beginGridChange()
+    const current = entries[index]
+    entries[index] = entries[destination]
+    entries[destination] = current
+    project.value.palette = entries
+  }
+
+  function reorderPaletteEntry(sourceValue: string, targetValue: string, after: boolean) {
+    const source = normalizeColor(sourceValue)
+    const target = normalizeColor(targetValue)
+    if (!source || !target || source === target) return
+    const entries = completePaletteEntries(project.value)
+    const reordered = reorderPaletteEntries(entries, source, target, after)
+    if (!reordered) return
+    beginGridChange()
+    project.value.palette = reordered
+  }
+
+  function switchPaletteColor(sourceValue: string, targetValue: string): boolean {
+    const source = normalizeColor(sourceValue)
+    const target = normalizeColor(targetValue)
+    if (!source || !target || source === target) return false
+    const entries = completePaletteEntries(project.value)
+    const sourceEntry = entries.find((entry) => entry.color === source)
+    const targetEntry = entries.find((entry) => entry.color === target)
+    if (!sourceEntry) return false
+    beginGridChange()
+    if (targetEntry) {
+      const conflictingMetadata = [
+        targetEntry.name && sourceEntry.name && targetEntry.name !== sourceEntry.name ? sourceEntry.name : '',
+        targetEntry.brand && sourceEntry.brand && targetEntry.brand !== sourceEntry.brand ? sourceEntry.brand : '',
+        targetEntry.code && sourceEntry.code && targetEntry.code !== sourceEntry.code ? sourceEntry.code : '',
+      ].filter(Boolean)
+      const sourceDetails = conflictingMetadata.length > 0 ? [source.toUpperCase(), ...conflictingMetadata].join(' · ') : ''
+      const notes = [targetEntry.notes.trim(), sourceEntry.notes.trim(), sourceDetails].filter(Boolean)
+      const merged: PaletteEntry = {
+        color: target,
+        name: targetEntry.name || sourceEntry.name,
+        brand: targetEntry.brand || sourceEntry.brand,
+        code: targetEntry.code || sourceEntry.code,
+        notes: [...new Set(notes)].join('\n'),
+      }
+      project.value.palette = entries.filter((entry) => entry.color !== source).map((entry) => entry.color === target ? merged : entry)
+    } else {
+      project.value.palette = entries.map((entry) => entry.color === source ? { ...entry, color: target } : entry)
+    }
+    project.value.cells = synchronizeEnabledBoxes(project.value.cells.map((row) => row.map((color) => color === source ? target : color)))
+    if (project.value.backgroundColor === source) project.value.backgroundColor = target
+    project.value.swatches = [...new Set(project.value.swatches.map((color) => color === source ? target : color))]
+    recentColors.value = [...new Set(recentColors.value.map((color) => color === source ? target : color))]
+    if (selectedColor.value === source) selectedColor.value = target
+    persistColors()
+    return true
   }
 
   function setSelection(top: number, left: number, bottom: number, right: number) {
@@ -824,20 +907,30 @@ export function usePattern() {
   }
 
   function undo() {
-    const snapshot = history.undo({ cells: project.value.cells, repeatBoxes: project.value.repeatBoxes })
+    const snapshot = history.undo({ cells: project.value.cells, repeatBoxes: project.value.repeatBoxes, palette: project.value.palette, backgroundColor: project.value.backgroundColor, swatches: project.value.swatches, recentColors: recentColors.value })
     if (snapshot) {
       project.value.cells = snapshot.cells
       project.value.repeatBoxes = snapshot.repeatBoxes
+      project.value.palette = snapshot.palette
+      project.value.backgroundColor = snapshot.backgroundColor
+      project.value.swatches = snapshot.swatches
+      recentColors.value = snapshot.recentColors
+      persistColors()
     }
     selectRow(Math.min(selectedRow.value, project.value.cells.length - 1))
     selectColumn(Math.min(selectedColumn.value, project.value.cells[0].length - 1))
   }
 
   function redo() {
-    const snapshot = history.redo({ cells: project.value.cells, repeatBoxes: project.value.repeatBoxes })
+    const snapshot = history.redo({ cells: project.value.cells, repeatBoxes: project.value.repeatBoxes, palette: project.value.palette, backgroundColor: project.value.backgroundColor, swatches: project.value.swatches, recentColors: recentColors.value })
     if (snapshot) {
       project.value.cells = snapshot.cells
       project.value.repeatBoxes = snapshot.repeatBoxes
+      project.value.palette = snapshot.palette
+      project.value.backgroundColor = snapshot.backgroundColor
+      project.value.swatches = snapshot.swatches
+      recentColors.value = snapshot.recentColors
+      persistColors()
     }
     selectRow(Math.min(selectedRow.value, project.value.cells.length - 1))
     selectColumn(Math.min(selectedColumn.value, project.value.cells[0].length - 1))
@@ -865,6 +958,11 @@ export function usePattern() {
     chooseColor,
     addSwatch,
     removeSwatch,
+    paletteEntries: computed(() => completePaletteEntries(project.value)),
+    updatePaletteEntry,
+    movePaletteEntry,
+    reorderPaletteEntry,
+    switchPaletteColor,
     replaceProject,
     createProject,
     beginGridChange,

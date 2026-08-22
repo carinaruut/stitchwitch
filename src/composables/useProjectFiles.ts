@@ -10,7 +10,8 @@ export function safeFilename(name: string): string {
 export function downloadProject(project: PatternProject) {
   const validation = validateProject(project)
   if (!validation.valid) throw validation.error
-  const blob = new Blob([JSON.stringify(project, null, 2)], { type: 'application/json' })
+  const validated = asPatternProject(project)
+  const blob = new Blob([JSON.stringify(validated, null, 2)], { type: 'application/json' })
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')
   link.href = url

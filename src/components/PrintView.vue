@@ -2,8 +2,9 @@
 import { computed, type CSSProperties } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { PatternGrid, PatternProject, PrintMode } from '../types/pattern'
-import { countColors, renderGrid } from '../utils/grid'
+import { renderGrid } from '../utils/grid'
 import { colorSymbolMap, describeColor } from '../utils/colors'
+import { orderedColorCounts, paletteDetails, paletteMap } from '../utils/palette'
 import PrintChart from './PrintChart.vue'
 
 const CHART_WIDTH_MM = 238
@@ -15,7 +16,7 @@ const MAX_CELL_MM = 5
 const TILE_COLUMNS = 55
 const TILE_ROWS = 35
 const REPEAT_GAP_MM = 6
-const KEY_ENTRIES_PER_PAGE = 52
+const KEY_ENTRIES_PER_PAGE = 39
 
 interface PrintableChart {
   id: string
@@ -52,7 +53,8 @@ const chartStyle = computed(() => ({
   gridTemplateColumns: `repeat(${columns.value + 1}, ${chartCellSize.value}mm)`,
   gridTemplateRows: `repeat(${rows.value + 1}, ${chartCellSize.value}mm)`,
 }))
-const legendEntries = computed(() => countColors(pattern.value))
+const printPalette = computed(() => paletteMap(props.project.palette))
+const legendEntries = computed(() => orderedColorCounts(pattern.value, props.project.palette))
 const legendPages = computed(() => props.mode === 'color'
   ? Array.from(
       { length: Math.ceil(legendEntries.value.length / KEY_ENTRIES_PER_PAGE) },
@@ -80,11 +82,22 @@ function stitchCount(count: number) {
 }
 
 function colorName(color: string) {
+  const customName = printPalette.value.get(color)?.name.trim()
+  if (customName) return customName
   const description = describeColor(color)
   const name = t(`print.colors.${description.name}`)
   return description.tone
     ? t('print.colorWithTone', { tone: t(`print.tones.${description.tone}`), color: name })
     : name
+}
+
+function colorDetails(color: string) {
+  return [color.toUpperCase(), paletteDetails(printPalette.value.get(color))].filter(Boolean).join(' · ')
+}
+
+function colorNotes(color: string) {
+  const notes = printPalette.value.get(color)?.notes.trim() ?? ''
+  return notes.length > 80 ? `${notes.slice(0, 77)}...` : notes
 }
 
 function makeChart(
@@ -264,7 +277,11 @@ const repeatPages = computed(() => packCharts(repeatCharts.value))
             class="print-symbol-key-entry"
           >
             <span class="print-symbol-key-mark">{{ entry.symbol }}</span>
-            <span>{{ colorName(entry.color) }}</span>
+            <span class="print-key-details">
+              <strong>{{ colorName(entry.color) }}</strong>
+              <span>{{ colorDetails(entry.color) }}</span>
+              <small v-if="colorNotes(entry.color)">{{ colorNotes(entry.color) }}</small>
+            </span>
             <strong class="print-key-count">{{ stitchCount(entry.count) }}</strong>
           </div>
         </div>
@@ -294,7 +311,11 @@ const repeatPages = computed(() => packCharts(repeatCharts.value))
               class="print-color-key-mark"
               :style="{ backgroundColor: entry.color }"
             />
-            <span>{{ entry.color.toUpperCase() }}</span>
+            <span class="print-key-details">
+              <strong>{{ colorName(entry.color) }}</strong>
+              <span>{{ colorDetails(entry.color) }}</span>
+              <small v-if="colorNotes(entry.color)">{{ colorNotes(entry.color) }}</small>
+            </span>
             <strong class="print-key-count">{{ stitchCount(entry.count) }}</strong>
           </div>
         </div>

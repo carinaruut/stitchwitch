@@ -26,7 +26,7 @@ guide:
   tools:
     title: Drawing and colors
     colorTitle: Color controls
-    colorText: Click the color swatch to open the browser picker. You can also enter a hex color, reuse a recent color, or choose Eyedropper and sample a cell. Colors used by Pencil and Fill are added to Recent colors.
+    colorText: Click the color swatch to open the browser picker. You can also enter a hex color, reuse a recent color, or choose Eyedropper and sample a cell. Colors used by Pencil and Fill are added to Recent colors. Expand Color legend entries below the canvas to add color names, yarn or thread brands, product codes, and notes; drag entries to reorder them; or switch every stitch of a color to a new or existing palette color.
     pencilTitle: Pencil and Eraser
     pencilName: Pencil
     eraserName: Eraser

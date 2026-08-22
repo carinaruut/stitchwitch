@@ -6,6 +6,15 @@ export type PrintMode = 'color' | 'symbols'
 
 export const MAX_REPEAT_COUNT = 100
 export const MAX_PROJECT_SWATCHES = 32
+export const MAX_PALETTE_ENTRIES = 1000
+
+export interface PaletteEntry {
+  color: string
+  name: string
+  brand: string
+  code: string
+  notes: string
+}
 
 export interface GridSelection {
   top: number
@@ -43,8 +52,9 @@ export interface PatternProject {
   previewStitch: PreviewStitch
   recentColors: string[]
   swatches: string[]
+  palette: PaletteEntry[]
   repeatBoxes: RepeatBox[]
   cells: PatternGrid
 }
 
-export type NewPatternProject = Omit<PatternProject, 'format' | 'version' | 'previewStitch' | 'cells' | 'recentColors' | 'swatches' | 'repeatBoxes'>
+export type NewPatternProject = Omit<PatternProject, 'format' | 'version' | 'previewStitch' | 'cells' | 'recentColors' | 'swatches' | 'palette' | 'repeatBoxes'>
