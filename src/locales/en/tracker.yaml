@@ -63,8 +63,8 @@ tracker:
     exitFullscreen: Exit fullscreen
   instructions:
     resetOrder: Reset progress to change the marking mode or tracking order.
-    usage: Click a stitch to complete everything through it. Click a row number to complete or reopen that entire row.
-    individualUsage: Click a stitch to toggle only that stitch. Click a row number to complete or reopen that entire row.
+    usage: Click a stitch to complete everything through it, or hold and drag across stitches. Click a row number to complete or reopen that entire row.
+    individualUsage: Click a stitch to toggle it, or hold and drag across multiple stitches. Click a row number to complete or reopen that entire row.
   notifications:
     trackerOpened: Tracker progress opened.
     designOpened: Design opened. Choose the tracking order before starting.

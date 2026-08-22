@@ -33,6 +33,8 @@ const viewport = ref<HTMLElement | null>(null)
 const activeCell = ref({ row: 0, column: 0 })
 const activeRowHeader = ref(0)
 const isFullscreen = ref(false)
+const marking = ref(false)
+const markedCells = new Set<string>()
 
 function handleFullscreenChange() {
   isFullscreen.value = document.fullscreenElement === fullscreenTarget.value
@@ -51,9 +53,13 @@ defineExpose({ enterFullscreen, exitFullscreen })
 
 onMounted(() => {
   document.addEventListener('fullscreenchange', handleFullscreenChange)
+  window.addEventListener('pointerup', stopMarking)
+  window.addEventListener('pointercancel', stopMarking)
 })
 onBeforeUnmount(() => {
   document.removeEventListener('fullscreenchange', handleFullscreenChange)
+  window.removeEventListener('pointerup', stopMarking)
+  window.removeEventListener('pointercancel', stopMarking)
 })
 
 function ordinal(row: number, column: number) {
@@ -139,6 +145,34 @@ function selectStitch(row: number, column: number) {
   const movesProgressForward = props.progress.completionMode === 'sequential' && ordinal(row, column) >= props.progress.completedCount
   emit('stitch', row, column)
   if (props.autoScroll && movesProgressForward) void nextTick(() => scrollAfterStitch(row, column))
+}
+
+function markStitch(row: number, column: number) {
+  const cell = `${row}-${column}`
+  if (markedCells.has(cell)) return
+  markedCells.add(cell)
+  selectStitch(row, column)
+}
+
+function startMarking(row: number, column: number, event: PointerEvent) {
+  if (event.button !== 0) return
+  event.preventDefault()
+  marking.value = true
+  markedCells.clear()
+  markStitch(row, column)
+}
+
+function continueMarking(row: number, column: number, event: PointerEvent) {
+  if (marking.value && event.buttons === 1) markStitch(row, column)
+}
+
+function stopMarking() {
+  marking.value = false
+  markedCells.clear()
+}
+
+function selectStitchFromClick(row: number, column: number, event: MouseEvent) {
+  if (event.detail === 0) selectStitch(row, column)
 }
 
 function focusCell(row: number, column: number) {
@@ -262,7 +296,10 @@ function moveRowHeader(row: number, event: KeyboardEvent) {
             :aria-selected="cellComplete(rowIndex, columnIndex)"
             :aria-label="t('tracker.grid.cell', { row: rowHeaders[rowIndex] + 1, column: columnHeaders[columnIndex] + 1, status: cellComplete(rowIndex, columnIndex) ? t('tracker.grid.completed') : nextStitch(rowIndex, columnIndex) ? t('tracker.grid.nextStitch') : t('tracker.grid.notCompleted') })"
             @focus="activeCell = { row: rowIndex, column: columnIndex }"
-            @click="selectStitch(rowIndex, columnIndex)"
+            @pointerdown="startMarking(rowIndex, columnIndex, $event)"
+            @pointerenter="continueMarking(rowIndex, columnIndex, $event)"
+            @pointercancel="stopMarking"
+            @click="selectStitchFromClick(rowIndex, columnIndex, $event)"
             @keydown="moveCell(rowIndex, columnIndex, $event)"
           >
             <span

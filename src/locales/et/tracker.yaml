@@ -63,8 +63,8 @@ tracker:
     exitFullscreen: Välju täisekraanilt
   instructions:
     resetOrder: Märkimisviisi või jälgimisjärjekorra muutmiseks lähtesta edenemine.
-    usage: Kõigi pistete märkimiseks kuni valitud pisteni klõpsa pistet. Kogu rea lõpetamiseks või taasavamiseks klõpsa rea numbrit.
-    individualUsage: Ainult ühe piste märkimiseks klõpsa seda pistet. Kogu rea lõpetamiseks või taasavamiseks klõpsa rea numbrit.
+    usage: Kõigi pistete märkimiseks kuni valitud pisteni klõpsa seda või hoia hiirenuppu all ja lohista üle pistete. Kogu rea lõpetamiseks või taasavamiseks klõpsa rea numbrit.
+    individualUsage: Piste oleku vahetamiseks klõpsa seda või hoia hiirenuppu all ja lohista üle mitme piste. Kogu rea lõpetamiseks või taasavamiseks klõpsa rea numbrit.
   notifications:
     trackerOpened: Tööjärg avatud.
     designOpened: Kavand avatud. Enne alustamist vali jälgimisjärjekord.
