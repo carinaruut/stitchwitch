@@ -317,7 +317,7 @@ defineExpose({
       v-if="isOpen"
       :id="panelId"
       ref="panel"
-      class="dropdown-content app-dropdown-panel z-[60] overflow-y-auto rounded-box border border-base-300 bg-base-100 shadow-xl"
+      class="dropdown-content app-dropdown-panel z-60 overflow-y-auto rounded-box border border-base-300 bg-base-100 shadow-xl"
       :class="[panelClasses, props.panelClass]"
       :style="panelStyle"
       :role="panelRole"

@@ -158,7 +158,7 @@ function adjustWheel(event: KeyboardEvent) {
     <div class="mt-3">
       <div
         v-if="mode === 'spectrum'"
-        class="color-spectrum relative aspect-[7/4] w-full cursor-crosshair touch-none overflow-hidden rounded-box border border-base-content/20 shadow-inner"
+        class="color-spectrum relative aspect-7/4 w-full cursor-crosshair touch-none overflow-hidden rounded-box border border-base-content/20 shadow-inner"
         :style="{ backgroundColor: hueColor }"
         role="slider"
         tabindex="0"

@@ -407,7 +407,7 @@ function moveRowHeader(row: number, event: KeyboardEvent) {
             />
             <span
               v-if="symbols?.[color]"
-              class="pointer-events-none absolute inset-0 z-[1] flex items-center justify-center font-bold leading-none"
+              class="pointer-events-none absolute inset-0 z-1 flex items-center justify-center font-bold leading-none"
               :style="{ color: contrastColor(color), fontSize: `${Math.max(8, Math.min(16, cellSize * 0.45))}px` }"
               aria-hidden="true"
             >{{ symbols[color] }}</span>
@@ -432,7 +432,7 @@ function moveRowHeader(row: number, event: KeyboardEvent) {
             <button
               v-for="comment in renderedComments"
               :key="comment.renderId"
-              class="absolute z-[7] flex items-center justify-center rounded-md border border-current bg-white shadow-sm hover:scale-110 focus-visible:outline-2 focus-visible:outline-primary"
+              class="absolute z-7 flex items-center justify-center rounded-md border border-current bg-white shadow-sm hover:scale-110 focus-visible:outline-2 focus-visible:outline-primary"
               :class="{ 'pointer-events-none': marking, 'ring-2 ring-primary ring-offset-1': selectedComment?.renderId === comment.renderId }"
               :style="commentButtonStyle(comment)"
               type="button"

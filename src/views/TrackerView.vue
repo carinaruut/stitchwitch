@@ -480,7 +480,7 @@ function cancelActiveModal() {
       @change="selectFile"
     >
 
-    <main class="mx-auto max-w-[90rem] space-y-4 p-3 sm:p-5">
+    <main class="mx-auto max-w-360 space-y-4 p-3 sm:p-5">
       <section
         v-if="!state.tracker.value"
         class="grid min-h-[calc(100dvh-7rem)] place-items-center"
@@ -949,7 +949,7 @@ function cancelActiveModal() {
     </button>
   </div>
   <div
-    class="toast toast-end toast-top z-[100] mt-14"
+    class="toast toast-end toast-top z-100 mt-14"
     aria-live="polite"
   >
     <div

@@ -453,7 +453,7 @@ onBeforeUnmount(() => {
           :key="columnIndex"
           class="pattern-cell"
           :class="{
-            'outline-2 outline-offset-[-2px] outline-neutral': tool !== 'select' && tool !== 'wand' && tool !== 'move' && selectedRows.length > 0 && selectedColumns.length > 0 && selectedRow === cellSourceRows[rowIndex][columnIndex] && selectedColumn === cellSourceColumns[rowIndex][columnIndex],
+            'outline-2 -outline-offset-2 outline-neutral': tool !== 'select' && tool !== 'wand' && tool !== 'move' && selectedRows.length > 0 && selectedColumns.length > 0 && selectedRow === cellSourceRows[rowIndex][columnIndex] && selectedColumn === cellSourceColumns[rowIndex][columnIndex],
             'selection-border-top': visibleContains(rowHeaders[rowIndex], columnHeaders[columnIndex]) && !visibleContains(rowHeaders[rowIndex] - 1, columnHeaders[columnIndex]),
             'selection-border-bottom': visibleContains(rowHeaders[rowIndex], columnHeaders[columnIndex]) && !visibleContains(rowHeaders[rowIndex] + 1, columnHeaders[columnIndex]),
             'selection-border-left': visibleContains(rowHeaders[rowIndex], columnHeaders[columnIndex]) && !visibleContains(rowHeaders[rowIndex], columnHeaders[columnIndex] - 1),
@@ -509,7 +509,7 @@ onBeforeUnmount(() => {
 
   <div
     v-if="selectionMenu"
-    class="fixed z-[80] w-52 rounded-box border border-base-300 bg-base-100 p-2 shadow-lg"
+    class="fixed z-80 w-52 rounded-box border border-base-300 bg-base-100 p-2 shadow-lg"
     :style="{ left: `${selectionMenu.x}px`, top: `${selectionMenu.y}px` }"
     role="menu"
     :aria-label="t('controls.patternGrid.selectionActions')"
@@ -631,7 +631,7 @@ onBeforeUnmount(() => {
 
   <div
     v-if="rowMenu"
-    class="fixed z-[80] w-56 rounded-box border border-base-300 bg-base-100 p-2"
+    class="fixed z-80 w-56 rounded-box border border-base-300 bg-base-100 p-2"
     :style="{ left: `${rowMenu.x}px`, top: `${rowMenu.y}px` }"
     role="menu"
     :aria-label="selectedRows.length === 1 ? t('controls.patternGrid.rowActions', { number: rowMenu.row + 1 }) : t('controls.patternGrid.selectedRowActions', selectedRows.length)"
@@ -735,7 +735,7 @@ onBeforeUnmount(() => {
 
   <div
     v-if="columnMenu"
-    class="fixed z-[80] w-56 rounded-box border border-base-300 bg-base-100 p-2"
+    class="fixed z-80 w-56 rounded-box border border-base-300 bg-base-100 p-2"
     :style="{ left: `${columnMenu.x}px`, top: `${columnMenu.y}px` }"
     role="menu"
     :aria-label="selectedColumns.length === 1 ? t('controls.patternGrid.columnActions', { number: columnMenu.column + 1 }) : t('controls.patternGrid.selectedColumnActions', selectedColumns.length)"

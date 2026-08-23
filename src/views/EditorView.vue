@@ -625,7 +625,7 @@ onBeforeUnmount(() => {
     >
 
     <div class="min-w-0 p-3 sm:p-5">
-      <main class="mx-auto max-w-[90rem] space-y-4">
+      <main class="mx-auto max-w-360 space-y-4">
         <section class="card border border-base-300 bg-base-100">
           <div class="card-body gap-3 p-3 sm:p-5">
             <div class="flex flex-wrap items-start justify-between gap-3">

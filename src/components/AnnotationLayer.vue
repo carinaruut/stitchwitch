@@ -93,7 +93,7 @@ onBeforeUnmount(cancelDrag)
 <template>
   <svg
     ref="svg"
-    class="annotation-layer absolute z-[6] overflow-visible"
+    class="annotation-layer absolute z-6 overflow-visible"
     :class="cursorClass"
     :viewBox="`0 0 ${columns} ${rows}`"
     :style="{ left: `${headerSize}${headerUnit}`, top: `${headerSize}${headerUnit}`, width: `calc(100% - ${headerSize}${headerUnit})`, height: `calc(100% - ${headerSize}${headerUnit})` }"
