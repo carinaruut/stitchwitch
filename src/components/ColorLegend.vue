@@ -177,7 +177,7 @@ function endDrag() {
           <span
             v-if="dropTarget?.color === entry.color"
             class="pointer-events-none absolute inset-x-4 z-20 h-0.5 rounded-full bg-primary"
-            :class="dropTarget.after ? '-bottom-[5px]' : '-top-[5px]'"
+            :class="dropTarget.after ? '-bottom-1.25' : '-top-1.25'"
             aria-hidden="true"
           />
           <AppDropdown
@@ -185,6 +185,7 @@ function endDrag() {
             class="w-full"
             :label="entryLabel(entry.color, completedCounts ? progressCount(completedCounts[entry.color] ?? 0, entry.count) : stitchCount(entry.count))"
             align="left"
+            fixed-width
             :open="openColor === entry.color"
             panel-class="flex w-[min(24rem,calc(100vw-1.5rem))] min-w-0 flex-col gap-3 p-4"
             @update:open="setEntryOpen(entry.color, $event)"
