@@ -30,12 +30,23 @@ function annotationLabel(annotation: RenderedAnnotation) {
     : t(`controls.annotations.types.${annotation.type}`)
 }
 
+function commentBounds(annotation: RenderedAnnotation) {
+  return {
+    left: annotation.displayColumn + 0.18,
+    top: annotation.displayRow + 0.2,
+    right: annotation.displayColumn + 0.82,
+    bottom: annotation.displayRow + 0.68,
+  }
+}
+
 function commentPath(annotation: RenderedAnnotation) {
-  const left = annotation.displayColumn + 0.18
-  const top = annotation.displayRow + 0.2
-  const right = annotation.displayColumn + 0.82
-  const bottom = annotation.displayRow + 0.68
+  const { left, top, right, bottom } = commentBounds(annotation)
   return `M ${left + 0.1} ${top} H ${right - 0.1} Q ${right} ${top} ${right} ${top + 0.1} V ${bottom - 0.1} Q ${right} ${bottom} ${right - 0.1} ${bottom} H ${left + 0.3} L ${left + 0.12} ${bottom + 0.16} V ${bottom} H ${left + 0.1} Q ${left} ${bottom} ${left} ${bottom - 0.1} V ${top + 0.1} Q ${left} ${top} ${left + 0.1} ${top} Z`
+}
+
+function commentCenter(annotation: RenderedAnnotation) {
+  const bounds = commentBounds(annotation)
+  return { x: (bounds.left + bounds.right) / 2, y: (bounds.top + bounds.bottom) / 2 }
 }
 
 function transform(annotation: RenderedAnnotation) {
@@ -115,6 +126,14 @@ onBeforeUnmount(cancelDrag)
       @pointerdown="startDrag(annotation.id, false, $event)"
     >
       <template v-if="annotation.type === 'text'">
+        <rect
+          :x="commentBounds(annotation).left - 0.08"
+          :y="commentBounds(annotation).top - 0.06"
+          :width="commentBounds(annotation).right - commentBounds(annotation).left + 0.16"
+          :height="commentBounds(annotation).bottom - commentBounds(annotation).top + 0.28"
+          fill="transparent"
+          pointer-events="all"
+        />
         <path
           :d="commentPath(annotation)"
           fill="white"
@@ -131,8 +150,8 @@ onBeforeUnmount(cancelDrag)
         />
         <circle
           v-if="selectedId === annotation.id"
-          :cx="annotation.displayColumn + 0.5"
-          :cy="annotation.displayRow + 0.5"
+          :cx="commentCenter(annotation).x"
+          :cy="commentCenter(annotation).y"
           r="0.46"
           fill="none"
           stroke="var(--color-primary)"

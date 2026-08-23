@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
-import ClickPopover from './ClickPopover.vue'
+import AppDropdown from './AppDropdown.vue'
 import ColorPicker from './ColorPicker.vue'
 
 defineProps<{ color: string; recentColors: string[]; swatches: string[] }>()
@@ -9,7 +9,7 @@ const { t } = useI18n({ useScope: 'global' })
 </script>
 
 <template>
-  <ClickPopover
+  <AppDropdown
     :label="t('controls.color.controls')"
     align="right"
     width="md"
@@ -42,5 +42,5 @@ const { t } = useI18n({ useScope: 'global' })
       @add-swatch="$emit('addSwatch')"
       @remove-swatch="$emit('removeSwatch', $event)"
     />
-  </ClickPopover>
+  </AppDropdown>
 </template>

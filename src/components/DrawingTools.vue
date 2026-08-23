@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { DrawingTool, PrintMode } from '../types/pattern'
+import AppDropdown from './AppDropdown.vue'
 
 defineProps<{
   tool: DrawingTool
@@ -38,10 +39,8 @@ const tools = computed<Array<{ value: DrawingTool; icon: string; label: string; 
   { value: 'arrow', icon: 'mdi-arrow-top-right', label: t('controls.drawing.tools.arrow'), shortcut: 'A' },
 ])
 
-function requestDownload(event: MouseEvent, action: () => void) {
-  const target = event.currentTarget as HTMLElement
-  target.closest('details')?.removeAttribute('open')
-  target.blur()
+function requestDownload(close: (focusAnchor?: boolean) => void, action: () => void) {
+  close(true)
   action()
 }
 </script>
@@ -191,65 +190,77 @@ function requestDownload(event: MouseEvent, action: () => void) {
           />
         </button>
       </div>
-      <details class="dropdown dropdown-end">
-        <summary
-          class="btn btn-ghost btn-sm"
-          :aria-label="t('editor.nav.download')"
-          :title="t('editor.nav.download')"
-        >
-          <span
-            class="mdi mdi-download-outline text-xl text-info"
-            aria-hidden="true"
-          />
-        </summary>
-        <ul class="menu dropdown-content z-50 mt-2 w-52 rounded-box border border-base-300 bg-base-100 p-2 shadow-lg">
-          <li>
-            <label class="flex-row justify-between gap-3">
-              <span>{{ t('editor.print.includeAnnotations') }}</span>
-              <input
-                class="checkbox checkbox-primary checkbox-sm"
-                type="checkbox"
-                :checked="includeAnnotations"
-                @change="$emit('update:includeAnnotations', ($event.target as HTMLInputElement).checked)"
+      <AppDropdown
+        :label="t('editor.nav.download')"
+        align="right"
+        panel-role="menu"
+      >
+        <template #trigger="{ open, panelId }">
+          <button
+            class="btn btn-ghost btn-sm"
+            type="button"
+            :aria-label="t('editor.nav.download')"
+            :title="t('editor.nav.download')"
+            aria-haspopup="menu"
+            :aria-controls="panelId"
+            :aria-expanded="open"
+          >
+            <span
+              class="mdi mdi-download-outline text-xl text-info"
+              aria-hidden="true"
+            />
+          </button>
+        </template>
+        <template #default="{ close }">
+          <ul class="menu w-52 p-2">
+            <li>
+              <label class="flex-row justify-between gap-3">
+                <span>{{ t('editor.print.includeAnnotations') }}</span>
+                <input
+                  class="checkbox checkbox-primary checkbox-sm"
+                  type="checkbox"
+                  :checked="includeAnnotations"
+                  @change="$emit('update:includeAnnotations', ($event.target as HTMLInputElement).checked)"
+                >
+              </label>
+            </li>
+            <li class="my-1 border-t border-base-300" />
+            <li>
+              <button
+                type="button"
+                @click="requestDownload(close, () => $emit('png'))"
               >
-            </label>
-          </li>
-          <li class="my-1 border-t border-base-300" />
-          <li>
-            <button
-              type="button"
-              @click="requestDownload($event, () => $emit('png'))"
-            >
-              <span
-                class="mdi mdi-image-outline"
-                aria-hidden="true"
-              />{{ t('editor.print.canvasPng') }}
-            </button>
-          </li>
-          <li>
-            <button
-              type="button"
-              @click="requestDownload($event, () => $emit('print', 'color'))"
-            >
-              <span
-                class="mdi mdi-palette-outline"
-                aria-hidden="true"
-              />{{ t('editor.print.colorChart') }}
-            </button>
-          </li>
-          <li>
-            <button
-              type="button"
-              @click="requestDownload($event, () => $emit('print', 'symbols'))"
-            >
-              <span
-                class="mdi mdi-shape-outline"
-                aria-hidden="true"
-              />{{ t('editor.print.symbolChart') }}
-            </button>
-          </li>
-        </ul>
-      </details>
+                <span
+                  class="mdi mdi-image-outline"
+                  aria-hidden="true"
+                />{{ t('editor.print.canvasPng') }}
+              </button>
+            </li>
+            <li>
+              <button
+                type="button"
+                @click="requestDownload(close, () => $emit('print', 'color'))"
+              >
+                <span
+                  class="mdi mdi-palette-outline"
+                  aria-hidden="true"
+                />{{ t('editor.print.colorChart') }}
+              </button>
+            </li>
+            <li>
+              <button
+                type="button"
+                @click="requestDownload(close, () => $emit('print', 'symbols'))"
+              >
+                <span
+                  class="mdi mdi-shape-outline"
+                  aria-hidden="true"
+                />{{ t('editor.print.symbolChart') }}
+              </button>
+            </li>
+          </ul>
+        </template>
+      </AppDropdown>
     </div>
   </section>
 </template>

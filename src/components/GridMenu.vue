@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
-import ClickPopover from './ClickPopover.vue'
+import AppDropdown from './AppDropdown.vue'
 import GridSettings from './GridSettings.vue'
 
 defineProps<{ cellSize: number; fullHeight: boolean; showSymbols: boolean }>()
@@ -9,7 +9,7 @@ const { t } = useI18n({ useScope: 'global' })
 </script>
 
 <template>
-  <ClickPopover
+  <AppDropdown
     :label="t('controls.gridSettings.settings')"
     align="right"
   >
@@ -38,5 +38,5 @@ const { t } = useI18n({ useScope: 'global' })
       @full-height="$emit('fullHeight', $event)"
       @show-symbols="$emit('showSymbols', $event)"
     />
-  </ClickPopover>
+  </AppDropdown>
 </template>

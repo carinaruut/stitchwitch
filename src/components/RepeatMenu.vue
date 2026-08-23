@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
-import ClickPopover from './ClickPopover.vue'
+import AppDropdown from './AppDropdown.vue'
 import RepeatSettings from './RepeatSettings.vue'
 import type { RepeatBox, RepeatBoxInput } from '../types/pattern'
 
@@ -25,7 +25,7 @@ const { t } = useI18n({ useScope: 'global' })
 </script>
 
 <template>
-  <ClickPopover
+  <AppDropdown
     :label="t('controls.repeat.controls')"
     align="right"
     width="md"
@@ -61,5 +61,5 @@ const { t } = useI18n({ useScope: 'global' })
       @toggle="(id, enabled) => $emit('toggle', id, enabled)"
       @remove="$emit('remove', $event)"
     />
-  </ClickPopover>
+  </AppDropdown>
 </template>

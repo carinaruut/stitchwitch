@@ -62,6 +62,17 @@ tracker:
     keepAwake: Keep screen awake
     fullscreen: Enter fullscreen
     exitFullscreen: Exit fullscreen
+  comments:
+    title: Comment
+    multiple: "{count} comments"
+    coordinates: "Row {row}, column {column}"
+    close: Close comment
+    add: Add comment
+    addAnother: Add another comment here
+    addInstruction: Select a stitch to add a comment without changing its progress. Press Escape to cancel.
+    defaultText: New comment
+    edit: Edit comment
+    remove: Remove
   instructions:
     resetOrder: Reset progress to change the marking mode or tracking order.
     usage: Click a stitch to complete everything through it, or hold and drag across stitches. Click a row number to complete or reopen that entire row.

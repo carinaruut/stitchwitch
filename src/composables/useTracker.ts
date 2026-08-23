@@ -1,5 +1,5 @@
 import { computed, ref } from 'vue'
-import type { PaletteEntry, PatternProject } from '../types/pattern'
+import type { PaletteEntry, PatternAnnotation, PatternProject } from '../types/pattern'
 import type { TrackerCompletionMode, TrackerDirection, TrackerPreferences, TrackerProgress, TrackerProject, TrackerStartRow } from '../types/tracker'
 import { normalizeColor } from '../utils/colors'
 import { asTrackerProject, createTracker, rowCompletionRange, stitchOrdinal, trackerElapsedMilliseconds, trackerTotal } from '../utils/tracker'
@@ -14,6 +14,11 @@ interface StoredTracker {
 
 type ProgressSnapshot = Omit<TrackerProgress, 'updatedAt'>
 
+interface TrackerSnapshot {
+  progress: ProgressSnapshot
+  annotations: PatternAnnotation[]
+}
+
 function progressSnapshot(progress: TrackerProgress): ProgressSnapshot {
   return {
     completedCount: progress.completedCount,
@@ -22,6 +27,13 @@ function progressSnapshot(progress: TrackerProgress): ProgressSnapshot {
     startRow: progress.startRow,
     firstRowDirection: progress.firstRowDirection,
     alternateRows: progress.alternateRows,
+  }
+}
+
+function trackerSnapshot(project: TrackerProject): TrackerSnapshot {
+  return {
+    progress: progressSnapshot(project.progress),
+    annotations: project.pattern.annotations.map((annotation) => ({ ...annotation })),
   }
 }
 
@@ -47,8 +59,8 @@ export function useTracker() {
   const autosaveStatus = ref<'idle' | 'saving' | 'saved' | 'error'>(saved.tracker ? 'saved' : 'idle')
   const backupNeeded = ref(saved.backupNeeded)
   const restoredAutosave = ref(saved.restored)
-  const undoStack = ref<ProgressSnapshot[]>([])
-  const redoStack = ref<ProgressSnapshot[]>([])
+  const undoStack = ref<TrackerSnapshot[]>([])
+  const redoStack = ref<TrackerSnapshot[]>([])
   let autosaveTimer: ReturnType<typeof setTimeout> | null = null
 
   const completedCount = computed(() => {
@@ -66,9 +78,9 @@ export function useTracker() {
     redoStack.value = []
   }
 
-  function recordProgress() {
+  function recordState() {
     if (!tracker.value) return
-    undoStack.value.push(progressSnapshot(tracker.value.progress))
+    undoStack.value.push(trackerSnapshot(tracker.value))
     if (undoStack.value.length > 100) undoStack.value.shift()
     redoStack.value = []
   }
@@ -194,7 +206,7 @@ export function useTracker() {
     if (!tracker.value || completedCount.value > 0) return
     const progress = tracker.value.progress
     if (progress.startRow === startRow && progress.firstRowDirection === firstRowDirection && progress.alternateRows === alternateRows) return
-    recordProgress()
+    recordState()
     progress.startRow = startRow
     progress.firstRowDirection = firstRowDirection
     progress.alternateRows = alternateRows
@@ -203,7 +215,7 @@ export function useTracker() {
 
   function setCompletionMode(mode: TrackerCompletionMode) {
     if (!tracker.value || completedCount.value > 0 || tracker.value.progress.completionMode === mode) return
-    recordProgress()
+    recordState()
     tracker.value.progress.completionMode = mode
     tracker.value.progress.completedCount = 0
     tracker.value.progress.completedCells = []
@@ -214,7 +226,7 @@ export function useTracker() {
     if (!tracker.value) return
     if (tracker.value.progress.completionMode === 'individual') {
       const cell = row * columns + column
-      recordProgress()
+      recordState()
       tracker.value.progress.completedCells = tracker.value.progress.completedCells.includes(cell)
         ? tracker.value.progress.completedCells.filter((completed) => completed !== cell)
         : [...tracker.value.progress.completedCells, cell].sort((a, b) => a - b)
@@ -222,7 +234,7 @@ export function useTracker() {
       return
     }
     const ordinal = stitchOrdinal(row, column, rows, columns, tracker.value.progress)
-    recordProgress()
+    recordState()
     tracker.value.progress.completedCount = completedCount.value === ordinal + 1 ? ordinal : ordinal + 1
     changed()
   }
@@ -234,46 +246,83 @@ export function useTracker() {
       const rowCells = Array.from({ length: columns }, (_, column) => firstCell + column)
       const completed = new Set(tracker.value.progress.completedCells)
       const rowIsComplete = rowCells.every((cell) => completed.has(cell))
-      recordProgress()
+      recordState()
       rowCells.forEach((cell) => rowIsComplete ? completed.delete(cell) : completed.add(cell))
       tracker.value.progress.completedCells = [...completed].sort((a, b) => a - b)
       changed()
       return
     }
     const range = rowCompletionRange(row, rows, columns, tracker.value.progress.startRow)
-    recordProgress()
+    recordState()
     tracker.value.progress.completedCount = completedCount.value >= range.through ? range.before : range.through
     changed()
   }
 
   function resetProgress() {
     if (!tracker.value || completedCount.value === 0) return
-    recordProgress()
+    recordState()
     tracker.value.progress.completedCount = 0
     tracker.value.progress.completedCells = []
     changed()
   }
 
-  function restoreProgress(snapshot: ProgressSnapshot) {
+  function restoreState(snapshot: TrackerSnapshot) {
     if (!tracker.value) return
-    Object.assign(tracker.value.progress, snapshot)
+    Object.assign(tracker.value.progress, snapshot.progress)
+    tracker.value.pattern.annotations = snapshot.annotations.map((annotation) => ({ ...annotation }))
     changed()
+  }
+
+  function addComment(row: number, column: number, text: string) {
+    if (!tracker.value || tracker.value.pattern.annotations.length >= 500) return null
+    const pattern = tracker.value.pattern
+    const comment = {
+      id: crypto.randomUUID(),
+      type: 'text' as const,
+      row: Math.max(0, Math.min(pattern.rows - 1, Math.round(row))),
+      column: Math.max(0, Math.min(pattern.columns - 1, Math.round(column))),
+      color: '#7c3aed',
+      text: text.trim().slice(0, 500) || 'Comment',
+    }
+    recordState()
+    pattern.annotations.push(comment)
+    changed()
+    return comment.id
+  }
+
+  function updateComment(id: string, text: string) {
+    if (!tracker.value) return false
+    const comment = tracker.value.pattern.annotations.find((annotation) => annotation.id === id)
+    const next = text.trim().slice(0, 500)
+    if (comment?.type !== 'text' || !next || comment.text === next) return false
+    recordState()
+    comment.text = next
+    changed()
+    return true
+  }
+
+  function removeComment(id: string) {
+    if (!tracker.value?.pattern.annotations.some((annotation) => annotation.id === id && annotation.type === 'text')) return false
+    recordState()
+    tracker.value.pattern.annotations = tracker.value.pattern.annotations.filter((annotation) => annotation.id !== id)
+    changed()
+    return true
   }
 
   function undo() {
     if (!tracker.value) return
     const snapshot = undoStack.value.pop()
     if (!snapshot) return
-    redoStack.value.push(progressSnapshot(tracker.value.progress))
-    restoreProgress(snapshot)
+    redoStack.value.push(trackerSnapshot(tracker.value))
+    restoreState(snapshot)
   }
 
   function redo() {
     if (!tracker.value) return
     const snapshot = redoStack.value.pop()
     if (!snapshot) return
-    undoStack.value.push(progressSnapshot(tracker.value.progress))
-    restoreProgress(snapshot)
+    undoStack.value.push(trackerSnapshot(tracker.value))
+    restoreState(snapshot)
   }
 
   function startTimer() {
@@ -351,6 +400,9 @@ export function useTracker() {
     selectStitch,
     selectRow,
     resetProgress,
+    addComment,
+    updateComment,
+    removeComment,
     undo,
     redo,
     startTimer,

@@ -1,13 +1,17 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import type { PatternAnnotation, PatternDisplay, PatternGrid } from '../types/pattern'
+import type { PatternAnnotation, PatternDisplay, PatternGrid, TextAnnotation } from '../types/pattern'
 import type { TrackerProgress } from '../types/tracker'
 import { contrastColor } from '../utils/colors'
 import { followsCenterBoundary, isCenterHeader, repeatOutlineColor, REPEAT_COPY } from '../utils/grid'
 import { isStitchCompleted, rowCompletionRange, stitchOrdinal } from '../utils/tracker'
 import { renderAnnotations } from '../utils/annotations'
+import type { RenderedAnnotation } from '../utils/annotations'
 import AnnotationLayer from './AnnotationLayer.vue'
+import AppDropdown from './AppDropdown.vue'
+
+type RenderedTextAnnotation = Extract<RenderedAnnotation, { type: 'text' }>
 
 const props = defineProps<{
   cells: PatternGrid
@@ -25,6 +29,7 @@ const props = defineProps<{
   cellSourceRows: number[][]
   cellSourceColumns: number[][]
   showAnnotations: boolean
+  addingComment: boolean
 }>()
 
 const { t } = useI18n({ useScope: 'global' })
@@ -32,18 +37,45 @@ const { t } = useI18n({ useScope: 'global' })
 const emit = defineEmits<{
   stitch: [row: number, column: number]
   row: [row: number]
+  addComment: [row: number, column: number]
+  updateComment: [id: string, text: string]
+  removeComment: [id: string]
   'fullscreen-change': [active: boolean]
 }>()
 
 const fullscreenTarget = ref<HTMLElement | null>(null)
 const viewport = ref<HTMLElement | null>(null)
+const commentDropdown = ref<InstanceType<typeof AppDropdown> | null>(null)
 const activeCell = ref({ row: 0, column: 0 })
 const activeRowHeader = ref(0)
 const isFullscreen = ref(false)
 const marking = ref(false)
 const markedCells = new Set<string>()
-const renderedAnnotations = computed(() => props.showAnnotations ? renderAnnotations(props.annotations, props.cellSourceRows, props.cellSourceColumns) : [])
-
+const selectedComment = ref<RenderedAnnotation | null>(null)
+const allRenderedAnnotations = computed(() => props.showAnnotations ? renderAnnotations(props.annotations, props.cellSourceRows, props.cellSourceColumns) : [])
+const renderedAnnotations = computed(() => allRenderedAnnotations.value.filter((annotation) => annotation.type !== 'text'))
+const renderedComments = computed(() => {
+  if (!props.showAnnotations) return []
+  const groupedComments = new Map<string, RenderedTextAnnotation>()
+  const rendered: RenderedTextAnnotation[] = []
+  for (const annotation of allRenderedAnnotations.value) {
+    if (annotation.type !== 'text') continue
+    const key = `${annotation.displayRow}:${annotation.displayColumn}`
+    const existing = groupedComments.get(key)
+    if (existing) existing.commentCount = (existing.commentCount ?? 1) + 1
+    else {
+      const grouped: RenderedTextAnnotation = { ...annotation, commentCount: 1 }
+      groupedComments.set(key, grouped)
+      rendered.push(grouped)
+    }
+  }
+  return rendered
+})
+const openComments = computed(() => {
+  const selected = selectedComment.value
+  if (!selected) return []
+  return props.annotations.filter((annotation): annotation is TextAnnotation => annotation.type === 'text' && annotation.row === selected.row && annotation.column === selected.column)
+})
 function handleFullscreenChange() {
   isFullscreen.value = document.fullscreenElement === fullscreenTarget.value
   emit('fullscreen-change', isFullscreen.value)
@@ -68,6 +100,43 @@ onBeforeUnmount(() => {
   document.removeEventListener('fullscreenchange', handleFullscreenChange)
   window.removeEventListener('pointerup', stopMarking)
   window.removeEventListener('pointercancel', stopMarking)
+})
+
+function selectComment(annotation: RenderedAnnotation) {
+  stopMarking()
+  selectedComment.value = annotation
+}
+
+function closeComment(focusAnchor = false) {
+  commentDropdown.value?.close(focusAnchor)
+  selectedComment.value = null
+}
+
+function handleCommentDropdown(open: boolean) {
+  if (!open) selectedComment.value = null
+}
+
+function commentButtonStyle(annotation: RenderedAnnotation) {
+  const size = Math.max(14, Math.min(24, props.cellSize * 0.65))
+  return {
+    left: `${32 + (annotation.displayColumn + 1) * props.cellSize - size - 1}px`,
+    top: `${32 + annotation.displayRow * props.cellSize + 1}px`,
+    width: `${size}px`,
+    height: `${size}px`,
+    color: annotation.color,
+    fontSize: `${Math.max(12, size * 0.75)}px`,
+  }
+}
+
+function updateComment(id: string, event: Event) {
+  emit('updateComment', id, (event.target as HTMLTextAreaElement).value)
+}
+
+watch(() => props.showAnnotations, (visible) => {
+  if (!visible) closeComment()
+})
+watch(() => props.annotations, (annotations) => {
+  if (selectedComment.value && !annotations.some((annotation) => annotation.id === selectedComment.value?.id)) closeComment()
 })
 
 function ordinal(row: number, column: number) {
@@ -169,6 +238,11 @@ function markStitch(row: number, column: number) {
 function startMarking(row: number, column: number, event: PointerEvent) {
   if (event.button !== 0) return
   event.preventDefault()
+  if (props.addingComment) {
+    event.stopPropagation()
+    emit('addComment', props.cellSourceRows[row][column], props.cellSourceColumns[row][column])
+    return
+  }
   marking.value = true
   markedCells.clear()
   markStitch(row, column)
@@ -184,6 +258,10 @@ function stopMarking() {
 }
 
 function selectStitchFromClick(row: number, column: number, event: MouseEvent) {
+  if (props.addingComment) {
+    emit('addComment', props.cellSourceRows[row][column], props.cellSourceColumns[row][column])
+    return
+  }
   if (event.detail === 0) selectStitch(row, column)
 }
 
@@ -234,6 +312,7 @@ function moveRowHeader(row: number, event: KeyboardEvent) {
     >
       <div
         class="relative grid w-max border border-base-300/70 bg-base-100"
+        :class="{ 'cursor-crosshair': addingComment }"
         :style="{ gridTemplateColumns: `32px repeat(${cells[0].length}, ${cellSize}px)`, gridTemplateRows: `32px repeat(${cells.length}, ${cellSize}px)` }"
         role="grid"
         :aria-rowcount="cells.length + 1"
@@ -341,6 +420,99 @@ function moveRowHeader(row: number, event: KeyboardEvent) {
           :columns="cells[0].length"
           :header-size="32"
         />
+        <AppDropdown
+          ref="commentDropdown"
+          class="contents"
+          :label="t('tracker.comments.title')"
+          panel-class="tracker-comment-panel w-[min(20rem,calc(100vw-1.5rem))] p-4 shadow-2xl"
+          panel-role="dialog"
+          @update:open="handleCommentDropdown"
+        >
+          <template #trigger="{ open, panelId }">
+            <button
+              v-for="comment in renderedComments"
+              :key="comment.renderId"
+              class="absolute z-[7] flex items-center justify-center rounded-md border border-current bg-white shadow-sm hover:scale-110 focus-visible:outline-2 focus-visible:outline-primary"
+              :class="{ 'pointer-events-none': marking, 'ring-2 ring-primary ring-offset-1': selectedComment?.renderId === comment.renderId }"
+              :style="commentButtonStyle(comment)"
+              type="button"
+              :aria-label="t('controls.annotations.commentLabel', { text: comment.text })"
+              :aria-controls="panelId"
+              :aria-expanded="open && selectedComment?.renderId === comment.renderId"
+              @pointerdown="selectComment(comment)"
+              @click="selectComment(comment)"
+            >
+              <span
+                class="mdi mdi-comment-outline"
+                aria-hidden="true"
+              />
+              <span
+                v-if="(comment.commentCount ?? 0) > 1"
+                class="absolute -right-1.5 -top-1.5 flex size-4 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-primary-content"
+              >{{ comment.commentCount }}</span>
+            </button>
+          </template>
+          <template v-if="selectedComment">
+            <header class="mb-3 flex items-start justify-between gap-3">
+              <div>
+                <h2 class="font-semibold">
+                  {{ t(openComments.length === 1 ? 'tracker.comments.title' : 'tracker.comments.multiple', { count: openComments.length }) }}
+                </h2>
+                <p class="text-xs text-base-content/60">
+                  {{ t('tracker.comments.coordinates', { row: rowHeaders[selectedComment.displayRow] + 1, column: columnHeaders[selectedComment.displayColumn] + 1 }) }}
+                </p>
+              </div>
+              <button
+                class="btn btn-ghost btn-square btn-xs"
+                type="button"
+                :aria-label="t('tracker.comments.close')"
+                @click="closeComment(true)"
+              >
+                <span
+                  class="mdi mdi-close text-lg"
+                  aria-hidden="true"
+                />
+              </button>
+            </header>
+            <div class="space-y-3">
+              <div
+                v-for="comment in openComments"
+                :key="comment.id"
+                class="rounded-lg bg-base-200/70 p-2"
+              >
+                <textarea
+                  class="textarea textarea-bordered textarea-sm min-h-20 w-full resize-y text-sm leading-relaxed"
+                  maxlength="500"
+                  :aria-label="t('tracker.comments.edit')"
+                  :value="comment.text"
+                  @change="updateComment(comment.id, $event)"
+                />
+                <div class="flex justify-end">
+                  <button
+                    class="btn btn-ghost btn-xs text-error"
+                    type="button"
+                    @click="$emit('removeComment', comment.id)"
+                  >
+                    <span
+                      class="mdi mdi-delete-outline"
+                      aria-hidden="true"
+                    />{{ t('tracker.comments.remove') }}
+                  </button>
+                </div>
+              </div>
+              <button
+                class="btn btn-outline btn-sm w-full"
+                type="button"
+                @click="$emit('addComment', selectedComment.row, selectedComment.column)"
+              >
+                <span
+                  class="mdi mdi-comment-plus-outline"
+                  aria-hidden="true"
+                />{{ t('tracker.comments.addAnother') }}
+              </button>
+            </div>
+          </template>
+        </AppDropdown>
       </div>
     </div>
     <button
@@ -360,6 +532,18 @@ function moveRowHeader(row: number, event: KeyboardEvent) {
 </template>
 
 <style scoped>
+@media (max-width: 39.999rem) {
+  :deep(.tracker-comment-panel) {
+    bottom: 0.75rem;
+    left: 0.75rem;
+    margin: 0;
+    position: fixed;
+    right: auto;
+    top: auto;
+    width: calc(100vw - 1.5rem);
+  }
+}
+
 .tracker-stitch {
   background: var(--stitch-color);
   inset: 1px;

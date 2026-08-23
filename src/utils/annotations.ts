@@ -6,6 +6,7 @@ export type RenderedAnnotation = PatternAnnotation & {
   displayColumn: number
   displayEndRow?: number
   displayEndColumn?: number
+  commentCount?: number
 }
 
 export function renderAnnotations(annotations: PatternAnnotation[], sourceRows: number[][], sourceColumns: number[][]): RenderedAnnotation[] {

@@ -62,6 +62,17 @@ tracker:
     keepAwake: Hoia ekraan ärkvel
     fullscreen: Ava täisekraan
     exitFullscreen: Välju täisekraanilt
+  comments:
+    title: Kommentaar
+    multiple: "{count} kommentaari"
+    coordinates: "Rida {row}, veerg {column}"
+    close: Sulge kommentaar
+    add: Lisa kommentaar
+    addAnother: Lisa siia veel üks kommentaar
+    addInstruction: Vali piste, et lisada kommentaar edenemist muutmata. Tühistamiseks vajuta paoklahvi.
+    defaultText: Uus kommentaar
+    edit: Muuda kommentaari
+    remove: Eemalda
   instructions:
     resetOrder: Märkimisviisi või jälgimisjärjekorra muutmiseks lähtesta edenemine.
     usage: Kõigi pistete märkimiseks kuni valitud pisteni klõpsa seda või hoia hiirenuppu all ja lohista üle pistete. Kogu rea lõpetamiseks või taasavamiseks klõpsa rea numbrit.

@@ -6,6 +6,7 @@ import LanguageSwitcher from '../components/LanguageSwitcher.vue'
 import ThemeToggle from '../components/ThemeToggle.vue'
 import ColorLegend from '../components/ColorLegend.vue'
 import TrackerGrid from '../components/TrackerGrid.vue'
+import AppDropdown from '../components/AppDropdown.vue'
 import { useNotifications } from '../composables/useNotifications'
 import { useTheme } from '../composables/useTheme'
 import { useTracker } from '../composables/useTracker'
@@ -55,6 +56,7 @@ const autoScroll = ref(savedPreferences.autoScroll ?? true)
 const keepAwake = ref(savedPreferences.keepAwake ?? false)
 const showSymbols = ref(savedPreferences.showSymbols ?? false)
 const showAnnotations = ref(savedPreferences.showAnnotations ?? true)
+const addingComment = ref(false)
 const wakeLockSupported = typeof navigator !== 'undefined' && 'wakeLock' in navigator
 const fullscreenSupported = typeof document !== 'undefined' && document.fullscreenEnabled
 const trackerFullscreen = ref(false)
@@ -137,6 +139,7 @@ async function selectFile(event: Event) {
 
 function applyInput(input: { tracker?: TrackerProject; pattern?: PatternProject }) {
   focusedColor.value = null
+  addingComment.value = false
   if (!hasCellSizePreference) {
     const pattern = input.tracker?.pattern ?? input.pattern
     if (pattern) cellSize.value = Math.min(40, Math.max(18, pattern.cellSize))
@@ -261,6 +264,12 @@ function toggleFocusedColor(color: string) {
   focusedColor.value = focusedColor.value === color ? null : color
 }
 
+function addTrackerComment(row: number, column: number) {
+  state.addComment(row, column, t('tracker.comments.defaultText'))
+  showAnnotations.value = true
+  addingComment.value = false
+}
+
 function confirmReset() {
   state.resetProgress()
   resetModalOpen.value = false
@@ -296,6 +305,10 @@ function handleVisibilityChange() {
 function handleKeyboardShortcuts(event: KeyboardEvent) {
   const target = event.target as HTMLElement | null
   if (target?.closest('input, textarea, select, [contenteditable="true"]')) return
+  if (event.key === 'Escape' && addingComment.value) {
+    addingComment.value = false
+    return
+  }
   if (confirmation.value || event.altKey || (!event.metaKey && !event.ctrlKey)) return
   const key = event.key.toLowerCase()
   if (key === 'z') {
@@ -681,18 +694,45 @@ function cancelActiveModal() {
                     />
                   </button>
                 </div>
-                <details class="dropdown dropdown-end">
-                  <summary
-                    class="btn btn-ghost btn-square btn-sm"
-                    :aria-label="t('tracker.controls.settings')"
-                    :title="t('tracker.controls.settings')"
+                <div
+                  class="tooltip"
+                  :data-tip="t('tracker.comments.add')"
+                >
+                  <button
+                    class="btn btn-square btn-sm"
+                    :class="addingComment ? 'btn-primary' : 'btn-ghost'"
+                    type="button"
+                    :aria-label="t('tracker.comments.add')"
+                    :aria-pressed="addingComment"
+                    @click="addingComment = !addingComment; if (addingComment) showAnnotations = true"
                   >
                     <span
-                      class="mdi mdi-cog-outline text-xl"
+                      class="mdi mdi-comment-plus-outline text-lg"
                       aria-hidden="true"
                     />
-                  </summary>
-                  <div class="dropdown-content z-40 mt-2 w-72 rounded-box border border-base-300 bg-base-100 p-4 shadow-lg">
+                  </button>
+                </div>
+                <AppDropdown
+                  :label="t('tracker.controls.settings')"
+                  align="right"
+                >
+                  <template #trigger="{ open, panelId }">
+                    <button
+                      class="btn btn-ghost btn-square btn-sm"
+                      type="button"
+                      :aria-label="t('tracker.controls.settings')"
+                      :title="t('tracker.controls.settings')"
+                      aria-haspopup="true"
+                      :aria-controls="panelId"
+                      :aria-expanded="open"
+                    >
+                      <span
+                        class="mdi mdi-cog-outline text-xl"
+                        aria-hidden="true"
+                      />
+                    </button>
+                  </template>
+                  <div class="w-72 p-4">
                     <div class="flex flex-col gap-6">
                       <label class="form-control gap-1">
                         <span class="text-xs font-semibold">{{ t('tracker.controls.display') }}</span>
@@ -744,7 +784,7 @@ function cancelActiveModal() {
                       ></label>
                     </div>
                   </div>
-                </details>
+                </AppDropdown>
                 <div
                   v-if="fullscreenSupported"
                   class="tooltip"
@@ -805,7 +845,7 @@ function cancelActiveModal() {
               {{ t('tracker.instructions.resetOrder') }}
             </p>
             <p class="text-sm text-base-content/65">
-              {{ t(state.tracker.value.progress.completionMode === 'individual' ? 'tracker.instructions.individualUsage' : 'tracker.instructions.usage') }}
+              {{ t(addingComment ? 'tracker.comments.addInstruction' : state.tracker.value.progress.completionMode === 'individual' ? 'tracker.instructions.individualUsage' : 'tracker.instructions.usage') }}
             </p>
 
             <div
@@ -836,7 +876,11 @@ function cancelActiveModal() {
               :cell-source-rows="renderedPattern.sourceRows"
               :cell-source-columns="renderedPattern.sourceColumns"
               :show-annotations="showAnnotations"
+              :adding-comment="addingComment"
               @stitch="selectStitch"
+              @add-comment="addTrackerComment"
+              @update-comment="state.updateComment"
+              @remove-comment="state.removeComment"
               @row="state.selectRow($event, renderedPattern.cells.length, renderedPattern.cells[0].length)"
               @fullscreen-change="trackerFullscreen = $event"
             />

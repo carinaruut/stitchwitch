@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
-import ClickPopover from './ClickPopover.vue'
+import AppDropdown from './AppDropdown.vue'
 import RowControls from './RowControls.vue'
 
 defineProps<{ selected: number; count: number }>()
@@ -9,7 +9,7 @@ const { t } = useI18n({ useScope: 'global' })
 </script>
 
 <template>
-  <ClickPopover
+  <AppDropdown
     :label="t('controls.menus.rowControls')"
     align="right"
   >
@@ -42,5 +42,5 @@ const { t } = useI18n({ useScope: 'global' })
       @remove-current="$emit('removeCurrent')"
       @remove-rows="$emit('removeRows', $event)"
     />
-  </ClickPopover>
+  </AppDropdown>
 </template>
