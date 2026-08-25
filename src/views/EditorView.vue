@@ -96,7 +96,7 @@ const renderedPattern = computed(() => renderGrid(
   pattern.project.value.verticalRepeats,
   pattern.project.value.repeatBoxes,
 ))
-const canvasSymbolMap = computed(() => canvasSymbols.value ? colorSymbolMap(orderedColorCounts(renderedPattern.value.cells, pattern.paletteEntries.value).map((entry) => entry.color)) : undefined)
+const canvasSymbolMap = computed(() => canvasSymbols.value ? colorSymbolMap(orderedColorCounts(renderedPattern.value.cells, pattern.paletteEntries.value).map((entry) => entry.color), pattern.paletteEntries.value) : undefined)
 const selectedAnnotation = computed(() => pattern.project.value.annotations.find((annotation) => annotation.id === pattern.selectedAnnotationId.value) ?? null)
 
 watch(canvasFullHeight, (value) => {

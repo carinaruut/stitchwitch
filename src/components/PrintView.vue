@@ -62,7 +62,7 @@ const legendPages = computed(() => props.mode === 'color'
       (_, index) => legendEntries.value.slice(index * KEY_ENTRIES_PER_PAGE, (index + 1) * KEY_ENTRIES_PER_PAGE),
     )
   : [])
-const printSymbolMap = computed(() => colorSymbolMap(legendEntries.value.map(({ color }) => color)))
+const printSymbolMap = computed(() => colorSymbolMap(legendEntries.value.map(({ color }) => color), props.project.palette))
 const symbolEntries = computed(() => legendEntries.value.filter(({ color }) => color.toLowerCase() !== '#ffffff').map((entry) => ({
   ...entry,
   symbol: printSymbolMap.value[entry.color],

@@ -75,7 +75,7 @@ const renderedPattern = computed(() => {
   return renderGrid(pattern.cells, pattern.horizontalRepeats, pattern.verticalRepeats, pattern.repeatBoxes)
 })
 const trackerSymbolMap = computed(() => showSymbols.value && renderedPattern.value && state.tracker.value
-  ? colorSymbolMap(orderedColorCounts(renderedPattern.value.cells, state.paletteEntries.value).map((entry) => entry.color))
+  ? colorSymbolMap(orderedColorCounts(renderedPattern.value.cells, state.paletteEntries.value).map((entry) => entry.color), state.paletteEntries.value)
   : undefined)
 const completedColorCounts = computed(() => {
   const pattern = renderedPattern.value

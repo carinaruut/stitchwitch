@@ -58,15 +58,20 @@ export function validateProject(value: unknown): ValidationResult {
   if (project.palette !== undefined) {
     if (!Array.isArray(project.palette) || project.palette.length > MAX_PALETTE_ENTRIES) return { valid: false, error: appError('validation.palette') }
     const colors = new Set<string>()
+    const symbols = new Set<string>()
     for (const value of project.palette) {
       if (!value || typeof value !== 'object') return { valid: false, error: appError('validation.palette') }
       const entry = value as Record<string, unknown>
       const color = typeof entry.color === 'string' ? entry.color.toLowerCase() : ''
       if (!isHexColor(color) || colors.has(color)) return { valid: false, error: appError('validation.palette') }
+      if (entry.symbol !== undefined && (typeof entry.symbol !== 'string' || !entry.symbol || entry.symbol.length > 10 || symbols.has(entry.symbol))) {
+        return { valid: false, error: appError('validation.palette') }
+      }
       if (typeof entry.name !== 'string' || entry.name.length > 100 || typeof entry.brand !== 'string' || entry.brand.length > 100 || typeof entry.code !== 'string' || entry.code.length > 100 || typeof entry.notes !== 'string' || entry.notes.length > 1000) {
         return { valid: false, error: appError('validation.palette') }
       }
       colors.add(color)
+      if (typeof entry.symbol === 'string') symbols.add(entry.symbol)
     }
   }
 
@@ -150,6 +155,7 @@ export function asPatternProject(value: unknown): PatternProject {
     .map((row) => row.map((color) => color.toLowerCase()))
   const palette = Array.isArray(source.palette) ? (source.palette as PaletteEntry[]).map((entry) => ({
     color: entry.color.toLowerCase(),
+    ...(typeof entry.symbol === 'string' ? { symbol: entry.symbol } : {}),
     name: entry.name,
     brand: entry.brand,
     code: entry.code,

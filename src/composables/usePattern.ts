@@ -283,6 +283,7 @@ export function usePattern() {
       const notes = [targetEntry.notes.trim(), sourceEntry.notes.trim(), sourceDetails].filter(Boolean)
       const merged: PaletteEntry = {
         color: target,
+        symbol: targetEntry.symbol,
         name: targetEntry.name || sourceEntry.name,
         brand: targetEntry.brand || sourceEntry.brand,
         code: targetEntry.code || sourceEntry.code,

@@ -1,3 +1,5 @@
+import type { PaletteEntry } from '../types/pattern'
+
 const HEX_COLOR = /^#[0-9a-f]{6}$/i
 const GRAPHIC_SYMBOLS = [
   '●', '○', '■', '□', '▲', '△', '◆', '◇', '✕', '＋', '−', '│', '╱', '╲', '✦', '✚',
@@ -102,15 +104,33 @@ export function hsvToHex(hue: number, saturation: number, value: number): string
   return `#${channels.map((channel) => Math.round((channel + match) * 255).toString(16).padStart(2, '0')).join('')}`
 }
 
-export function colorSymbolMap(colors: string[]): Record<string, string> {
+export function colorSymbolMap(colors: string[], palette: PaletteEntry[] = []): Record<string, string> {
   const symbols: Record<string, string> = {}
+  const colorsInUse = new Set(colors)
+  const usedSymbols = new Set<string>()
+  for (const entry of palette) {
+    if (!entry.symbol || entry.color.toLowerCase() === '#ffffff' || usedSymbols.has(entry.symbol)) continue
+    if (colorsInUse.has(entry.color)) symbols[entry.color] = entry.symbol
+    usedSymbols.add(entry.symbol)
+  }
   let symbolIndex = 0
   for (const color of [...colors].sort()) {
     if (color.toLowerCase() === '#ffffff' || color in symbols) continue
-    symbols[color] = COLOR_SYMBOLS[symbolIndex] ?? `#${symbolIndex - COLOR_SYMBOLS.length + 1}`
+    let symbol = COLOR_SYMBOLS[symbolIndex] ?? `#${symbolIndex - COLOR_SYMBOLS.length + 1}`
+    while (usedSymbols.has(symbol)) {
+      symbolIndex += 1
+      symbol = COLOR_SYMBOLS[symbolIndex] ?? `#${symbolIndex - COLOR_SYMBOLS.length + 1}`
+    }
+    symbols[color] = symbol
+    usedSymbols.add(symbol)
     symbolIndex += 1
   }
   return symbols
+}
+
+export function assignColorSymbols(entries: PaletteEntry[]): PaletteEntry[] {
+  const symbols = colorSymbolMap(entries.map((entry) => entry.color), entries)
+  return entries.map((entry) => ({ ...entry, symbol: symbols[entry.color] }))
 }
 
 export function contrastColor(hex: string): '#000000' | '#ffffff' {

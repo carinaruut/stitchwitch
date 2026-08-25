@@ -1,4 +1,5 @@
 import type { PaletteEntry, PatternGrid, PatternProject } from '../types/pattern'
+import { assignColorSymbols } from './colors'
 import { countColors } from './grid'
 
 export const emptyPaletteEntry = (color: string): PaletteEntry => ({ color, name: '', brand: '', code: '', notes: '' })
@@ -12,7 +13,7 @@ export function paletteEntries(project: PatternProject): PaletteEntry[] {
     known.add(color)
     entries.push(emptyPaletteEntry(color))
   }
-  return entries
+  return assignColorSymbols(entries)
 }
 
 export function paletteMap(palette: PaletteEntry[]): Map<string, PaletteEntry> {

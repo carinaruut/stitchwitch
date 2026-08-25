@@ -37,6 +37,7 @@ export type PatternAnnotation = TextAnnotation | MarkerAnnotation | ArrowAnnotat
 
 export interface PaletteEntry {
   color: string
+  symbol?: string
   name: string
   brand: string
   code: string
