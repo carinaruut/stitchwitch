@@ -227,8 +227,9 @@ export function useTracker() {
     if (!tracker.value) return
     if (tracker.value.progress.completionMode === 'individual') {
       const cell = row * columns + column
+      const isCompleted = tracker.value.progress.completedCells.includes(cell)
       recordState()
-      tracker.value.progress.completedCells = tracker.value.progress.completedCells.includes(cell)
+      tracker.value.progress.completedCells = isCompleted
         ? tracker.value.progress.completedCells.filter((completed) => completed !== cell)
         : [...tracker.value.progress.completedCells, cell].sort((a, b) => a - b)
       changed()
@@ -237,6 +238,23 @@ export function useTracker() {
     const ordinal = stitchOrdinal(row, column, rows, columns, tracker.value.progress)
     recordState()
     tracker.value.progress.completedCount = completedCount.value === ordinal + 1 ? ordinal : ordinal + 1
+    changed()
+  }
+
+  function selectStitches(cells: Array<[row: number, column: number]>, columns: number, completed: boolean) {
+    if (!tracker.value || tracker.value.progress.completionMode !== 'individual') return
+    const next = new Set(tracker.value.progress.completedCells)
+    let changedCells = false
+    for (const [row, column] of cells) {
+      const cell = row * columns + column
+      if (next.has(cell) === completed) continue
+      changedCells = true
+      if (completed) next.add(cell)
+      else next.delete(cell)
+    }
+    if (!changedCells) return
+    recordState()
+    tracker.value.progress.completedCells = [...next].sort((a, b) => a - b)
     changed()
   }
 
@@ -399,6 +417,7 @@ export function useTracker() {
     setCompletionMode,
     setOrder,
     selectStitch,
+    selectStitches,
     selectRow,
     resetProgress,
     addComment,

@@ -260,6 +260,11 @@ function selectStitch(row: number, column: number) {
   state.selectStitch(row, column, renderedPattern.value.cells.length, renderedPattern.value.cells[0].length)
 }
 
+function selectStitches(cells: Array<[row: number, column: number]>, completed: boolean) {
+  if (!renderedPattern.value) return
+  state.selectStitches(cells, renderedPattern.value.cells[0].length, completed)
+}
+
 function toggleFocusedColor(color: string) {
   focusedColor.value = focusedColor.value === color ? null : color
 }
@@ -878,6 +883,7 @@ function cancelActiveModal() {
               :show-annotations="showAnnotations"
               :adding-comment="addingComment"
               @stitch="selectStitch"
+              @stitches="selectStitches"
               @add-comment="addTrackerComment"
               @update-comment="state.updateComment"
               @remove-comment="state.removeComment"

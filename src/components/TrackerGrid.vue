@@ -36,6 +36,7 @@ const { t } = useI18n({ useScope: 'global' })
 
 const emit = defineEmits<{
   stitch: [row: number, column: number]
+  stitches: [cells: Array<[row: number, column: number]>, completed: boolean]
   row: [row: number]
   addComment: [row: number, column: number]
   updateComment: [id: string, text: string]
@@ -50,7 +51,8 @@ const activeCell = ref({ row: 0, column: 0 })
 const activeRowHeader = ref(0)
 const isFullscreen = ref(false)
 const marking = ref(false)
-const markedCells = new Set<string>()
+const markedCells = ref(new Map<string, [row: number, column: number]>())
+const markingComplete = ref<boolean | null>(null)
 const selectedComment = ref<RenderedAnnotation | null>(null)
 const allRenderedAnnotations = computed(() => props.showAnnotations ? renderAnnotations(props.annotations, props.cellSourceRows, props.cellSourceColumns) : [])
 const renderedAnnotations = computed(() => allRenderedAnnotations.value.filter((annotation) => annotation.type !== 'text'))
@@ -151,6 +153,7 @@ function rowComplete(row: number) {
 }
 
 function cellComplete(row: number, column: number) {
+  if (markingComplete.value !== null && markedCells.value.has(`${row}-${column}`)) return markingComplete.value
   return isStitchCompleted(row, column, props.cells.length, props.cells[0].length, props.progress)
 }
 
@@ -230,9 +233,9 @@ function selectStitch(row: number, column: number) {
 
 function markStitch(row: number, column: number) {
   const cell = `${row}-${column}`
-  if (markedCells.has(cell)) return
-  markedCells.add(cell)
-  selectStitch(row, column)
+  if (markedCells.value.has(cell)) return
+  markedCells.value = new Map(markedCells.value).set(cell, [row, column])
+  if (markingComplete.value === null) selectStitch(row, column)
 }
 
 function startMarking(row: number, column: number, event: PointerEvent) {
@@ -244,7 +247,8 @@ function startMarking(row: number, column: number, event: PointerEvent) {
     return
   }
   marking.value = true
-  markedCells.clear()
+  markingComplete.value = props.progress.completionMode === 'individual' ? !cellComplete(row, column) : null
+  markedCells.value = new Map()
   markStitch(row, column)
 }
 
@@ -253,16 +257,20 @@ function continueMarking(row: number, column: number, event: PointerEvent) {
 }
 
 function stopMarking() {
+  const completed = markingComplete.value
+  const cells = [...markedCells.value.values()]
   marking.value = false
-  markedCells.clear()
+  markingComplete.value = null
+  markedCells.value = new Map()
+  if (completed !== null && cells.length > 0) emit('stitches', cells, completed)
 }
 
-function selectStitchFromClick(row: number, column: number, event: MouseEvent) {
+function selectStitchFromKeyboard(row: number, column: number) {
   if (props.addingComment) {
     emit('addComment', props.cellSourceRows[row][column], props.cellSourceColumns[row][column])
     return
   }
-  if (event.detail === 0) selectStitch(row, column)
+  selectStitch(row, column)
 }
 
 function focusCell(row: number, column: number) {
@@ -395,7 +403,9 @@ function moveRowHeader(row: number, event: KeyboardEvent) {
             @pointerdown="startMarking(rowIndex, columnIndex, $event)"
             @pointerenter="continueMarking(rowIndex, columnIndex, $event)"
             @pointercancel="stopMarking"
-            @click="selectStitchFromClick(rowIndex, columnIndex, $event)"
+            @click.prevent
+            @keydown.enter.prevent="selectStitchFromKeyboard(rowIndex, columnIndex)"
+            @keydown.space.prevent="selectStitchFromKeyboard(rowIndex, columnIndex)"
             @keydown="moveCell(rowIndex, columnIndex, $event)"
           >
             <span
