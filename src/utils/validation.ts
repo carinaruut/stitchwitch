@@ -8,6 +8,10 @@ export interface ValidationResult {
   error?: AppError
 }
 
+export function createStableId() {
+  return crypto.randomUUID()
+}
+
 interface LegacyRepeatRange {
   id: string
   axis: 'row' | 'column'
@@ -48,6 +52,12 @@ export function validateProject(value: unknown): ValidationResult {
   const columns = project.columns as number
   if (!project.cells.every((row) => Array.isArray(row) && row.length === columns && row.every(isHexColor))) {
     return { valid: false, error: appError('validation.cellColors') }
+  }
+  if (project.rowIds !== undefined && (!Array.isArray(project.rowIds) || project.rowIds.length !== project.rows || project.rowIds.some((id) => typeof id !== 'string' || !id) || new Set(project.rowIds).size !== project.rowIds.length)) {
+    return { valid: false, error: appError('validation.cellRows') }
+  }
+  if (project.columnIds !== undefined && (!Array.isArray(project.columnIds) || project.columnIds.length !== columns || project.columnIds.some((id) => typeof id !== 'string' || !id) || new Set(project.columnIds).size !== project.columnIds.length)) {
+    return { valid: false, error: appError('validation.cellRows') }
   }
   if (project.recentColors !== undefined && (!Array.isArray(project.recentColors) || project.recentColors.length > 20 || !project.recentColors.every(isHexColor))) {
     return { valid: false, error: appError('validation.recentColors') }
@@ -165,6 +175,8 @@ export function asPatternProject(value: unknown): PatternProject {
     ...(source as unknown as PatternProject),
     rows: cells.length,
     columns: cells[0].length,
+    rowIds: Array.isArray(source.rowIds) && source.rowIds.length === cells.length ? [...source.rowIds as string[]] : Array.from({ length: cells.length }, createStableId),
+    columnIds: Array.isArray(source.columnIds) && source.columnIds.length === cells[0].length ? [...source.columnIds as string[]] : Array.from({ length: cells[0].length }, createStableId),
     horizontalRepeats: source.repeatBoxes === undefined && Array.isArray(source.repeatRanges) && source.repeatRanges.length > 0 ? 1 : source.horizontalRepeats as number,
     verticalRepeats: source.repeatBoxes === undefined && Array.isArray(source.repeatRanges) && source.repeatRanges.length > 0 ? 1 : source.verticalRepeats as number,
     previewStitch: source.previewStitch === 'cross-stitch' || source.previewStitch === 'single-crochet' ? source.previewStitch : 'knit',

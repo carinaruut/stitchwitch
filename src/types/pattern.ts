@@ -73,6 +73,8 @@ export interface PatternProject {
   name: string
   rows: number
   columns: number
+  rowIds: string[]
+  columnIds: string[]
   cellSize: number
   backgroundColor: string
   horizontalRepeats: number
@@ -86,4 +88,4 @@ export interface PatternProject {
   cells: PatternGrid
 }
 
-export type NewPatternProject = Omit<PatternProject, 'format' | 'version' | 'previewStitch' | 'cells' | 'recentColors' | 'swatches' | 'palette' | 'repeatBoxes' | 'annotations'>
+export type NewPatternProject = Omit<PatternProject, 'format' | 'version' | 'rowIds' | 'columnIds' | 'previewStitch' | 'cells' | 'recentColors' | 'swatches' | 'palette' | 'repeatBoxes' | 'annotations'>

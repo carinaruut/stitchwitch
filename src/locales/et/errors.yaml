@@ -1,6 +1,6 @@
 validation:
   projectObject: Fail ei sisalda projekti andmeid.
-  unsupportedPattern: See fail ei ole toetatud stitch-pattern-vormingus.
+  unsupportedPattern: See ei ole toetatud Stitch Witchi projektifail.
   projectNameMissing: Projekti nimi puudub.
   integerRange: "{field} peab olema täisarv vahemikus {minimum} kuni {maximum}."
   fields:
@@ -25,7 +25,7 @@ validation:
   annotations: Mustri märkused ei sobi.
 tracker:
   projectObject: Fail ei sisalda rea jälgimise projekti.
-  unsupportedFile: See fail ei ole toetatud stitch-tracker-vormingus.
+  unsupportedFile: See ei ole toetatud Stitch Witchi jälgijafail.
   progressMissing: Rea jälgimise edenemisandmed puuduvad.
   completedCount: Lõpetatud pistete arv ei sobi.
   completedCells: Üksikult lõpetatud pisted ei sobi.

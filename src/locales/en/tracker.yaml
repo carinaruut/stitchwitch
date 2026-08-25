@@ -5,10 +5,10 @@ tracker:
     label: Tracker actions
     editor: Editor
     open: Open
-    save: Save Tracker
+    save: Save Project
     openEditor: Open editor
     openDesignOrTracker: Open design or tracker
-    saveAria: Save tracker
+    saveAria: Save project
     undo: Undo
     redo: Redo
     reset: Reset progress
@@ -22,6 +22,7 @@ tracker:
     percentComplete: '{percentage} complete'
     updated: Updated {date}
   timer:
+    toggle: Timer
     elapsed: 'Elapsed time: {time}'
     start: Start timer
     pause: Pause timer
@@ -36,6 +37,7 @@ tracker:
     recovery: Browser recovery can be lost if site data is cleared or you change browser or device. Download a tracker file regularly.
     beforeUnload: Download a tracker file before leaving.
   order:
+    label: Stitch order
     startRow: Start row
     top: Top
     bottom: Bottom
@@ -48,6 +50,7 @@ tracker:
     sequential: Complete through selected cell
     individual: Toggle individual cells
   controls:
+    trackingOptions: Tracking options
     settings: Settings
     display: Display
     displayAria: Tracker stitch display

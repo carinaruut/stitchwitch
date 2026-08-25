@@ -359,7 +359,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleEscape))
               {{ t('guide.tracker.intro') }}
             </p>
             <p class="mt-3 text-sm text-base-content/70">
-              {{ t('guide.tracker.recoveryBefore') }} <code>.stitch-tracker</code> {{ t('guide.tracker.recoveryAfter') }}
+              {{ t('guide.tracker.recoveryBefore') }} <code>.stitch-project</code> {{ t('guide.tracker.recoveryAfter') }}
             </p>
           </div>
         </section>
@@ -389,7 +389,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleEscape))
               <h3 class="font-bold">
                 {{ t('guide.saving.saveTitle') }}
               </h3><p class="mt-1 text-sm text-base-content/70">
-                {{ t('guide.saving.saveBefore') }} <code>.stitch-pattern</code> {{ t('guide.saving.saveAfter') }}
+                {{ t('guide.saving.saveBefore') }} <code>.stitch-project</code> {{ t('guide.saving.saveAfter') }}
               </p>
             </article>
             <article class="rounded-box border border-base-300 p-4">

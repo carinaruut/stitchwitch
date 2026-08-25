@@ -5,13 +5,14 @@ import type { PatternAnnotation, PatternDisplay, PatternGrid } from '../types/pa
 import type { TrackerProgress } from '../types/tracker'
 import { contrastColor } from '../utils/colors'
 import { followsCenterBoundary, isCenterHeader, repeatOutlineColor, REPEAT_COPY } from '../utils/grid'
-import { isStitchCompleted, rowCompletionRange, stitchOrdinal } from '../utils/tracker'
+import { isStitchCompleted, nextStitchId } from '../utils/tracker'
 import { renderAnnotations } from '../utils/annotations'
 import AnnotationLayer from './AnnotationLayer.vue'
 import AnnotationComments from './AnnotationComments.vue'
 
 const props = defineProps<{
   cells: PatternGrid
+  cellIds: string[][]
   rowHeaders: number[]
   columnHeaders: number[]
   repeatFlags: number[][]
@@ -52,6 +53,7 @@ const markedCells = ref(new Map<string, [row: number, column: number]>())
 const markingComplete = ref<boolean | null>(null)
 const allRenderedAnnotations = computed(() => props.showAnnotations ? renderAnnotations(props.annotations, props.cellSourceRows, props.cellSourceColumns) : [])
 const renderedAnnotations = computed(() => allRenderedAnnotations.value.filter((annotation) => annotation.type !== 'text'))
+const nextId = computed(() => props.progress.completionMode === 'sequential' ? nextStitchId(props.cellIds, props.progress) : null)
 function handleFullscreenChange() {
   isFullscreen.value = document.fullscreenElement === fullscreenTarget.value
   emit('fullscreen-change', isFullscreen.value)
@@ -78,20 +80,13 @@ onBeforeUnmount(() => {
   window.removeEventListener('pointercancel', stopMarking)
 })
 
-function ordinal(row: number, column: number) {
-  return stitchOrdinal(row, column, props.cells.length, props.cells[0].length, props.progress)
-}
-
 function rowComplete(row: number) {
-  if (props.progress.completionMode === 'individual') {
-    return props.cells[row].every((_, column) => isStitchCompleted(row, column, props.cells.length, props.cells[0].length, props.progress))
-  }
-  return props.progress.completedCount >= rowCompletionRange(row, props.cells.length, props.cells[0].length, props.progress.startRow).through
+  return props.cellIds[row].every((id) => isStitchCompleted(id, props.progress))
 }
 
 function cellComplete(row: number, column: number) {
   if (markingComplete.value !== null && markedCells.value.has(`${row}-${column}`)) return markingComplete.value
-  return isStitchCompleted(row, column, props.cells.length, props.cells[0].length, props.progress)
+  return isStitchCompleted(props.cellIds[row][column], props.progress)
 }
 
 function colorFocused(row: number, column: number) {
@@ -99,7 +94,7 @@ function colorFocused(row: number, column: number) {
 }
 
 function nextStitch(row: number, column: number) {
-  return props.progress.completionMode === 'sequential' && ordinal(row, column) === props.progress.completedCount
+  return props.progress.completionMode === 'sequential' && props.cellIds[row][column] === nextId.value
 }
 
 function rowDirection(row: number) {
@@ -163,7 +158,7 @@ function scrollAfterStitch(row: number, column: number) {
 }
 
 function selectStitch(row: number, column: number) {
-  const movesProgressForward = props.progress.completionMode === 'sequential' && ordinal(row, column) >= props.progress.completedCount
+  const movesProgressForward = props.progress.completionMode === 'sequential' && !isStitchCompleted(props.cellIds[row][column], props.progress)
   emit('stitch', row, column)
   if (props.autoScroll && movesProgressForward) void nextTick(() => scrollAfterStitch(row, column))
 }

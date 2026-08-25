@@ -25,7 +25,7 @@ Use `pnpm typecheck` for static checks, `pnpm build` to create `dist/`, and `pnp
 
 ## Project Files
 
-Work is backed up in browser storage. **Save** also downloads a `.stitch-pattern` file, while Tracker progress can be downloaded as `.stitch-tracker`. Download files regularly because clearing site data removes local backups.
+Work is backed up in browser storage. **Save** downloads one `.stitch-project` file containing both the pattern and its Tracker progress. Legacy `.stitch-pattern` and `.stitch-tracker` files remain importable. Download files regularly because clearing site data removes local backups.
 
 ## Deployment
 

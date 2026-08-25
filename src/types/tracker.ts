@@ -5,8 +5,7 @@ export type TrackerDirection = 'left-to-right' | 'right-to-left'
 export type TrackerCompletionMode = 'sequential' | 'individual'
 
 export interface TrackerProgress {
-  completedCount: number
-  completedCells: number[]
+  completedCells: string[]
   completionMode: TrackerCompletionMode
   startRow: TrackerStartRow
   firstRowDirection: TrackerDirection
@@ -28,11 +27,34 @@ export interface TrackerPreferences {
   showAnnotations: boolean
 }
 
+export interface TrackerState {
+  progress: TrackerProgress
+  timer: TrackerTimer
+  preferences?: TrackerPreferences
+}
+
+export interface StitchProject {
+  format: 'stitch-project'
+  version: 1
+  pattern: PatternProject
+  tracker?: TrackerState
+}
+
+export interface LegacyTrackerProgress {
+  completedCount: number
+  completedCells: number[]
+  completionMode: TrackerCompletionMode
+  startRow: TrackerStartRow
+  firstRowDirection: TrackerDirection
+  alternateRows: boolean
+  updatedAt: string
+}
+
 export interface TrackerProject {
   format: 'stitch-tracker'
   version: 1
   pattern: PatternProject
-  progress: TrackerProgress
+  progress: LegacyTrackerProgress
   timer: TrackerTimer
   preferences?: TrackerPreferences
 }

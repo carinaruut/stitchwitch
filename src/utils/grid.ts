@@ -103,6 +103,7 @@ export function synchronizeRepeatBox(grid: PatternGrid, box: RepeatBox): Pattern
 
 export interface RenderedGrid {
   cells: PatternGrid
+  cellIds: string[][]
   sourceRows: number[][]
   sourceColumns: number[][]
   rowHeaders: number[]
@@ -113,7 +114,17 @@ export interface RenderedGrid {
   repeatColorIndices: number[][]
 }
 
-function identityRenderedGrid(grid: PatternGrid, boxes: RepeatBox[]): RenderedGrid {
+export function cellOccurrenceId(rowId: string, rowCopy: number, columnId: string, columnCopy: number) {
+  return `${rowId}@${rowCopy}:${columnId}@${columnCopy}`
+}
+
+function axisIds(ids: string[] | undefined, length: number, prefix: string) {
+  return ids?.length === length ? ids : Array.from({ length }, (_, index) => `${prefix}-${index}`)
+}
+
+function identityRenderedGrid(grid: PatternGrid, boxes: RepeatBox[], rowIds?: string[], columnIds?: string[]): RenderedGrid {
+  const stableRowIds = axisIds(rowIds, grid.length, 'row')
+  const stableColumnIds = axisIds(columnIds, grid[0].length, 'column')
   const sourceRows = grid.map((row, rowIndex) => row.map(() => rowIndex))
   const sourceColumns = grid.map((row) => row.map((_, columnIndex) => columnIndex))
   const repeatFlags = grid.map((row) => row.map(() => 0))
@@ -151,6 +162,7 @@ function identityRenderedGrid(grid: PatternGrid, boxes: RepeatBox[]): RenderedGr
 
   return {
     cells,
+    cellIds: stableRowIds.map((rowId) => stableColumnIds.map((columnId) => cellOccurrenceId(rowId, 0, columnId, 0))),
     sourceRows,
     sourceColumns,
     rowHeaders: Array.from({ length: grid.length }, (_, index) => index),
@@ -162,8 +174,11 @@ function identityRenderedGrid(grid: PatternGrid, boxes: RepeatBox[]): RenderedGr
   }
 }
 
-export function renderGrid(grid: PatternGrid, horizontal: number, vertical: number, boxes: RepeatBox[]): RenderedGrid {
-  if (boxes.length > 0) return identityRenderedGrid(grid, boxes)
+export function renderGrid(grid: PatternGrid, horizontal: number, vertical: number, boxes: RepeatBox[], rowIds?: string[], columnIds?: string[]): RenderedGrid {
+  if (boxes.length > 0) return identityRenderedGrid(grid, boxes, rowIds, columnIds)
+
+  const stableRowIds = axisIds(rowIds, grid.length, 'row')
+  const stableColumnIds = axisIds(columnIds, grid[0].length, 'column')
 
   const rowHeaders = Array.from({ length: vertical }, () => Array.from({ length: grid.length }, (_, index) => index)).flat()
   const columnHeaders = Array.from({ length: horizontal }, () => Array.from({ length: grid[0].length }, (_, index) => index)).flat()
@@ -172,6 +187,7 @@ export function renderGrid(grid: PatternGrid, horizontal: number, vertical: numb
   const cells = rowHeaders.map((row) => columnHeaders.map((column) => grid[row][column]))
   return {
     cells,
+    cellIds: rowHeaders.map((row, rowIndex) => columnHeaders.map((column, columnIndex) => cellOccurrenceId(stableRowIds[row], rowCopies[rowIndex], stableColumnIds[column], columnCopies[columnIndex]))),
     sourceRows: rowHeaders.map((row) => columnHeaders.map(() => row)),
     sourceColumns: rowHeaders.map(() => [...columnHeaders]),
     rowHeaders,

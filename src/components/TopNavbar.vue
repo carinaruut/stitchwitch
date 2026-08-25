@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { RouterLink } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import ThemeToggle from './ThemeToggle.vue'
 import LanguageSwitcher from './LanguageSwitcher.vue'
@@ -134,15 +133,6 @@ function requestPng(close: (focusAnchor?: boolean) => void) {
           </ul>
         </template>
       </AppDropdown>
-      <RouterLink
-        class="btn btn-ghost btn-sm"
-        to="/tracker"
-      >
-        <span
-          class="mdi mdi-progress-check text-lg"
-          aria-hidden="true"
-        />{{ t('editor.nav.tracker') }}
-      </RouterLink>
     </nav>
     <div class="navbar-end gap-1">
       <button
@@ -260,14 +250,6 @@ function requestPng(close: (focusAnchor?: boolean) => void) {
                   aria-hidden="true"
                 />{{ t('editor.print.symbolChart') }}
               </button>
-            </li>
-            <li>
-              <RouterLink to="/tracker">
-                <span
-                  class="mdi mdi-progress-check"
-                  aria-hidden="true"
-                />{{ t('editor.nav.openTracker') }}
-              </RouterLink>
             </li>
           </ul>
         </template>

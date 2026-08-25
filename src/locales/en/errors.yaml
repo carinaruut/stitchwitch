@@ -1,6 +1,6 @@
 validation:
   projectObject: The file does not contain a project object.
-  unsupportedPattern: This is not a supported stitch-pattern file.
+  unsupportedPattern: This is not a supported Stitch Witch project file.
   projectNameMissing: The project name is missing.
   integerRange: "{field} must be a whole number from {minimum} to {maximum}."
   fields:
@@ -25,7 +25,7 @@ validation:
   annotations: The pattern annotations are invalid.
 tracker:
   projectObject: The file does not contain a tracker project.
-  unsupportedFile: This is not a supported stitch-tracker file.
+  unsupportedFile: This is not a supported Stitch Witch tracker file.
   progressMissing: The tracker progress is missing.
   completedCount: The completed stitch count is invalid.
   completedCells: The individually completed stitches are invalid.

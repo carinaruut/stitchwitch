@@ -97,7 +97,7 @@ guide:
     referenceText: Open the reference-photo panel from the image button in the tools bar. Add a local image, select Eyedropper or press I, then click or tap the photo to use that color. Reference photos remain only for the current session and are not included in project files.
   tracker:
     title: Progress tracker
-    intro: Open Tracker from the top menu, then open a saved design or tracker file. Choose the starting row and stitch direction before beginning. Clicking a stitch completes every earlier row and each stitch through that point; clicking a row number completes or reopens the whole row.
+    intro: Open Tracker from the progress icon beside the Editor grid settings. It tracks the current project directly. Choose the starting row and stitch direction before beginning. Clicking a stitch completes every earlier row and each stitch through that point; clicking a row number completes or reopens the whole row. Completed stitches reopen automatically when their Editor cells change.
     recoveryBefore: Progress is recovered in the current browser, but browser data can be cleared. Download a
     recoveryAfter: file regularly and use it to continue on another browser or device.
   saving:
@@ -108,7 +108,7 @@ guide:
     saveBefore: Downloads a
     saveAfter: backup. Keep downloaded backups because browser data can be cleared.
     openTitle: Open
-    openText: Validates a downloaded project, asks before replacing current work, and then resets undo history for the imported design.
+    openText: Validates a downloaded project, asks before replacing current work, and restores both its design and Tracker progress. Legacy pattern and tracker files are also supported.
   output:
     title: Preview, printing, and PDF
     intro: Complete pattern preview shows the rendered chart, including whole-pattern repeats or active repeat boxes. Open Print or Save as PDF and choose a Color chart or B&W symbols. Color PDFs include a swatch legend with stitch counts. Symbol PDFs include a black-and-white key with descriptive color names and stitch counts. Either option creates a numbered overview, detail pages for large charts, and source charts for enabled repeat boxes.

@@ -97,7 +97,7 @@ guide:
     referenceText: Ava viitepildi paneel tööriistariba pildinupust. Lisa kohalik pilt, vali pipett või vajuta I ning klõpsa või puuduta värvi kasutamiseks pilti. Viitepilt säilib ainult praeguse seansi jooksul ja seda ei lisata projektifaili.
   tracker:
     title: Edenemise jälgija
-    intro: Ava ülamenüüst jälgija ja seejärel salvestatud kavand või jälgijafail. Enne alustamist vali algusrida ja pistete tegemise suund. Pistelt klõpsamine märgib lõpetatuks kõik varasemad read ja pisted kuni valitud kohani; reanumbril klõpsamine lõpetab või taasavab terve rea.
+    intro: Ava jälgija redaktori ruudustikuseadete kõrval olevast edenemise ikoonist. See jälgib praegust projekti otse. Enne alustamist vali algusrida ja pistete tegemise suund. Pistelt klõpsamine märgib lõpetatuks kõik varasemad read ja pisted kuni valitud kohani; reanumbril klõpsamine lõpetab või taasavab terve rea. Redaktoris muudetud lõpetatud pisted avatakse automaatselt uuesti.
     recoveryBefore: Edenemine taastatakse selles brauseris, kuid brauseri andmed võidakse kustutada. Laadi korrapäraselt alla
     recoveryAfter: fail, et jätkata teises brauseris või seadmes.
   saving:
@@ -108,7 +108,7 @@ guide:
     saveBefore: Laadib alla
     saveAfter: varukoopia. Hoia allalaaditud varukoopiad alles, sest brauseri andmed võidakse kustutada.
     openTitle: Ava
-    openText: Kontrollib allalaaditud projekti, küsib enne aktiivse töö asendamist kinnitust ning lähtestab seejärel imporditud kavandi tagasivõtmisajaloo.
+    openText: Kontrollib allalaaditud projekti, küsib enne aktiivse töö asendamist kinnitust ning taastab nii kavandi kui ka jälgija edenemise. Toetatud on ka varasemad mustri- ja jälgijafailid.
   output:
     title: Eelvaade, printimine ja PDF
     intro: Terve mustri eelvaates kuvatakse valmis skeem koos kogu mustri korduste või aktiivsete kordusaladega. Ava printimine või PDF-failina salvestamine ja vali värviline skeem või mustvalged sümbolid. Värviline PDF sisaldab värvinäidiste legendit koos pistete arvuga. Sümbolitega PDF sisaldab mustvalget legendit kirjeldavate värvinimede ja pistete arvuga. Mõlemad valikud loovad nummerdatud ülevaate, suurte skeemide detaillehed ja lubatud kordusalade lähteosade skeemid.

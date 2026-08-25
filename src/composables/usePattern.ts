@@ -1,9 +1,11 @@
 import { computed, ref, watch } from 'vue'
 import { MAX_ANNOTATIONS, MAX_PROJECT_SWATCHES, MAX_REPEAT_COUNT, type AnnotationType, type DrawingTool, type GridSelection, type NewPatternProject, type PaletteEntry, type PatternAnnotation, type PatternGrid, type PatternProject, type RepeatBox, type RepeatBoxInput } from '../types/pattern'
+import type { StitchProject, TrackerState } from '../types/tracker'
 import { addColumn, addRow, boxesOverlap, cloneGrid, createGrid, ensureGridSize, removeColumn, removeRow, renderGrid, sourceCellFor, synchronizeRepeatBox } from '../utils/grid'
 import { assignColorSymbols, normalizeColor } from '../utils/colors'
 import { parseAxisSelection } from '../utils/axisSelection'
-import { asPatternProject } from '../utils/validation'
+import { createStableId } from '../utils/validation'
+import { asStitchProject } from '../utils/project'
 import { translateError } from '../utils/localizedErrors'
 import { emptyPaletteEntry, paletteEntries as completePaletteEntries, reorderPaletteEntries } from '../utils/palette'
 import { useHistory } from './useHistory'
@@ -21,6 +23,8 @@ const DEFAULT_PROJECT: PatternProject = {
   name: translateError('defaults.projectName'),
   rows: 20,
   columns: 20,
+  rowIds: Array.from({ length: 20 }, createStableId),
+  columnIds: Array.from({ length: 20 }, createStableId),
   cellSize: 24,
   backgroundColor: '#ffffff',
   horizontalRepeats: 1,
@@ -29,18 +33,18 @@ const DEFAULT_PROJECT: PatternProject = {
   recentColors: [],
   swatches: [],
   palette: [],
-    repeatBoxes: [],
-    annotations: [],
-    cells: createGrid(20, 20, '#ffffff'),
+  repeatBoxes: [],
+  annotations: [],
+  cells: createGrid(20, 20, '#ffffff'),
 }
 
-export function usePattern() {
-  let initialProject = DEFAULT_PROJECT
+function createPattern() {
+  let initialDocument: StitchProject = { format: 'stitch-project', version: 1, pattern: DEFAULT_PROJECT }
   let recovered = false
   try {
     const savedProject = localStorage.getItem(AUTOSAVE_KEY)
     if (savedProject) {
-      initialProject = asPatternProject(JSON.parse(savedProject))
+      initialDocument = asStitchProject(JSON.parse(savedProject))
       recovered = true
     }
   } catch {
@@ -51,6 +55,7 @@ export function usePattern() {
     }
   }
 
+  const initialProject = initialDocument.pattern
   const project = ref<PatternProject>({
     ...initialProject,
     recentColors: [...initialProject.recentColors],
@@ -60,6 +65,7 @@ export function usePattern() {
     annotations: initialProject.annotations.map((annotation) => ({ ...annotation })),
     cells: cloneGrid(initialProject.cells),
   })
+  const tracker = ref<TrackerState | undefined>(initialDocument.tracker ? structuredClone(initialDocument.tracker) : undefined)
   project.value.palette = completePaletteEntries(project.value)
   const tool = ref<DrawingTool>('pencil')
   const selectedRow = ref(0)
@@ -87,6 +93,7 @@ export function usePattern() {
   project.value.recentColors = [...recentColors.value]
   const history = useHistory()
   const restoredAutosave = ref(recovered)
+  const replacementVersion = ref(0)
   const autosaveStatus = ref<'saving' | 'saved' | 'error'>('saving')
   const lastSavedAt = ref<number | null>(recovered ? Date.now() : null)
   let autosaveTimer: ReturnType<typeof setTimeout> | null = null
@@ -146,18 +153,27 @@ export function usePattern() {
     (cells) => {
       project.value.rows = cells.length
       project.value.columns = cells[0].length
+      project.value.rowIds = project.value.rowIds.slice(0, cells.length)
+      project.value.columnIds = project.value.columnIds.slice(0, cells[0].length)
+      while (project.value.rowIds.length < cells.length) project.value.rowIds.push(createStableId())
+      while (project.value.columnIds.length < cells[0].length) project.value.columnIds.push(createStableId())
     },
-    { immediate: true },
+    { immediate: true, flush: 'sync' },
   )
 
   function flushAutosave() {
     if (autosaveTimer) clearTimeout(autosaveTimer)
     autosaveTimer = null
     try {
-      const snapshot = {
-        ...project.value,
-        rows: project.value.cells.length,
-        columns: project.value.cells[0].length,
+      const snapshot: StitchProject = {
+        format: 'stitch-project',
+        version: 1,
+        pattern: {
+          ...project.value,
+          rows: project.value.cells.length,
+          columns: project.value.cells[0].length,
+        },
+        ...(tracker.value ? { tracker: tracker.value } : {}),
       }
       localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(snapshot))
       autosaveStatus.value = 'saved'
@@ -173,7 +189,7 @@ export function usePattern() {
     autosaveTimer = setTimeout(flushAutosave, 300)
   }
 
-  watch(project, scheduleAutosave, { deep: true })
+  watch([project, tracker], scheduleAutosave, { deep: true })
   scheduleAutosave()
 
   function persistColors() {
@@ -204,9 +220,10 @@ export function usePattern() {
     project.value.swatches = project.value.swatches.filter((swatch) => swatch !== color)
   }
 
-  function replaceProject(next: PatternProject) {
+  function replaceProject(next: PatternProject, nextTracker?: TrackerState) {
     project.value = { ...next, recentColors: [...next.recentColors], swatches: [...next.swatches], palette: next.palette.map((entry) => ({ ...entry })), repeatBoxes: next.repeatBoxes.map((box) => ({ ...box })), annotations: next.annotations.map((annotation) => ({ ...annotation })), cells: cloneGrid(next.cells) }
     project.value.palette = completePaletteEntries(project.value)
+    tracker.value = nextTracker ? structuredClone(nextTracker) : undefined
     recentColors.value = [...next.recentColors]
     persistColors()
     selectRow(0)
@@ -215,15 +232,18 @@ export function usePattern() {
     selectedAnnotationId.value = null
     clipboard.value = null
     history.reset()
+    replacementVersion.value += 1
   }
 
   function createProject(input: NewPatternProject) {
-    replaceProject({ ...input, format: 'stitch-pattern', version: 1, previewStitch: 'knit', recentColors: [...recentColors.value], swatches: [], palette: [], repeatBoxes: [], annotations: [], cells: createGrid(input.rows, input.columns, input.backgroundColor) })
+    replaceProject({ ...input, format: 'stitch-pattern', version: 1, rowIds: Array.from({ length: input.rows }, createStableId), columnIds: Array.from({ length: input.columns }, createStableId), previewStitch: 'knit', recentColors: [...recentColors.value], swatches: [], palette: [], repeatBoxes: [], annotations: [], cells: createGrid(input.rows, input.columns, input.backgroundColor) })
   }
 
   function beginGridChange() {
     history.record({
       cells: project.value.cells,
+      rowIds: project.value.rowIds,
+      columnIds: project.value.columnIds,
       repeatBoxes: project.value.repeatBoxes,
       annotations: project.value.annotations,
       palette: project.value.palette,
@@ -340,7 +360,7 @@ export function usePattern() {
   }
 
   function selectionClipboard(candidate: GridSelection): SelectionClipboard {
-    const rendered = renderGrid(project.value.cells, 1, 1, project.value.repeatBoxes).cells
+    const rendered = renderGrid(project.value.cells, 1, 1, project.value.repeatBoxes, project.value.rowIds, project.value.columnIds).cells
     const selectedCells = candidate.cells ? new Set(candidate.cells.map(([row, column]) => `${row}:${column}`)) : null
     const cells = rendered
       .slice(candidate.top, candidate.bottom + 1)
@@ -780,6 +800,7 @@ export function usePattern() {
         const position = target.top + section * sectionHeight + sectionOffset + section * total
         for (let offset = 0; offset < total; offset += 1) {
           cells = addRow(cells, position + offset, project.value.backgroundColor)
+          project.value.rowIds.splice(position + offset, 0, createStableId())
           adjustBoxesForInsert('row', position + offset, 1, alignedIds)
         }
       }
@@ -793,6 +814,7 @@ export function usePattern() {
     adjustBoxesForInsert('row', index, total)
     for (let offset = 0; offset < total; offset += 1) {
       cells = addRow(cells, index + offset, project.value.backgroundColor)
+      project.value.rowIds.splice(index + offset, 0, createStableId())
     }
     project.value.cells = cells
     selectRow(Math.min(index, cells.length - 1))
@@ -843,6 +865,7 @@ export function usePattern() {
       for (let section = target.sections - 1; section >= 0; section -= 1) {
         const position = target.top + section * sectionHeight + sectionOffset
         cells = removeRow(cells, position)
+        project.value.rowIds.splice(position, 1)
         adjustBoxesForDelete('row', position, alignedIds)
       }
       if (sectionHeight === 1) project.value.repeatBoxes = project.value.repeatBoxes.filter((box) => !alignedIds.includes(box.id))
@@ -853,6 +876,7 @@ export function usePattern() {
     }
 
     adjustBoxesForDelete('row', index)
+    project.value.rowIds.splice(index, 1)
     project.value.cells = removeRow(project.value.cells, index)
   }
 
@@ -903,6 +927,7 @@ export function usePattern() {
         const position = target.left + section * sectionWidth + sectionOffset + section * total
         for (let offset = 0; offset < total; offset += 1) {
           cells = addColumn(cells, position + offset, project.value.backgroundColor)
+          project.value.columnIds.splice(position + offset, 0, createStableId())
           adjustBoxesForInsert('column', position + offset, 1, alignedIds)
         }
       }
@@ -916,6 +941,7 @@ export function usePattern() {
     adjustBoxesForInsert('column', index, total)
     for (let offset = 0; offset < total; offset += 1) {
       cells = addColumn(cells, index + offset, project.value.backgroundColor)
+      project.value.columnIds.splice(index + offset, 0, createStableId())
     }
     project.value.cells = cells
     selectColumn(Math.min(index, cells[0].length - 1))
@@ -966,6 +992,7 @@ export function usePattern() {
       for (let section = target.sections - 1; section >= 0; section -= 1) {
         const position = target.left + section * sectionWidth + sectionOffset
         cells = removeColumn(cells, position)
+        project.value.columnIds.splice(position, 1)
         adjustBoxesForDelete('column', position, alignedIds)
       }
       if (sectionWidth === 1) project.value.repeatBoxes = project.value.repeatBoxes.filter((box) => !alignedIds.includes(box.id))
@@ -976,6 +1003,7 @@ export function usePattern() {
     }
 
     adjustBoxesForDelete('column', index)
+    project.value.columnIds.splice(index, 1)
     project.value.cells = removeColumn(project.value.cells, index)
   }
 
@@ -1012,9 +1040,11 @@ export function usePattern() {
   }
 
   function undo() {
-    const snapshot = history.undo({ cells: project.value.cells, repeatBoxes: project.value.repeatBoxes, annotations: project.value.annotations, palette: project.value.palette, backgroundColor: project.value.backgroundColor, swatches: project.value.swatches, recentColors: recentColors.value })
+    const snapshot = history.undo({ cells: project.value.cells, rowIds: project.value.rowIds, columnIds: project.value.columnIds, repeatBoxes: project.value.repeatBoxes, annotations: project.value.annotations, palette: project.value.palette, backgroundColor: project.value.backgroundColor, swatches: project.value.swatches, recentColors: recentColors.value })
     if (snapshot) {
       project.value.cells = snapshot.cells
+      project.value.rowIds = snapshot.rowIds
+      project.value.columnIds = snapshot.columnIds
       project.value.repeatBoxes = snapshot.repeatBoxes
       project.value.annotations = snapshot.annotations
       project.value.palette = snapshot.palette
@@ -1028,9 +1058,11 @@ export function usePattern() {
   }
 
   function redo() {
-    const snapshot = history.redo({ cells: project.value.cells, repeatBoxes: project.value.repeatBoxes, annotations: project.value.annotations, palette: project.value.palette, backgroundColor: project.value.backgroundColor, swatches: project.value.swatches, recentColors: recentColors.value })
+    const snapshot = history.redo({ cells: project.value.cells, rowIds: project.value.rowIds, columnIds: project.value.columnIds, repeatBoxes: project.value.repeatBoxes, annotations: project.value.annotations, palette: project.value.palette, backgroundColor: project.value.backgroundColor, swatches: project.value.swatches, recentColors: recentColors.value })
     if (snapshot) {
       project.value.cells = snapshot.cells
+      project.value.rowIds = snapshot.rowIds
+      project.value.columnIds = snapshot.columnIds
       project.value.repeatBoxes = snapshot.repeatBoxes
       project.value.annotations = snapshot.annotations
       project.value.palette = snapshot.palette
@@ -1045,6 +1077,7 @@ export function usePattern() {
 
   return {
     project,
+    tracker,
     tool,
     selectedRow,
     selectedColumn,
@@ -1057,6 +1090,7 @@ export function usePattern() {
     selectedColor,
     recentColors,
     restoredAutosave,
+    replacementVersion,
     autosaveStatus,
     lastSavedAt,
     rowCount: computed(() => project.value.cells.length),
@@ -1123,4 +1157,13 @@ export function usePattern() {
     undo,
     redo,
   }
+}
+
+export type PatternState = ReturnType<typeof createPattern>
+
+let sharedPattern: PatternState | undefined
+
+export function usePattern() {
+  sharedPattern ??= createPattern()
+  return sharedPattern
 }

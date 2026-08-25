@@ -19,17 +19,21 @@ import NotificationToast from '../components/NotificationToast.vue'
 import PrintView from '../components/PrintView.vue'
 import UserGuideModal from '../components/UserGuideModal.vue'
 import AnnotationEditor from '../components/AnnotationEditor.vue'
+import TrackerWorkspace from '../components/TrackerWorkspace.vue'
+import WorkspaceActions from '../components/WorkspaceActions.vue'
 import { usePattern } from '../composables/usePattern'
 import { useTheme } from '../composables/useTheme'
 import { useNotifications } from '../composables/useNotifications'
 import { downloadProject, readProjectFile, safeFilename } from '../composables/useProjectFiles'
-import type { DrawingTool, NewPatternProject, PatternProject, PrintMode, RepeatBoxInput } from '../types/pattern'
+import type { DrawingTool, NewPatternProject, PrintMode, RepeatBoxInput } from '../types/pattern'
+import type { StitchProject } from '../types/tracker'
 import { localizedErrorMessage } from '../utils/appError'
 import { colorSymbolMap } from '../utils/colors'
 import { pickScreenColor } from '../utils/eyeDropper'
 import { renderGrid } from '../utils/grid'
 import { orderedColorCounts } from '../utils/palette'
 import { renderAnnotations as renderPatternAnnotations } from '../utils/annotations'
+import { reconcileTracker, trackerElapsedMilliseconds } from '../utils/tracker'
 
 const CANVAS_FULL_HEIGHT_KEY = 'stitch-canvas-full-height'
 const CANVAS_SYMBOLS_KEY = 'stitch-canvas-symbols'
@@ -68,8 +72,9 @@ const clearModalOpen = ref(false)
 const importModalOpen = ref(false)
 const guideOpen = ref(false)
 const referenceOpen = ref(false)
+const workspace = ref<'editor' | 'tracker'>('editor')
 const fileInput = ref<HTMLInputElement | null>(null)
-const pendingImport = ref<PatternProject | null>(null)
+const pendingImport = ref<StitchProject | null>(null)
 const placingSelection = ref(false)
 const selectedCommentId = ref<string | null>(null)
 const printMode = ref<PrintMode>('color')
@@ -96,6 +101,8 @@ const renderedPattern = computed(() => renderGrid(
   pattern.project.value.horizontalRepeats,
   pattern.project.value.verticalRepeats,
   pattern.project.value.repeatBoxes,
+  pattern.project.value.rowIds,
+  pattern.project.value.columnIds,
 ))
 const canvasSymbolMap = computed(() => canvasSymbols.value ? colorSymbolMap(orderedColorCounts(renderedPattern.value.cells, pattern.paletteEntries.value).map((entry) => entry.color), pattern.paletteEntries.value) : undefined)
 const selectedAnnotation = computed(() => pattern.project.value.annotations.find((annotation) => annotation.id === pattern.selectedAnnotationId.value) ?? null)
@@ -169,9 +176,20 @@ function confirmClear() {
 function saveProject() {
   try {
     pattern.flushAutosave()
-    downloadProject(pattern.project.value)
-    downloadBackupNeeded.value = false
-    void nextTick(() => { downloadBackupNeeded.value = false })
+    const tracker = pattern.tracker.value
+    downloadProject({
+      format: 'stitch-project',
+      version: 1,
+      pattern: pattern.project.value,
+      ...(tracker ? {
+        tracker: {
+          ...tracker,
+          timer: { elapsedMilliseconds: trackerElapsedMilliseconds(tracker.timer), startedAt: null },
+        },
+      } : {}),
+    })
+    downloadBackupNeeded.value = tracker?.timer.startedAt != null
+    void nextTick(() => { downloadBackupNeeded.value = tracker?.timer.startedAt != null })
     notify(t('editor.notifications.projectSaved'), 'success')
   } catch (error) {
     notify(localizeProjectError(error, 'editor.errors.saveFailed'), 'error')
@@ -196,7 +214,7 @@ async function selectFile(event: Event) {
 
 function confirmImport() {
   if (!pendingImport.value) return
-  pattern.replaceProject(pendingImport.value)
+  pattern.replaceProject(pendingImport.value.pattern, pendingImport.value.tracker)
   downloadBackupNeeded.value = false
   void nextTick(() => { downloadBackupNeeded.value = false })
   pendingImport.value = null
@@ -410,7 +428,7 @@ async function downloadCanvasPng() {
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
-    link.download = safeFilename(pattern.project.value.name).replace(/\.stitch-pattern$/, '.png')
+    link.download = safeFilename(pattern.project.value.name).replace(/\.stitch-project$/, '.png')
     link.click()
     URL.revokeObjectURL(url)
     notify(t('editor.notifications.pngDownloaded'), 'success')
@@ -574,11 +592,19 @@ watch(pattern.autosaveStatus, (status) => {
     notify(t('editor.notifications.backupFailed'), 'error', 7000)
   }
 })
-watch(pattern.project, () => {
+watch([pattern.project, pattern.tracker], () => {
   downloadBackupNeeded.value = true
 }, { deep: true })
 watch(() => pattern.project.value.name, (name) => {
   patternName.value = name
+})
+let lastReplacementVersion = pattern.replacementVersion.value
+watch(renderedPattern, (current, previous) => {
+  if (lastReplacementVersion !== pattern.replacementVersion.value) {
+    lastReplacementVersion = pattern.replacementVersion.value
+    return
+  }
+  if (previous) reconcileTracker(pattern.tracker.value, previous, current)
 })
 
 onBeforeRouteLeave(() => {
@@ -628,7 +654,10 @@ onBeforeUnmount(() => {
 
     <div class="min-w-0 p-3 sm:p-5">
       <main class="mx-auto max-w-360 space-y-4">
-        <section class="card border border-base-300 bg-base-100">
+        <section
+          v-if="workspace === 'editor'"
+          class="card border border-base-300 bg-base-100"
+        >
           <div class="card-body gap-3 p-3 sm:p-5">
             <div class="flex flex-wrap items-start justify-between gap-3">
               <div>
@@ -678,17 +707,12 @@ onBeforeUnmount(() => {
               :mirror-horizontal="pattern.mirrorHorizontal.value"
               :mirror-vertical="pattern.mirrorVertical.value"
               :reference-open="referenceOpen"
-              :include-annotations="includeAnnotations"
-              @update:include-annotations="includeAnnotations = $event"
               @select="selectTool"
               @toggle-mirror-horizontal="toggleMirror('horizontal')"
               @toggle-mirror-vertical="toggleMirror('vertical')"
               @toggle-reference="referenceOpen = !referenceOpen"
               @cancel-placement="placingSelection = false"
               @clear="requestClear"
-              @save="saveProject"
-              @png="downloadCanvasPng"
-              @print="printPattern"
             >
               <template #color>
                 <ColorMenu
@@ -770,15 +794,27 @@ onBeforeUnmount(() => {
                   @remove-columns="deleteColumns"
                 />
               </template>
-              <template #settings>
-                <GridMenu
-                  :cell-size="pattern.project.value.cellSize"
-                  :full-height="canvasFullHeight"
-                  :show-symbols="canvasSymbols"
-                  @cell-size="pattern.project.value.cellSize = $event"
-                  @full-height="canvasFullHeight = $event"
-                  @show-symbols="canvasSymbols = $event"
-                />
+              <template #actions>
+                <WorkspaceActions
+                  context="editor"
+                  :include-annotations="includeAnnotations"
+                  @update:include-annotations="includeAnnotations = $event"
+                  @switch="workspace = 'tracker'"
+                  @save="saveProject"
+                  @png="downloadCanvasPng"
+                  @print="printPattern"
+                >
+                  <template #settings>
+                    <GridMenu
+                      :cell-size="pattern.project.value.cellSize"
+                      :full-height="canvasFullHeight"
+                      :show-symbols="canvasSymbols"
+                      @cell-size="pattern.project.value.cellSize = $event"
+                      @full-height="canvasFullHeight = $event"
+                      @show-symbols="canvasSymbols = $event"
+                    />
+                  </template>
+                </WorkspaceActions>
               </template>
             </DrawingTools>
             <AnnotationEditor
@@ -858,7 +894,18 @@ onBeforeUnmount(() => {
           </div>
         </section>
 
+        <TrackerWorkspace
+          v-else
+          :include-annotations="includeAnnotations"
+          @update:include-annotations="includeAnnotations = $event"
+          @close="workspace = 'editor'"
+          @save="saveProject"
+          @png="downloadCanvasPng"
+          @print="printPattern"
+        />
+
         <ColorLegend
+          v-if="workspace === 'editor'"
           :cells="renderedPattern.cells"
           :symbols="canvasSymbolMap"
           :palette="pattern.paletteEntries.value"
@@ -871,6 +918,7 @@ onBeforeUnmount(() => {
         />
 
         <PatternPreview
+          v-if="workspace === 'editor'"
           v-model:stitch="pattern.project.value.previewStitch"
           :cells="renderedPattern.cells"
         />

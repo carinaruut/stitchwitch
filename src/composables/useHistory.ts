@@ -4,6 +4,8 @@ import { cloneGrid } from '../utils/grid'
 
 export interface PatternSnapshot {
   cells: PatternGrid
+  rowIds: string[]
+  columnIds: string[]
   repeatBoxes: RepeatBox[]
   annotations: PatternAnnotation[]
   palette: PaletteEntry[]
@@ -15,6 +17,8 @@ export interface PatternSnapshot {
 function cloneSnapshot(snapshot: PatternSnapshot): PatternSnapshot {
   return {
     cells: cloneGrid(snapshot.cells),
+    rowIds: [...snapshot.rowIds],
+    columnIds: [...snapshot.columnIds],
     repeatBoxes: snapshot.repeatBoxes.map((box) => ({ ...box })),
     annotations: snapshot.annotations.map((annotation) => ({ ...annotation })),
     palette: snapshot.palette.map((entry) => ({ ...entry })),

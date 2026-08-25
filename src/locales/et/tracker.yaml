@@ -5,10 +5,10 @@ tracker:
     label: Tööjärje toimingud
     editor: Redaktor
     open: Ava
-    save: Salvesta tööjärg
+    save: Salvesta projekt
     openEditor: Ava redaktor
     openDesignOrTracker: Ava kavand või tööjärg
-    saveAria: Salvesta tööjärg
+    saveAria: Salvesta projekt
     undo: Võta tagasi
     redo: Tee uuesti
     reset: Lähtesta edenemine
@@ -22,6 +22,7 @@ tracker:
     percentComplete: '{percentage} tehtud'
     updated: Uuendatud {date}
   timer:
+    toggle: Taimer
     elapsed: 'Kulunud aeg: {time}'
     start: Käivita taimer
     pause: Peata taimer
@@ -36,6 +37,7 @@ tracker:
     recovery: Brauseri taastekoopia võib kaduda, kui saidiandmed kustutatakse või vahetad brauserit või seadet. Laadi tööjärjefail korrapäraselt alla.
     beforeUnload: Enne lahkumist laadi tööjärjefail alla.
   order:
+    label: Pistete järjekord
     startRow: Algusrida
     top: Ülemine
     bottom: Alumine
@@ -48,6 +50,7 @@ tracker:
     sequential: Märgi valitud pisteni tehtuks
     individual: Lülita üksikuid pisteid
   controls:
+    trackingOptions: Jälgimise valikud
     settings: Seaded
     display: Vaade
     displayAria: Tööjärje pistete vaade
