@@ -1,11 +1,11 @@
 import { computed, ref, watch } from 'vue'
 import { MAX_ANNOTATIONS, MAX_PROJECT_SWATCHES, MAX_REPEAT_COUNT, type AnnotationType, type DrawingTool, type GridSelection, type NewPatternProject, type PaletteEntry, type PatternAnnotation, type PatternGrid, type PatternProject, type RepeatBox, type RepeatBoxInput } from '../types/pattern'
 import { addColumn, addRow, boxesOverlap, cloneGrid, createGrid, ensureGridSize, removeColumn, removeRow, renderGrid, sourceCellFor, synchronizeRepeatBox } from '../utils/grid'
-import { normalizeColor } from '../utils/colors'
+import { assignColorSymbols, normalizeColor } from '../utils/colors'
 import { parseAxisSelection } from '../utils/axisSelection'
 import { asPatternProject } from '../utils/validation'
 import { translateError } from '../utils/localizedErrors'
-import { paletteEntries as completePaletteEntries, reorderPaletteEntries } from '../utils/palette'
+import { emptyPaletteEntry, paletteEntries as completePaletteEntries, reorderPaletteEntries } from '../utils/palette'
 import { useHistory } from './useHistory'
 
 const AUTOSAVE_KEY = 'stitch-project-autosave'
@@ -60,6 +60,7 @@ export function usePattern() {
     annotations: initialProject.annotations.map((annotation) => ({ ...annotation })),
     cells: cloneGrid(initialProject.cells),
   })
+  project.value.palette = completePaletteEntries(project.value)
   const tool = ref<DrawingTool>('pencil')
   const selectedRow = ref(0)
   const selectedColumn = ref(0)
@@ -185,6 +186,9 @@ export function usePattern() {
     const color = normalizeColor(value)
     if (!color) return false
     selectedColor.value = color
+    if (!project.value.palette.some((entry) => entry.color === color)) {
+      project.value.palette = assignColorSymbols([...completePaletteEntries(project.value), emptyPaletteEntry(color)])
+    }
     if (recent) recentColors.value = [color, ...recentColors.value.filter((item) => item !== color)].slice(0, 20)
     persistColors()
     return true
@@ -202,6 +206,7 @@ export function usePattern() {
 
   function replaceProject(next: PatternProject) {
     project.value = { ...next, recentColors: [...next.recentColors], swatches: [...next.swatches], palette: next.palette.map((entry) => ({ ...entry })), repeatBoxes: next.repeatBoxes.map((box) => ({ ...box })), annotations: next.annotations.map((annotation) => ({ ...annotation })), cells: cloneGrid(next.cells) }
+    project.value.palette = completePaletteEntries(project.value)
     recentColors.value = [...next.recentColors]
     persistColors()
     selectRow(0)
