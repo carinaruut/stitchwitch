@@ -13,6 +13,16 @@ editor:
     columns: '{count} columns'
     oneRow: '{count} row'
     rows: '{count} rows'
+  tabs:
+    label: Open projects
+    new: New project tab
+    close: Close {name}
+    chooseTitle: Open a project tab
+    chooseDescription: Start a new design or load a project from your device.
+    createTitle: Create new project
+    createDescription: Choose a name, canvas size, repeats, and background color.
+    loadTitle: Load project file
+    loadDescription: Open a .stitch-project file in its own tab.
   legend:
     title: Color legend
     oneTotal: '{count} total stitch'
@@ -87,6 +97,9 @@ editor:
     importTitle: Replace the current project?
     importMessage: Opening this file will replace the pattern currently in the editor. Save it first if you want to keep it.
     importConfirm: Open project
+    closeProjectTitle: Close project?
+    closeProjectMessage: '“{name}” has changes that have not been downloaded. Closing this tab will delete its browser copy.'
+    closeProjectConfirm: Close and delete
   errors:
     saveFailed: The project could not be saved.
     pngFailed: The canvas PNG could not be created.

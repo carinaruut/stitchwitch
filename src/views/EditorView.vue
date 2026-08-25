@@ -14,6 +14,7 @@ import PatternGrid from '../components/PatternGrid.vue'
 import PatternPreview from '../components/PatternPreview.vue'
 import ReferenceImage from '../components/ReferenceImage.vue'
 import NewProjectModal from '../components/NewProjectModal.vue'
+import NewTabModal from '../components/NewTabModal.vue'
 import ConfirmModal from '../components/ConfirmModal.vue'
 import NotificationToast from '../components/NotificationToast.vue'
 import PrintView from '../components/PrintView.vue'
@@ -21,12 +22,11 @@ import UserGuideModal from '../components/UserGuideModal.vue'
 import AnnotationEditor from '../components/AnnotationEditor.vue'
 import TrackerWorkspace from '../components/TrackerWorkspace.vue'
 import WorkspaceActions from '../components/WorkspaceActions.vue'
-import { usePattern } from '../composables/usePattern'
+import { activePatternProxy, useProjects } from '../composables/useProjects'
 import { useTheme } from '../composables/useTheme'
 import { useNotifications } from '../composables/useNotifications'
 import { downloadProject, readProjectFile, safeFilename } from '../composables/useProjectFiles'
 import type { DrawingTool, NewPatternProject, PrintMode, RepeatBoxInput } from '../types/pattern'
-import type { StitchProject } from '../types/tracker'
 import { localizedErrorMessage } from '../utils/appError'
 import { colorSymbolMap } from '../utils/colors'
 import { pickScreenColor } from '../utils/eyeDropper'
@@ -63,18 +63,23 @@ function readExportAnnotations() {
   }
 }
 
-const pattern = usePattern()
+const projects = useProjects()
+const pattern = activePatternProxy(projects)
 const { t } = useI18n({ useScope: 'global' })
 const { theme, toggleTheme } = useTheme()
 const { notifications, notify, dismiss } = useNotifications()
 const newModalOpen = ref(false)
+const newTabModalOpen = ref(false)
 const clearModalOpen = ref(false)
-const importModalOpen = ref(false)
 const guideOpen = ref(false)
 const referenceOpen = ref(false)
-const workspace = ref<'editor' | 'tracker'>('editor')
+const workspace = computed({
+  get: () => projects.activeSession.value.workspace.value,
+  set: (value: 'editor' | 'tracker') => { projects.activeSession.value.workspace.value = value },
+})
 const fileInput = ref<HTMLInputElement | null>(null)
-const pendingImport = ref<StitchProject | null>(null)
+const pendingCloseId = ref<string | null>(null)
+const closingProjectName = computed(() => projects.sessions.value.find((session) => session.id === pendingCloseId.value)?.pattern.project.value.name ?? '')
 const placingSelection = ref(false)
 const selectedCommentId = ref<string | null>(null)
 const printMode = ref<PrintMode>('color')
@@ -82,7 +87,10 @@ const printMenu = ref<HTMLDetailsElement | null>(null)
 const canvasFullHeight = ref(readCanvasFullHeight())
 const canvasSymbols = ref(readCanvasSymbols())
 const includeAnnotations = ref(readExportAnnotations())
-const downloadBackupNeeded = ref(pattern.restoredAutosave.value)
+const downloadBackupNeeded = computed({
+  get: () => projects.activeSession.value.downloadBackupNeeded.value,
+  set: (value: boolean) => { projects.activeSession.value.downloadBackupNeeded.value = value },
+})
 const patternName = ref(pattern.project.value.name)
 const toolShortcuts: Record<string, DrawingTool> = {
   p: 'pencil',
@@ -154,9 +162,20 @@ function blurPatternName(event: KeyboardEvent) {
 }
 
 function createProject(project: NewPatternProject) {
-  pattern.createProject(project)
+  projects.createProject(project)
   newModalOpen.value = false
   notify(t('editor.notifications.patternCreated'), 'success')
+}
+
+function chooseNewProject() {
+  newTabModalOpen.value = false
+  newModalOpen.value = true
+}
+
+async function chooseProjectFile() {
+  newTabModalOpen.value = false
+  await nextTick()
+  fileInput.value?.click()
 }
 
 function requestClear() {
@@ -205,27 +224,23 @@ async function selectFile(event: Event) {
     return
   }
   try {
-    pendingImport.value = await readProjectFile(file)
-    importModalOpen.value = true
+    projects.openProject(await readProjectFile(file))
+    notify(t('editor.notifications.projectImported'), 'success')
   } catch (error) {
     notify(localizeProjectError(error, 'editor.errors.invalidProjectFile'), 'error', 6000)
   }
 }
 
-function confirmImport() {
-  if (!pendingImport.value) return
-  pattern.replaceProject(pendingImport.value.pattern, pendingImport.value.tracker)
-  downloadBackupNeeded.value = false
-  void nextTick(() => { downloadBackupNeeded.value = false })
-  pendingImport.value = null
-  importModalOpen.value = false
-  notify(t('editor.notifications.projectImported'), 'success')
+function requestCloseProject(id: string) {
+  const session = projects.sessions.value.find((candidate) => candidate.id === id)
+  if (!session) return
+  if (session.downloadBackupNeeded.value) pendingCloseId.value = id
+  else projects.closeProject(id)
 }
 
-function cancelImport() {
-  pendingImport.value = null
-  importModalOpen.value = false
-  notify(t('editor.notifications.importCancelled'), 'info')
+function confirmCloseProject() {
+  if (pendingCloseId.value) projects.closeProject(pendingCloseId.value)
+  pendingCloseId.value = null
 }
 
 function beginStroke() {
@@ -517,14 +532,15 @@ function moveAnnotationEndpoint(id: string, rowDelta: number, columnDelta: numbe
 function handleKeyboardShortcuts(event: KeyboardEvent) {
   if ((event.metaKey || event.ctrlKey) && !event.altKey && event.key.toLowerCase() === 's') {
     event.preventDefault()
-    if (newModalOpen.value || clearModalOpen.value || importModalOpen.value || guideOpen.value) return
+    if (newModalOpen.value || newTabModalOpen.value || clearModalOpen.value || pendingCloseId.value || guideOpen.value) return
     savePatternName()
     saveProject()
     return
   }
   const target = event.target as HTMLElement | null
   if (target?.closest('input, textarea, select, [contenteditable="true"]')) return
-  if (newModalOpen.value || clearModalOpen.value || importModalOpen.value || guideOpen.value) return
+  if (newModalOpen.value || newTabModalOpen.value || clearModalOpen.value || pendingCloseId.value || guideOpen.value) return
+  if (workspace.value === 'tracker') return
   if (event.key === 'Escape' && pattern.selectedAnnotationId.value) {
     pattern.selectedAnnotationId.value = null
     return
@@ -575,56 +591,53 @@ function handleKeyboardShortcuts(event: KeyboardEvent) {
 }
 
 function flushHiddenProject() {
-  if (document.visibilityState === 'hidden') pattern.flushAutosave()
+  if (document.visibilityState === 'hidden') projects.flushAll()
 }
 
 function warnBeforeUnload(event: BeforeUnloadEvent) {
-  pattern.flushAutosave()
-  if (!downloadBackupNeeded.value) return
+  projects.flushAll()
+  if (!projects.sessions.value.some((session) => session.downloadBackupNeeded.value)) return
   event.preventDefault()
   event.returnValue = t('editor.confirmations.beforeUnload')
 }
 
 let autosaveErrorNotified = false
-watch(pattern.autosaveStatus, (status) => {
+watch(() => pattern.autosaveStatus.value, (status) => {
   if (status === 'error' && !autosaveErrorNotified) {
     autosaveErrorNotified = true
     notify(t('editor.notifications.backupFailed'), 'error', 7000)
   }
 })
-watch([pattern.project, pattern.tracker], () => {
-  downloadBackupNeeded.value = true
-}, { deep: true })
 watch(() => pattern.project.value.name, (name) => {
   patternName.value = name
 })
-let lastReplacementVersion = pattern.replacementVersion.value
-watch(renderedPattern, (current, previous) => {
-  if (lastReplacementVersion !== pattern.replacementVersion.value) {
-    lastReplacementVersion = pattern.replacementVersion.value
-    return
-  }
-  if (previous) reconcileTracker(pattern.tracker.value, previous, current)
+watch(() => projects.activeProjectId.value, () => {
+  patternName.value = pattern.project.value.name
+  placingSelection.value = false
+  selectedCommentId.value = null
+})
+watch([() => projects.activeProjectId.value, renderedPattern], ([projectId, current], [previousProjectId, previous]) => {
+  if (projectId === previousProjectId && previous) reconcileTracker(pattern.tracker.value, previous, current)
 })
 
 onBeforeRouteLeave(() => {
-  pattern.flushAutosave()
-  if (!downloadBackupNeeded.value) return true
+  projects.flushAll()
+  if (!projects.sessions.value.some((session) => session.downloadBackupNeeded.value)) return true
   return window.confirm(t('editor.confirmations.leavePage'))
 })
 
 onMounted(() => {
   window.addEventListener('keydown', handleKeyboardShortcuts)
   window.addEventListener('beforeunload', warnBeforeUnload)
-  window.addEventListener('pagehide', pattern.flushAutosave)
+  window.addEventListener('pagehide', projects.flushAll)
   document.addEventListener('visibilitychange', flushHiddenProject)
-  if (pattern.restoredAutosave.value) notify(t('editor.notifications.patternRecovered'), 'success')
+  if (projects.restoredCount > 0) notify(t('editor.notifications.patternRecovered'), 'success')
 })
 onBeforeUnmount(() => {
-  pattern.flushAutosave()
+  projects.flushAll()
   window.removeEventListener('keydown', handleKeyboardShortcuts)
   window.removeEventListener('beforeunload', warnBeforeUnload)
-  window.removeEventListener('pagehide', pattern.flushAutosave)
+  window.removeEventListener('pagehide', projects.flushAll)
   document.removeEventListener('visibilitychange', flushHiddenProject)
 })
 </script>
@@ -635,7 +648,7 @@ onBeforeUnmount(() => {
       :theme="theme"
       :include-annotations="includeAnnotations"
       @update:include-annotations="includeAnnotations = $event"
-      @new="newModalOpen = true"
+      @new="newTabModalOpen = true"
       @open="fileInput?.click()"
       @save="saveProject"
       @png="downloadCanvasPng"
@@ -652,7 +665,71 @@ onBeforeUnmount(() => {
       @change="selectFile"
     >
 
-    <div class="min-w-0 p-3 sm:p-5">
+    <div class="relative bg-base-100 px-3 pt-2 sm:px-5">
+      <span
+        class="pointer-events-none absolute inset-x-0 bottom-px h-px bg-base-300"
+        aria-hidden="true"
+      />
+      <div class="mx-auto max-w-360 overflow-x-auto">
+        <div
+          class="tabs tabs-lift relative z-10 w-max shrink-0 flex-nowrap"
+          role="tablist"
+          :aria-label="t('editor.tabs.label')"
+        >
+          <div
+            v-for="session in projects.sessions.value"
+            :id="`project-tab-${session.id}`"
+            :key="session.id"
+            class="tab relative h-10 max-w-64 shrink-0 gap-1 px-2"
+            :class="session.id === projects.activeProjectId.value ? 'tab-active' : ''"
+            role="tab"
+            aria-controls="project-workspace"
+            :aria-label="session.pattern.project.value.name"
+            :aria-selected="session.id === projects.activeProjectId.value"
+            :tabindex="session.id === projects.activeProjectId.value ? 0 : -1"
+            :title="session.pattern.project.value.name"
+            @click="projects.activate(session.id)"
+            @keydown.enter.prevent="projects.activate(session.id)"
+            @keydown.space.prevent="projects.activate(session.id)"
+          >
+            <span class="min-w-0 flex-1 truncate px-1 text-left">{{ session.pattern.project.value.name }}</span>
+            <button
+              class="btn btn-ghost btn-circle btn-xs shrink-0"
+              type="button"
+              :aria-label="t('editor.tabs.close', { name: session.pattern.project.value.name })"
+              :title="t('editor.tabs.close', { name: session.pattern.project.value.name })"
+              @click.stop="requestCloseProject(session.id)"
+            >
+              <span
+                class="mdi mdi-close"
+                aria-hidden="true"
+              />
+            </button>
+          </div>
+          <button
+            class="tab h-10 shrink-0 px-3"
+            type="button"
+            role="tab"
+            aria-selected="false"
+            :aria-label="t('editor.tabs.new')"
+            :title="t('editor.tabs.new')"
+            @click="newTabModalOpen = true"
+          >
+            <span
+              class="mdi mdi-plus text-lg"
+              aria-hidden="true"
+            />
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div
+      id="project-workspace"
+      class="min-w-0 p-3 sm:p-5"
+      role="tabpanel"
+      :aria-labelledby="`project-tab-${projects.activeProjectId.value}`"
+    >
       <main class="mx-auto max-w-360 space-y-4">
         <section
           v-if="workspace === 'editor'"
@@ -896,6 +973,9 @@ onBeforeUnmount(() => {
 
         <TrackerWorkspace
           v-else
+          :key="projects.activeProjectId.value"
+          :pattern="projects.activeSession.value.pattern"
+          :state="projects.activeSession.value.tracker"
           :include-annotations="includeAnnotations"
           @update:include-annotations="includeAnnotations = $event"
           @close="workspace = 'editor'"
@@ -931,6 +1011,12 @@ onBeforeUnmount(() => {
     @create="createProject"
     @cancel="newModalOpen = false"
   />
+  <NewTabModal
+    :open="newTabModalOpen"
+    @create="chooseNewProject"
+    @load="chooseProjectFile"
+    @cancel="newTabModalOpen = false"
+  />
   <UserGuideModal
     :open="guideOpen"
     @close="guideOpen = false"
@@ -945,12 +1031,13 @@ onBeforeUnmount(() => {
     @cancel="clearModalOpen = false"
   />
   <ConfirmModal
-    :open="importModalOpen"
-    :title="t('editor.confirmations.importTitle')"
-    :message="t('editor.confirmations.importMessage')"
-    :confirm-label="t('editor.confirmations.importConfirm')"
-    @confirm="confirmImport"
-    @cancel="cancelImport"
+    :open="pendingCloseId !== null"
+    :title="t('editor.confirmations.closeProjectTitle')"
+    :message="t('editor.confirmations.closeProjectMessage', { name: closingProjectName })"
+    :confirm-label="t('editor.confirmations.closeProjectConfirm')"
+    destructive
+    @confirm="confirmCloseProject"
+    @cancel="pendingCloseId = null"
   />
   <NotificationToast
     :notifications="notifications"

@@ -13,6 +13,16 @@ editor:
     columns: '{count} veergu'
     oneRow: '{count} rida'
     rows: '{count} rida'
+  tabs:
+    label: Avatud projektid
+    new: Uus projektikaart
+    close: Sulge {name}
+    chooseTitle: Ava projektikaart
+    chooseDescription: Alusta uut mustrit või laadi projekt oma seadmest.
+    createTitle: Loo uus projekt
+    createDescription: Vali nimi, lõuendi suurus, kordused ja taustavärv.
+    loadTitle: Laadi projektifail
+    loadDescription: Ava .stitch-project-fail eraldi kaardil.
   legend:
     title: Värvilegend
     oneTotal: 'Kokku {count} piste'
@@ -87,6 +97,9 @@ editor:
     importTitle: Kas asendada praegune projekt?
     importMessage: Selle faili avamine asendab redaktoris oleva mustri. Kui soovid praeguse mustri alles hoida, salvesta see esmalt.
     importConfirm: Ava projekt
+    closeProjectTitle: Kas sulgeda projekt?
+    closeProjectMessage: 'Projekti „{name}” muudatusi pole alla laaditud. Selle kaardi sulgemine kustutab projekti brauserikoopia.'
+    closeProjectConfirm: Sulge ja kustuta
   errors:
     saveFailed: Projekti ei õnnestunud salvestada.
     pngFailed: Lõuendi PNG-faili loomine nurjus.

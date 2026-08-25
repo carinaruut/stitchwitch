@@ -5,55 +5,45 @@ import { addColumn, addRow, boxesOverlap, cloneGrid, createGrid, ensureGridSize,
 import { assignColorSymbols, normalizeColor } from '../utils/colors'
 import { parseAxisSelection } from '../utils/axisSelection'
 import { createStableId } from '../utils/validation'
-import { asStitchProject } from '../utils/project'
 import { translateError } from '../utils/localizedErrors'
 import { emptyPaletteEntry, paletteEntries as completePaletteEntries, reorderPaletteEntries } from '../utils/palette'
 import { useHistory } from './useHistory'
-
-const AUTOSAVE_KEY = 'stitch-project-autosave'
 
 interface SelectionClipboard {
   cells: PatternGrid
   mask: boolean[][] | null
 }
 
-const DEFAULT_PROJECT: PatternProject = {
-  format: 'stitch-pattern',
-  version: 1,
-  name: translateError('defaults.projectName'),
-  rows: 20,
-  columns: 20,
-  rowIds: Array.from({ length: 20 }, createStableId),
-  columnIds: Array.from({ length: 20 }, createStableId),
-  cellSize: 24,
-  backgroundColor: '#ffffff',
-  horizontalRepeats: 1,
-  verticalRepeats: 1,
-  previewStitch: 'knit',
-  recentColors: [],
-  swatches: [],
-  palette: [],
-  repeatBoxes: [],
-  annotations: [],
-  cells: createGrid(20, 20, '#ffffff'),
+export function createDefaultProject(): PatternProject {
+  return {
+    format: 'stitch-pattern',
+    version: 1,
+    name: translateError('defaults.projectName'),
+    rows: 20,
+    columns: 20,
+    rowIds: Array.from({ length: 20 }, createStableId),
+    columnIds: Array.from({ length: 20 }, createStableId),
+    cellSize: 24,
+    backgroundColor: '#ffffff',
+    horizontalRepeats: 1,
+    verticalRepeats: 1,
+    previewStitch: 'knit',
+    recentColors: [],
+    swatches: [],
+    palette: [],
+    repeatBoxes: [],
+    annotations: [],
+    cells: createGrid(20, 20, '#ffffff'),
+  }
 }
 
-function createPattern() {
-  let initialDocument: StitchProject = { format: 'stitch-project', version: 1, pattern: DEFAULT_PROJECT }
-  let recovered = false
-  try {
-    const savedProject = localStorage.getItem(AUTOSAVE_KEY)
-    if (savedProject) {
-      initialDocument = asStitchProject(JSON.parse(savedProject))
-      recovered = true
-    }
-  } catch {
-    try {
-      localStorage.removeItem(AUTOSAVE_KEY)
-    } catch {
-      // Storage can be unavailable in restricted browser contexts.
-    }
-  }
+interface PatternOptions {
+  autosaveKey: string
+  recovered?: boolean
+}
+
+export function createPattern(initialDocument: StitchProject, options: PatternOptions) {
+  const recovered = options.recovered ?? false
 
   const initialProject = initialDocument.pattern
   const project = ref<PatternProject>({
@@ -175,7 +165,7 @@ function createPattern() {
         },
         ...(tracker.value ? { tracker: tracker.value } : {}),
       }
-      localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(snapshot))
+      localStorage.setItem(options.autosaveKey, JSON.stringify(snapshot))
       autosaveStatus.value = 'saved'
       lastSavedAt.value = Date.now()
     } catch {
@@ -189,7 +179,7 @@ function createPattern() {
     autosaveTimer = setTimeout(flushAutosave, 300)
   }
 
-  watch([project, tracker], scheduleAutosave, { deep: true })
+  const stopAutosave = watch([project, tracker], scheduleAutosave, { deep: true })
   scheduleAutosave()
 
   function persistColors() {
@@ -202,8 +192,11 @@ function createPattern() {
     const color = normalizeColor(value)
     if (!color) return false
     selectedColor.value = color
-    if (!project.value.palette.some((entry) => entry.color === color)) {
-      project.value.palette = assignColorSymbols([...completePaletteEntries(project.value), emptyPaletteEntry(color)])
+    const entries = completePaletteEntries(project.value)
+    if (!entries.some((entry) => entry.color === color)) {
+      project.value.palette = assignColorSymbols([...entries, emptyPaletteEntry(color)])
+    } else if (project.value.palette.length !== entries.length) {
+      project.value.palette = entries
     }
     if (recent) recentColors.value = [color, ...recentColors.value.filter((item) => item !== color)].slice(0, 20)
     persistColors()
@@ -1075,6 +1068,12 @@ function createPattern() {
     selectColumn(Math.min(selectedColumn.value, project.value.cells[0].length - 1))
   }
 
+  function dispose() {
+    stopAutosave()
+    if (autosaveTimer) clearTimeout(autosaveTimer)
+    autosaveTimer = null
+  }
+
   return {
     project,
     tracker,
@@ -1156,14 +1155,8 @@ function createPattern() {
     removeAnnotation,
     undo,
     redo,
+    dispose,
   }
 }
 
 export type PatternState = ReturnType<typeof createPattern>
-
-let sharedPattern: PatternState | undefined
-
-export function usePattern() {
-  sharedPattern ??= createPattern()
-  return sharedPattern
-}

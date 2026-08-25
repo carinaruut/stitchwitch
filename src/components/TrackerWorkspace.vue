@@ -6,8 +6,8 @@ import TrackerGrid from '../components/TrackerGrid.vue'
 import AppDropdown from '../components/AppDropdown.vue'
 import WorkspaceActions from './WorkspaceActions.vue'
 import { useNotifications } from '../composables/useNotifications'
-import { usePattern } from '../composables/usePattern'
-import { useTracker } from '../composables/useTracker'
+import type { PatternState } from '../composables/usePattern'
+import type { TrackerController } from '../composables/useProjects'
 import type { PatternDisplay, PrintMode } from '../types/pattern'
 import type { TrackerCompletionMode, TrackerDirection, TrackerPreferences, TrackerStartRow } from '../types/tracker'
 import { colorSymbolMap } from '../utils/colors'
@@ -34,7 +34,7 @@ function readTrackerPreferences(): Partial<TrackerPreferences> {
   }
 }
 
-defineProps<{ includeAnnotations: boolean }>()
+const props = defineProps<{ includeAnnotations: boolean; pattern: PatternState; state: TrackerController }>()
 defineEmits<{
   close: []
   save: []
@@ -43,8 +43,8 @@ defineEmits<{
   'update:includeAnnotations': [value: boolean]
 }>()
 
-const pattern = usePattern()
-const state = useTracker(pattern.project, pattern.tracker)
+const pattern = props.pattern
+const state = props.state
 state.ensureTracker()
 const activeTracker = computed(() => state.tracker.value!)
 const { d, n, t } = useI18n({ useScope: 'global' })
