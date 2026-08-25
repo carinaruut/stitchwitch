@@ -111,6 +111,12 @@ function close(focusAnchor = false) {
   }
 }
 
+function openAt(trigger: HTMLElement) {
+  anchor.value = trigger
+  setOpen(true)
+  void nextTick(updatePosition)
+}
+
 function getFixedWidthRect() {
   if (!root.value) {
     return null
@@ -289,6 +295,7 @@ onBeforeUnmount(() => {
 })
 
 defineExpose({
+  openAt,
   close,
   updatePosition,
 })

@@ -57,6 +57,7 @@ const keepAwake = ref(savedPreferences.keepAwake ?? false)
 const showSymbols = ref(savedPreferences.showSymbols ?? false)
 const showAnnotations = ref(savedPreferences.showAnnotations ?? true)
 const addingComment = ref(false)
+const selectedCommentId = ref<string | null>(null)
 const wakeLockSupported = typeof navigator !== 'undefined' && 'wakeLock' in navigator
 const fullscreenSupported = typeof document !== 'undefined' && document.fullscreenEnabled
 const trackerFullscreen = ref(false)
@@ -270,7 +271,7 @@ function toggleFocusedColor(color: string) {
 }
 
 function addTrackerComment(row: number, column: number) {
-  state.addComment(row, column, t('tracker.comments.defaultText'))
+  selectedCommentId.value = state.addComment(row, column, t('tracker.comments.defaultText'))
   showAnnotations.value = true
   addingComment.value = false
 }
@@ -882,6 +883,7 @@ function cancelActiveModal() {
               :cell-source-columns="renderedPattern.sourceColumns"
               :show-annotations="showAnnotations"
               :adding-comment="addingComment"
+              :selected-comment-id="selectedCommentId"
               @stitch="selectStitch"
               @stitches="selectStitches"
               @add-comment="addTrackerComment"

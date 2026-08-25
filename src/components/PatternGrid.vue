@@ -6,6 +6,7 @@ import { contrastColor } from '../utils/colors'
 import { followsCenterBoundary, isCenterHeader, repeatOutlineColor, REPEAT_BOTTOM, REPEAT_COPY, REPEAT_LEFT, REPEAT_RIGHT, REPEAT_TOP } from '../utils/grid'
 import { renderAnnotations } from '../utils/annotations'
 import AnnotationLayer from './AnnotationLayer.vue'
+import AnnotationComments from './AnnotationComments.vue'
 
 type SelectionAction = 'move' | 'copy' | 'paste' | 'flip-horizontal' | 'flip-vertical' | 'rotate-clockwise' | 'rotate-counterclockwise' | 'fill' | 'erase'
 
@@ -36,6 +37,7 @@ const props = defineProps<{
   symbols?: Record<string, string>
   annotations: PatternAnnotation[]
   selectedAnnotationId: string | null
+  selectedCommentId: string | null
 }>()
 const emit = defineEmits<{
   strokeStart: []
@@ -53,6 +55,8 @@ const emit = defineEmits<{
   moveSelection: [row: number, column: number]
   createAnnotation: [type: 'text' | 'marker' | 'arrow', row: number, column: number, endRow: number, endColumn: number]
   selectAnnotation: [id: string]
+  updateAnnotation: [id: string, text: string]
+  removeAnnotation: [id: string]
   moveAnnotation: [id: string, rowDelta: number, columnDelta: number]
   moveAnnotationEndpoint: [id: string, rowDelta: number, columnDelta: number]
 }>()
@@ -69,6 +73,7 @@ const selectionMenu = ref<{ x: number; y: number } | null>(null)
 const multipleCount = ref(5)
 const multipleColumnCount = ref(5)
 const renderedAnnotations = computed(() => renderAnnotations(props.annotations, props.cellSourceRows, props.cellSourceColumns))
+const renderedNonTextAnnotations = computed(() => renderedAnnotations.value.filter((annotation) => annotation.type !== 'text'))
 let panStartX = 0
 let panStartY = 0
 let scrollStartX = 0
@@ -495,7 +500,7 @@ onBeforeUnmount(() => {
         </div>
       </template>
       <AnnotationLayer
-        :annotations="renderedAnnotations"
+        :annotations="renderedNonTextAnnotations"
         :rows="cells.length"
         :columns="cells[0].length"
         :selected-id="selectedAnnotationId"
@@ -503,6 +508,19 @@ onBeforeUnmount(() => {
         @select="$emit('selectAnnotation', $event)"
         @move="(id, rowDelta, columnDelta) => $emit('moveAnnotation', id, rowDelta, columnDelta)"
         @move-endpoint="(id, rowDelta, columnDelta) => $emit('moveAnnotationEndpoint', id, rowDelta, columnDelta)"
+      />
+      <AnnotationComments
+        :annotations="annotations"
+        :rendered-annotations="renderedAnnotations"
+        :row-headers="rowHeaders"
+        :column-headers="columnHeaders"
+        :cell-size="cellSize"
+        :selected-id="selectedCommentId"
+        :header-size="28"
+        @select="$emit('selectAnnotation', $event)"
+        @add="(row, column) => $emit('createAnnotation', 'text', row, column, row, column)"
+        @update="(id, text) => $emit('updateAnnotation', id, text)"
+        @remove="$emit('removeAnnotation', $event)"
       />
     </div>
   </div>

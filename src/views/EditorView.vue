@@ -71,6 +71,7 @@ const referenceOpen = ref(false)
 const fileInput = ref<HTMLInputElement | null>(null)
 const pendingImport = ref<PatternProject | null>(null)
 const placingSelection = ref(false)
+const selectedCommentId = ref<string | null>(null)
 const printMode = ref<PrintMode>('color')
 const printMenu = ref<HTMLDetailsElement | null>(null)
 const canvasFullHeight = ref(readCanvasFullHeight())
@@ -486,7 +487,8 @@ function moveSelectionDirectly(row: number, column: number) {
 }
 
 function createAnnotation(type: 'text' | 'marker' | 'arrow', row: number, column: number, endRow: number, endColumn: number) {
-  pattern.addAnnotation(type, row, column, endRow, endColumn, t('controls.annotations.defaultText'))
+  const id = pattern.addAnnotation(type, row, column, endRow, endColumn, t('controls.annotations.defaultText'))
+  if (type === 'text') selectedCommentId.value = id
 }
 
 function moveAnnotationEndpoint(id: string, rowDelta: number, columnDelta: number) {
@@ -780,7 +782,7 @@ onBeforeUnmount(() => {
               </template>
             </DrawingTools>
             <AnnotationEditor
-              v-if="selectedAnnotation"
+              v-if="selectedAnnotation && selectedAnnotation.type !== 'text'"
               :annotation="selectedAnnotation"
               :selected-color="pattern.selectedColor.value"
               @update="pattern.updateAnnotation(selectedAnnotation.id, $event)"
@@ -830,6 +832,7 @@ onBeforeUnmount(() => {
                   :symbols="canvasSymbolMap"
                   :annotations="pattern.project.value.annotations"
                   :selected-annotation-id="pattern.selectedAnnotationId.value"
+                  :selected-comment-id="selectedCommentId"
                   @stroke-start="beginStroke"
                   @paint="pattern.paintCell"
                   @stroke-end="endStroke"
@@ -845,6 +848,8 @@ onBeforeUnmount(() => {
                   @move-selection="moveSelectionDirectly"
                   @create-annotation="createAnnotation"
                   @select-annotation="pattern.selectedAnnotationId.value = $event"
+                  @update-annotation="(id, text) => pattern.updateAnnotation(id, { text })"
+                  @remove-annotation="pattern.removeAnnotation"
                   @move-annotation="pattern.moveAnnotation"
                   @move-annotation-endpoint="moveAnnotationEndpoint"
                 />
