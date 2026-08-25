@@ -25,14 +25,7 @@ const emit = defineEmits<{
   selectColor: [color: string]
 }>()
 const { n, t } = useI18n({ useScope: 'global' })
-const entries = computed(() => {
-  const counted = orderedColorCounts(props.cells, props.palette ?? [])
-  if (!props.editable) return counted
-  const counts = new Map(counted.map((entry) => [entry.color, entry.count]))
-  const paletteEntries = (props.palette ?? []).map((entry) => ({ color: entry.color, count: counts.get(entry.color) ?? 0 }))
-  const known = new Set(paletteEntries.map((entry) => entry.color))
-  return [...paletteEntries, ...counted.filter((entry) => !known.has(entry.color))]
-})
+const entries = computed(() => orderedColorCounts(props.cells, props.palette ?? []))
 const legendGridStyle = computed(() => ({
   '--legend-rows': String(Math.max(1, entries.value.length)),
   '--legend-rows-sm': String(Math.max(1, Math.ceil(entries.value.length / 2))),
