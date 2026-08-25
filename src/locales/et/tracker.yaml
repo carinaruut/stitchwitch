@@ -27,6 +27,36 @@ tracker:
     start: Käivita taimer
     pause: Peata taimer
     reset: Lähtesta taimer
+  tools:
+    title: Märkmed ja loendurid
+    description: Hoia projekti meeldetuletused, reamärkmed ja loendurid ühes kohas.
+    close: Sulge märkmed ja loendurid
+  notes:
+    project: Projekti märkmed
+    projectPlaceholder: Materjalid, mõõdud, meeldetuletused või muu projekti jaoks vajalik
+    rows: Reamärkmed
+    row: Rida {row}
+    assignRow: Määra märge reale
+    chooseRow: Vali rida
+    note: Reamärge
+    notePlaceholder: Lisa selle rea kohta märge
+    add: Lisa reamärge
+    empty: Reamärkmeid pole veel.
+    edit: Muuda rea {row} märget
+    remove: Eemalda rea {row} märge
+  counters:
+    title: Korduvkasutatavad loendurid
+    description: Loenda kordusi, osi, lõngatokke või mida iganes vajad.
+    name: Loenduri nimi
+    namePlaceholder: Uue loenduri nimi
+    add: Lisa loendur
+    empty: Loendureid pole veel.
+    rename: Nimeta {name} ümber
+    decrement: Vähenda loendurit {name}
+    increment: Suurenda loendurit {name}
+    value: '{name}: {value}'
+    reset: Lähtesta {name}
+    remove: Eemalda {name}
   autosave:
     failed: Automaatne salvestamine nurjus
     saving: Salvestamine brauserisse

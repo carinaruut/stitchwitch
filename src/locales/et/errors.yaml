@@ -35,6 +35,8 @@ tracker:
   alternateRows: Ridade vahelduva suuna seade ei sobi.
   updatedAt: Rea jälgimise uuendamise aeg ei sobi.
   timer: Rea jälgimise taimer ei sobi.
+  notes: Tööjärje märkmed ei sobi.
+  counters: Tööjärje loendurid ei sobi.
 files:
   projectTooLarge: Projektifail on liiga suur.
   selectedTooLarge: Valitud fail on liiga suur.

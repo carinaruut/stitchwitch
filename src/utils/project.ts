@@ -1,5 +1,5 @@
 import type { PatternProject } from '../types/pattern'
-import type { LegacyTrackerProgress, StitchProject, TrackerPreferences, TrackerProgress, TrackerState, TrackerTimer } from '../types/tracker'
+import { MAX_TRACKER_COUNTER_NAME_LENGTH, MAX_TRACKER_COUNTERS, MAX_TRACKER_PROJECT_NOTE_LENGTH, MAX_TRACKER_ROW_NOTE_LENGTH, type LegacyTrackerProgress, type StitchProject, type TrackerCounter, type TrackerPreferences, type TrackerProgress, type TrackerState, type TrackerTimer } from '../types/tracker'
 import { renderGrid } from './grid'
 import { appError } from './appError'
 import { asPatternProject } from './validation'
@@ -27,6 +27,36 @@ function asTimer(value: unknown): TrackerTimer {
   if (!Number.isSafeInteger(timer.elapsedMilliseconds) || timer.elapsedMilliseconds! < 0
     || (timer.startedAt !== null && (typeof timer.startedAt !== 'string' || Number.isNaN(Date.parse(timer.startedAt))))) throw appError('tracker.timer')
   return { elapsedMilliseconds: timer.elapsedMilliseconds!, startedAt: timer.startedAt ?? null }
+}
+
+function asNotes(source: Record<string, unknown>, pattern: PatternProject) {
+  const projectNote = source.projectNote === undefined ? '' : source.projectNote
+  if (typeof projectNote !== 'string' || projectNote.length > MAX_TRACKER_PROJECT_NOTE_LENGTH) throw appError('tracker.notes')
+
+  const rowNotesSource = source.rowNotes === undefined ? {} : source.rowNotes
+  if (!rowNotesSource || typeof rowNotesSource !== 'object' || Array.isArray(rowNotesSource)) throw appError('tracker.notes')
+  const validRowIds = new Set(pattern.rowIds)
+  const rowNotes: Record<string, string> = {}
+  for (const [rowId, note] of Object.entries(rowNotesSource)) {
+    if (typeof note !== 'string' || note.length > MAX_TRACKER_ROW_NOTE_LENGTH) throw appError('tracker.notes')
+    if (validRowIds.has(rowId) && note) rowNotes[rowId] = note
+  }
+  return { projectNote, rowNotes }
+}
+
+function asCounters(value: unknown): TrackerCounter[] {
+  if (value === undefined) return []
+  if (!Array.isArray(value) || value.length > MAX_TRACKER_COUNTERS) throw appError('tracker.counters')
+  const ids = new Set<string>()
+  return value.map((item) => {
+    if (!item || typeof item !== 'object') throw appError('tracker.counters')
+    const counter = item as Partial<TrackerCounter>
+    if (typeof counter.id !== 'string' || !counter.id || counter.id.length > 100 || ids.has(counter.id)
+      || typeof counter.name !== 'string' || !counter.name.trim() || counter.name.length > MAX_TRACKER_COUNTER_NAME_LENGTH
+      || !Number.isSafeInteger(counter.value)) throw appError('tracker.counters')
+    ids.add(counter.id)
+    return { id: counter.id, name: counter.name, value: counter.value! }
+  })
 }
 
 function progressSettings(value: Record<string, unknown>) {
@@ -87,6 +117,8 @@ export function asTrackerState(value: unknown, pattern: PatternProject): Tracker
   return {
     progress: { ...settings, completedCells: [...progressSource.completedCells as string[]].sort() },
     timer: asTimer(source.timer),
+    ...asNotes(source, pattern),
+    counters: asCounters(source.counters),
     ...(preferences ? { preferences } : {}),
   }
 }
@@ -102,6 +134,9 @@ export function createTrackerState(preferences?: TrackerPreferences): TrackerSta
       updatedAt: new Date().toISOString(),
     },
     timer: { elapsedMilliseconds: 0, startedAt: null },
+    projectNote: '',
+    rowNotes: {},
+    counters: [],
     ...(preferences ? { preferences: { ...preferences } } : {}),
   }
 }
@@ -120,6 +155,9 @@ export function asStitchProject(value: unknown): StitchProject {
       tracker: {
         progress: legacyProgress(source.progress, pattern),
         timer: asTimer(source.timer),
+        projectNote: '',
+        rowNotes: {},
+        counters: [],
         ...(validPreferences(source.preferences) ? { preferences: validPreferences(source.preferences) } : {}),
       },
     }

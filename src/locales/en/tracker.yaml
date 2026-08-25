@@ -27,6 +27,36 @@ tracker:
     start: Start timer
     pause: Pause timer
     reset: Reset timer
+  tools:
+    title: Notes and counters
+    description: Keep project reminders, row notes, and reusable counts together.
+    close: Close notes and counters
+  notes:
+    project: Project notes
+    projectPlaceholder: Materials, sizing, reminders, or anything useful for this project
+    rows: Row notes
+    row: Row {row}
+    assignRow: Assign note to row
+    chooseRow: Choose a row
+    note: Row note
+    notePlaceholder: Add a note for this row
+    add: Add row note
+    empty: No row notes yet.
+    edit: Edit note for row {row}
+    remove: Remove note for row {row}
+  counters:
+    title: Reusable counters
+    description: Track repeats, sections, skeins, or anything else you need to count.
+    name: Counter name
+    namePlaceholder: New counter name
+    add: Add counter
+    empty: No counters yet.
+    rename: Rename {name}
+    decrement: Decrement {name}
+    increment: Increment {name}
+    value: '{name}: {value}'
+    reset: Reset {name}
+    remove: Remove {name}
   autosave:
     failed: Autosave failed
     saving: Saving in browser

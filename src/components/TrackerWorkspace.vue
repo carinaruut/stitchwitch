@@ -3,7 +3,9 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import ColorLegend from '../components/ColorLegend.vue'
 import TrackerGrid from '../components/TrackerGrid.vue'
+import TrackerNotesCounters from '../components/TrackerNotesCounters.vue'
 import AppDropdown from '../components/AppDropdown.vue'
+import AppModal from '../components/AppModal.vue'
 import WorkspaceActions from './WorkspaceActions.vue'
 import { useNotifications } from '../composables/useNotifications'
 import type { PatternState } from '../composables/usePattern'
@@ -61,6 +63,7 @@ const showSymbols = ref(savedPreferences.showSymbols ?? false)
 const showAnnotations = ref(savedPreferences.showAnnotations ?? true)
 const addingComment = ref(false)
 const timerOpen = ref(false)
+const toolsModalOpen = ref(false)
 const selectedCommentId = ref<string | null>(null)
 const wakeLockSupported = typeof navigator !== 'undefined' && 'wakeLock' in navigator
 const fullscreenSupported = typeof document !== 'undefined' && document.fullscreenEnabled
@@ -593,6 +596,19 @@ function cancelActiveModal() {
                   />
                 </button>
               </div>
+              <button
+                class="btn btn-ghost btn-square btn-sm"
+                type="button"
+                :aria-label="t('tracker.tools.title')"
+                :title="t('tracker.tools.title')"
+                aria-haspopup="dialog"
+                @click="toolsModalOpen = true"
+              >
+                <span
+                  class="mdi mdi-notebook-edit-outline text-xl"
+                  aria-hidden="true"
+                />
+              </button>
               <div
                 v-if="fullscreenSupported"
                 class="tooltip"
@@ -827,6 +843,20 @@ function cancelActiveModal() {
       />
     </div>
   </div>
+
+  <AppModal
+    :open="toolsModalOpen"
+    :title="t('tracker.tools.title')"
+    :description="t('tracker.tools.description')"
+    :close-label="t('tracker.tools.close')"
+    size="lg"
+    @close="toolsModalOpen = false"
+  >
+    <TrackerNotesCounters
+      :row-ids="pattern.project.value.rowIds"
+      :state="state"
+    />
+  </AppModal>
 
   <div
     v-if="confirmation"

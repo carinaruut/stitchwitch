@@ -35,6 +35,8 @@ tracker:
   alternateRows: The tracker row alternation setting is invalid.
   updatedAt: The tracker update time is invalid.
   timer: The tracker timer is invalid.
+  notes: The tracker notes are invalid.
+  counters: The tracker counters are invalid.
 files:
   projectTooLarge: The project file is too large.
   selectedTooLarge: The selected file is too large.

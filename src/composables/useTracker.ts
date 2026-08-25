@@ -1,6 +1,6 @@
 import { computed, ref, type Ref } from 'vue'
 import type { PaletteEntry, PatternAnnotation, PatternProject } from '../types/pattern'
-import type { TrackerCompletionMode, TrackerDirection, TrackerPreferences, TrackerProgress, TrackerStartRow, TrackerState } from '../types/tracker'
+import { MAX_TRACKER_COUNTER_NAME_LENGTH, MAX_TRACKER_COUNTERS, MAX_TRACKER_PROJECT_NOTE_LENGTH, MAX_TRACKER_ROW_NOTE_LENGTH, type TrackerCompletionMode, type TrackerCounter, type TrackerDirection, type TrackerPreferences, type TrackerProgress, type TrackerStartRow, type TrackerState } from '../types/tracker'
 import { normalizeColor } from '../utils/colors'
 import { createTrackerState } from '../utils/project'
 import { orderedCellIds, stitchOrdinal, trackerElapsedMilliseconds, trackerTotal } from '../utils/tracker'
@@ -11,6 +11,7 @@ type ProgressSnapshot = Omit<TrackerProgress, 'updatedAt'>
 interface TrackerSnapshot {
   progress: ProgressSnapshot
   annotations: PatternAnnotation[]
+  counters: TrackerCounter[]
 }
 
 function progressSnapshot(progress: TrackerProgress): ProgressSnapshot {
@@ -27,6 +28,7 @@ function trackerSnapshot(state: TrackerState, pattern: PatternProject): TrackerS
   return {
     progress: progressSnapshot(state.progress),
     annotations: pattern.annotations.map((annotation) => ({ ...annotation })),
+    counters: state.counters.map((counter) => ({ ...counter })),
   }
 }
 
@@ -186,10 +188,74 @@ export function useTracker(pattern: Ref<PatternProject>, tracker: Ref<TrackerSta
     changed()
   }
 
+  function setProjectNote(note: string) {
+    const state = ensureTracker()
+    const next = note.slice(0, MAX_TRACKER_PROJECT_NOTE_LENGTH)
+    if (state.projectNote === next) return
+    state.projectNote = next
+    changed()
+  }
+
+  function setRowNote(rowId: string, note: string) {
+    const state = ensureTracker()
+    if (!pattern.value.rowIds.includes(rowId)) return
+    const next = note.slice(0, MAX_TRACKER_ROW_NOTE_LENGTH)
+    if ((state.rowNotes[rowId] ?? '') === next) return
+    if (next) state.rowNotes[rowId] = next
+    else delete state.rowNotes[rowId]
+    changed()
+  }
+
+  function addCounter(name: string) {
+    const state = ensureTracker()
+    const next = name.trim().slice(0, MAX_TRACKER_COUNTER_NAME_LENGTH)
+    if (!next || state.counters.length >= MAX_TRACKER_COUNTERS) return null
+    recordState()
+    const counter = { id: crypto.randomUUID(), name: next, value: 0 }
+    state.counters.push(counter)
+    changed()
+    return counter.id
+  }
+
+  function renameCounter(id: string, name: string) {
+    const counter = tracker.value?.counters.find((item) => item.id === id)
+    const next = name.trim().slice(0, MAX_TRACKER_COUNTER_NAME_LENGTH)
+    if (!counter || !next || counter.name === next) return false
+    recordState()
+    counter.name = next
+    changed()
+    return true
+  }
+
+  function adjustCounter(id: string, amount: -1 | 1) {
+    const counter = tracker.value?.counters.find((item) => item.id === id)
+    if (!counter || !Number.isSafeInteger(counter.value + amount)) return
+    recordState()
+    counter.value += amount
+    changed()
+  }
+
+  function resetCounter(id: string) {
+    const counter = tracker.value?.counters.find((item) => item.id === id)
+    if (!counter || counter.value === 0) return
+    recordState()
+    counter.value = 0
+    changed()
+  }
+
+  function removeCounter(id: string) {
+    const state = tracker.value
+    if (!state || !state.counters.some((counter) => counter.id === id)) return
+    recordState()
+    state.counters = state.counters.filter((counter) => counter.id !== id)
+    changed()
+  }
+
   function restoreState(snapshot: TrackerSnapshot) {
     const state = ensureTracker()
     Object.assign(state.progress, snapshot.progress)
     pattern.value.annotations = snapshot.annotations.map((annotation) => ({ ...annotation }))
+    state.counters = snapshot.counters.map((counter) => ({ ...counter }))
     changed()
   }
 
@@ -275,6 +341,13 @@ export function useTracker(pattern: Ref<PatternProject>, tracker: Ref<TrackerSta
     selectStitches,
     selectRow,
     resetProgress,
+    setProjectNote,
+    setRowNote,
+    addCounter,
+    renameCounter,
+    adjustCounter,
+    resetCounter,
+    removeCounter,
     addComment,
     updateComment,
     removeComment,
