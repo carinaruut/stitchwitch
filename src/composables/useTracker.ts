@@ -1,6 +1,6 @@
 import { computed, ref, type Ref } from 'vue'
 import type { PaletteEntry, PatternAnnotation, PatternProject } from '../types/pattern'
-import { MAX_TRACKER_COUNTER_NAME_LENGTH, MAX_TRACKER_COUNTERS, MAX_TRACKER_PROJECT_NOTE_LENGTH, MAX_TRACKER_ROW_NOTE_LENGTH, MAX_TRACKER_SESSION_ARCHIVES, type TrackerCompletionMode, type TrackerCounter, type TrackerDailyGoal, type TrackerDirection, type TrackerPreferences, type TrackerProgress, type TrackerStartRow, type TrackerState } from '../types/tracker'
+import { MAX_TRACKER_COUNTER_NAME_LENGTH, MAX_TRACKER_COUNTERS, MAX_TRACKER_PROJECT_NOTE_LENGTH, MAX_TRACKER_ROW_NOTE_LENGTH, MAX_TRACKER_SESSION_ARCHIVES, MAX_TRACKER_SESSIONS, type TrackerCompletionMode, type TrackerCounter, type TrackerDailyGoal, type TrackerDirection, type TrackerPreferences, type TrackerProgress, type TrackerStartRow, type TrackerState } from '../types/tracker'
 import { normalizeColor } from '../utils/colors'
 import { createTrackerState } from '../utils/project'
 import { completeTrackerSession, orderedCellIds, stitchOrdinal, trackerTotal } from '../utils/tracker'
@@ -350,6 +350,17 @@ export function useTracker(pattern: Ref<PatternProject>, tracker: Ref<TrackerSta
     changed()
   }
 
+  function restoreLastSessionArchive() {
+    const state = tracker.value
+    const archive = state?.sessionArchives.at(-1)
+    if (!state || !archive) return
+    const sessions = new Map([...archive.sessions, ...state.sessions].map((session) => [session.id, session]))
+    state.sessions = [...sessions.values()].slice(-MAX_TRACKER_SESSIONS).map((session) => ({ ...session }))
+    state.timer.elapsedMilliseconds = Math.min(Number.MAX_SAFE_INTEGER, state.timer.elapsedMilliseconds + archive.elapsedMilliseconds)
+    state.sessionArchives = state.sessionArchives.slice(0, -1)
+    changed()
+  }
+
   function setDailyGoal(goal: TrackerDailyGoal | null) {
     const state = ensureTracker()
     state.dailyGoal = goal ? { ...goal } : null
@@ -392,6 +403,7 @@ export function useTracker(pattern: Ref<PatternProject>, tracker: Ref<TrackerSta
     resetTimer,
     removeSession,
     removeSessionArchive,
+    restoreLastSessionArchive,
     setDailyGoal,
   }
 }

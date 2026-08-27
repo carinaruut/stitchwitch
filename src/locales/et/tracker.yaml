@@ -51,6 +51,8 @@ tracker:
     previousGroup: Taimer lähtestati {date}
     groupSummary: '{duration} · {sessions} seanssi · {stitches} pistet'
     removePrevious: Kustuta {date} lähtestamise ajalugu
+    restorePrevious: Taasta
+    restorePreviousDescription: Taasta viimane lähtestamine praegusesse taimerisse ilma uuemat tegevust kaotamata
     noSessionDetails: See lähtestamine sisaldab varasema taimeri aega ilma üksikute seansside üksikasjadeta.
   goals:
     title: Päevaeesmärk

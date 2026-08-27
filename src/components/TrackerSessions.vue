@@ -14,6 +14,7 @@ const sessions = computed(() => [...activeTracker.value.sessions].reverse())
 const recordedDuration = computed(() => activeTracker.value.sessions.reduce((total, session) => total + session.durationMilliseconds, 0))
 const recordedStitches = computed(() => activeTracker.value.sessions.reduce((total, session) => total + session.stitchesCompleted, 0))
 const archives = computed(() => [...activeTracker.value.sessionArchives].reverse())
+const latestArchiveId = computed(() => activeTracker.value.sessionArchives.at(-1)?.id ?? null)
 const archivedDuration = computed(() => activeTracker.value.sessionArchives.reduce((total, archive) => total + archive.elapsedMilliseconds, 0))
 const archivedSessions = computed(() => activeTracker.value.sessionArchives.reduce((total, archive) => total + archive.sessions.length, 0))
 const archivedStitches = computed(() => activeTracker.value.sessionArchives.reduce((total, archive) => (
@@ -431,18 +432,33 @@ function formatDuration(milliseconds: number) {
                 }) }}
               </p>
             </div>
-            <button
-              class="btn btn-ghost btn-square btn-sm text-error"
-              type="button"
-              :aria-label="t('tracker.sessions.removePrevious', { date: d(new Date(archive.archivedAt), 'short') })"
-              :title="t('tracker.sessions.removePrevious', { date: d(new Date(archive.archivedAt), 'short') })"
-              @click="state.removeSessionArchive(archive.id)"
-            >
-              <span
-                class="mdi mdi-delete-outline"
-                aria-hidden="true"
-              />
-            </button>
+            <div class="flex shrink-0 items-center gap-1">
+              <button
+                v-if="archive.id === latestArchiveId"
+                class="btn btn-ghost btn-sm"
+                type="button"
+                :title="t('tracker.sessions.restorePreviousDescription')"
+                @click="state.restoreLastSessionArchive()"
+              >
+                <span
+                  class="mdi mdi-backup-restore text-lg"
+                  aria-hidden="true"
+                />
+                {{ t('tracker.sessions.restorePrevious') }}
+              </button>
+              <button
+                class="btn btn-ghost btn-square btn-sm text-error"
+                type="button"
+                :aria-label="t('tracker.sessions.removePrevious', { date: d(new Date(archive.archivedAt), 'short') })"
+                :title="t('tracker.sessions.removePrevious', { date: d(new Date(archive.archivedAt), 'short') })"
+                @click="state.removeSessionArchive(archive.id)"
+              >
+                <span
+                  class="mdi mdi-delete-outline"
+                  aria-hidden="true"
+                />
+              </button>
+            </div>
           </header>
 
           <p
