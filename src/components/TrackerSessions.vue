@@ -3,7 +3,7 @@ import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { TrackerController } from '../composables/useProjects'
 import { MAX_TRACKER_DAILY_STITCH_GOAL, MAX_TRACKER_DAILY_TIME_GOAL_MINUTES, type TrackerDailyGoal, type TrackerSession } from '../types/tracker'
-import { trackerElapsedMilliseconds } from '../utils/tracker'
+import { trackerElapsedMilliseconds, trackerSessionNetStitches, trackerSessionProgress } from '../utils/tracker'
 
 const MIN_ESTIMATE_STITCHES = 10
 const props = defineProps<{ now: number; state: TrackerController }>()
@@ -12,13 +12,13 @@ const activeTracker = computed(() => props.state.tracker.value!)
 const showPrevious = ref(false)
 const sessions = computed(() => [...activeTracker.value.sessions].reverse())
 const recordedDuration = computed(() => activeTracker.value.sessions.reduce((total, session) => total + session.durationMilliseconds, 0))
-const recordedStitches = computed(() => activeTracker.value.sessions.reduce((total, session) => total + session.stitchesCompleted, 0))
+const recordedStitches = computed(() => activeTracker.value.sessions.reduce((total, session) => total + trackerSessionNetStitches(session), 0))
 const archives = computed(() => [...activeTracker.value.sessionArchives].reverse())
 const latestArchiveId = computed(() => activeTracker.value.sessionArchives.at(-1)?.id ?? null)
 const archivedDuration = computed(() => activeTracker.value.sessionArchives.reduce((total, archive) => total + archive.elapsedMilliseconds, 0))
 const archivedSessions = computed(() => activeTracker.value.sessionArchives.reduce((total, archive) => total + archive.sessions.length, 0))
 const archivedStitches = computed(() => activeTracker.value.sessionArchives.reduce((total, archive) => (
-  total + archive.sessions.reduce((sessionTotal, session) => sessionTotal + session.stitchesCompleted, 0)
+  total + archive.sessions.reduce((sessionTotal, session) => sessionTotal + trackerSessionNetStitches(session), 0)
 ), 0))
 const totalDuration = computed(() => trackerElapsedMilliseconds(activeTracker.value.timer, props.now) + archivedDuration.value)
 const totalSessions = computed(() => activeTracker.value.sessions.length + archivedSessions.value)
@@ -27,9 +27,9 @@ const legacyDuration = computed(() => Math.max(0, activeTracker.value.timer.elap
 const currentDuration = computed(() => activeTracker.value.timer.startedAt
   ? Math.max(0, props.now - Date.parse(activeTracker.value.timer.startedAt))
   : 0)
-const currentStitches = computed(() => activeTracker.value.timer.startedAt
-  ? Math.max(0, props.state.completedCount.value - (activeTracker.value.timer.sessionStartedCompletedCount ?? props.state.completedCount.value))
-  : 0)
+const currentProgress = computed(() => activeTracker.value.timer.startedAt
+  ? trackerSessionProgress(activeTracker.value.timer, activeTracker.value.progress.completedCells)
+  : { completed: 0, reopened: 0, net: 0 })
 const allSessions = computed(() => [
   ...activeTracker.value.sessions,
   ...activeTracker.value.sessionArchives.flatMap((archive) => archive.sessions),
@@ -43,10 +43,10 @@ const goalTargetValid = computed(() => Number.isSafeInteger(Number(goalTarget.va
 const todayStart = computed(() => new Date(new Date(props.now).setHours(0, 0, 0, 0)).getTime())
 const tomorrowStart = computed(() => new Date(new Date(props.now).setHours(24, 0, 0, 0)).getTime())
 const todayDuration = computed(() => allSessions.value.reduce((total, session) => total + durationWithinToday(session), 0) + activeDurationToday.value)
-const todayStitches = computed(() => allSessions.value.reduce((total, session) => {
+const todayStitches = computed(() => Math.max(0, allSessions.value.reduce((total, session) => {
   const endedAt = Date.parse(session.endedAt)
-  return total + (endedAt >= todayStart.value && endedAt < tomorrowStart.value ? session.stitchesCompleted : 0)
-}, 0) + currentStitches.value)
+  return total + (endedAt >= todayStart.value && endedAt < tomorrowStart.value ? trackerSessionNetStitches(session) : 0)
+}, 0) + currentProgress.value.net))
 const activeDurationToday = computed(() => activeTracker.value.timer.startedAt
   ? Math.max(0, props.now - Math.max(todayStart.value, Date.parse(activeTracker.value.timer.startedAt)))
   : 0)
@@ -56,10 +56,10 @@ const goalTargetValue = computed(() => activeTracker.value.dailyGoal?.type === '
   : activeTracker.value.dailyGoal?.targetStitches ?? 0)
 const goalPercentage = computed(() => goalTargetValue.value > 0 ? Math.min(1, goalProgress.value / goalTargetValue.value) : 0)
 const speedDuration = computed(() => allSessions.value.reduce((total, session) => total + session.durationMilliseconds, 0) + currentDuration.value)
-const speedStitches = computed(() => allSessions.value.reduce((total, session) => total + session.stitchesCompleted, 0) + currentStitches.value)
+const speedStitches = computed(() => allSessions.value.reduce((total, session) => total + trackerSessionNetStitches(session), 0) + currentProgress.value.net)
 const activeDays = computed(() => {
-  const days = new Set(allSessions.value.filter((session) => session.stitchesCompleted > 0).map((session) => localDayKey(Date.parse(session.endedAt))))
-  if (currentStitches.value > 0) days.add(localDayKey(props.now))
+  const days = new Set(allSessions.value.filter((session) => trackerSessionNetStitches(session) !== 0).map((session) => localDayKey(Date.parse(session.endedAt))))
+  if (currentProgress.value.net !== 0) days.add(localDayKey(props.now))
   return days.size
 })
 const millisecondsPerStitch = computed(() => speedStitches.value >= MIN_ESTIMATE_STITCHES && speedDuration.value > 0 ? speedDuration.value / speedStitches.value : null)
@@ -132,6 +132,10 @@ function formatDuration(milliseconds: number) {
   const hours = Math.floor(seconds / 3600)
   const minutes = Math.floor(seconds / 60) % 60
   return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`
+}
+
+function formatSigned(value: number) {
+  return value > 0 ? `+${n(value, 'integer')}` : n(value, 'integer')
 }
 </script>
 
@@ -301,7 +305,11 @@ function formatDuration(milliseconds: number) {
           {{ formatDuration(currentDuration) }}
         </p>
         <p class="text-xs text-base-content/60">
-          {{ t('tracker.sessions.stitches', { count: n(currentStitches, 'integer') }) }}
+          {{ t('tracker.sessions.sessionProgress', {
+            completed: formatSigned(currentProgress.completed),
+            reopened: formatSigned(-currentProgress.reopened),
+            net: formatSigned(currentProgress.net),
+          }) }}
         </p>
       </div>
     </div>
@@ -366,7 +374,7 @@ function formatDuration(milliseconds: number) {
             />
           </button>
         </div>
-        <dl class="mt-3 grid grid-cols-2 gap-3 text-sm">
+        <dl class="mt-3 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
           <div>
             <dt class="text-xs text-base-content/55">
               {{ t('tracker.sessions.duration') }}
@@ -381,6 +389,22 @@ function formatDuration(milliseconds: number) {
             </dt>
             <dd class="mt-0.5 font-semibold tabular-nums">
               {{ n(session.stitchesCompleted, 'integer') }}
+            </dd>
+          </div>
+          <div>
+            <dt class="text-xs text-base-content/55">
+              {{ t('tracker.sessions.reopened') }}
+            </dt>
+            <dd class="mt-0.5 font-semibold tabular-nums">
+              {{ n(session.stitchesReopened, 'integer') }}
+            </dd>
+          </div>
+          <div>
+            <dt class="text-xs text-base-content/55">
+              {{ t('tracker.sessions.net') }}
+            </dt>
+            <dd class="mt-0.5 font-semibold tabular-nums">
+              {{ formatSigned(trackerSessionNetStitches(session)) }}
             </dd>
           </div>
         </dl>
@@ -428,7 +452,7 @@ function formatDuration(milliseconds: number) {
                 {{ t('tracker.sessions.groupSummary', {
                   duration: formatDuration(archive.elapsedMilliseconds),
                   sessions: n(archive.sessions.length, 'integer'),
-                  stitches: n(archive.sessions.reduce((total, session) => total + session.stitchesCompleted, 0), 'integer'),
+                  stitches: formatSigned(archive.sessions.reduce((total, session) => total + trackerSessionNetStitches(session), 0)),
                 }) }}
               </p>
             </div>
@@ -486,7 +510,13 @@ function formatDuration(milliseconds: number) {
                 </p>
               </div>
               <span class="font-mono font-semibold tabular-nums">{{ formatDuration(session.durationMilliseconds) }}</span>
-              <span class="text-xs text-base-content/65">{{ t('tracker.sessions.stitches', { count: n(session.stitchesCompleted, 'integer') }) }}</span>
+              <span class="text-xs text-base-content/65">
+                {{ t('tracker.sessions.sessionProgress', {
+                  completed: formatSigned(session.stitchesCompleted),
+                  reopened: formatSigned(-session.stitchesReopened),
+                  net: formatSigned(trackerSessionNetStitches(session)),
+                }) }}
+              </span>
               <button
                 class="btn btn-ghost btn-sm"
                 type="button"

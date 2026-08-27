@@ -33,23 +33,26 @@ tracker:
     close: Close session history
     totalTime: Total time
     totalSessions: Sessions
-    totalStitches: Stitches recorded
+    totalStitches: Net stitches
     inProgress: Session in progress
     started: Started {date}
     stitches: '{count} stitches'
+    sessionProgress: '{completed} completed · {reopened} reopened · {net} net'
     legacyTime: '{duration} was recorded by the earlier timer and has no session details.'
     history: Recorded sessions
-    historyDescription: Pausing the timer records the current session here.
+    historyDescription: Pausing records completed and reopened cells separately; estimates use the net progress.
     empty: No completed sessions yet.
     start: Start {date}
     end: End {date}
     duration: Duration
     completed: Stitches completed
+    reopened: Stitches reopened
+    net: Net progress
     remove: Delete session started {date}
     showPrevious: Show previous history
     hidePrevious: Hide previous history
     previousGroup: Timer reset {date}
-    groupSummary: '{duration} · {sessions} sessions · {stitches} stitches'
+    groupSummary: '{duration} · {sessions} sessions · {stitches} net stitches'
     removePrevious: Delete history from reset {date}
     restorePrevious: Restore
     restorePreviousDescription: Restore this latest reset into the current timer without losing newer activity

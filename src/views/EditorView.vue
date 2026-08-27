@@ -197,7 +197,7 @@ function saveProject() {
     pattern.flushAutosave()
     const tracker = pattern.tracker.value
     const downloadedTracker = tracker ? structuredClone(toRaw(tracker)) : undefined
-    if (downloadedTracker) completeTrackerSession(downloadedTracker, downloadedTracker.progress.completedCells.length)
+    if (downloadedTracker) completeTrackerSession(downloadedTracker, downloadedTracker.progress.completedCells)
     downloadProject({
       format: 'stitch-project',
       version: 1,

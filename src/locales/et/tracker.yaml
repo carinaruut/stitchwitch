@@ -33,23 +33,26 @@ tracker:
     close: Sulge seansiajalugu
     totalTime: Koguaeg
     totalSessions: Seansid
-    totalStitches: Salvestatud pisted
+    totalStitches: Pistete netoarv
     inProgress: Seanss käib
     started: Algas {date}
     stitches: '{count} pistet'
+    sessionProgress: '{completed} tehtud · {reopened} taasavatud · neto {net}'
     legacyTime: 'Varasema taimeriga salvestati {duration}, mille kohta seansi üksikasjad puuduvad.'
     history: Salvestatud seansid
-    historyDescription: Taimeri peatamisel salvestatakse praegune seanss siia.
+    historyDescription: Peatamisel salvestatakse tehtud ja taasavatud pisted eraldi; prognoos kasutab netoedenemist.
     empty: Lõpetatud seansse pole veel.
     start: Algus {date}
     end: Lõpp {date}
     duration: Kestus
     completed: Tehtud pisted
+    reopened: Taasavatud pisted
+    net: Netoedenemine
     remove: Kustuta {date} alanud seanss
     showPrevious: Näita varasemat ajalugu
     hidePrevious: Peida varasem ajalugu
     previousGroup: Taimer lähtestati {date}
-    groupSummary: '{duration} · {sessions} seanssi · {stitches} pistet'
+    groupSummary: '{duration} · {sessions} seanssi · neto {stitches} pistet'
     removePrevious: Kustuta {date} lähtestamise ajalugu
     restorePrevious: Taasta
     restorePreviousDescription: Taasta viimane lähtestamine praegusesse taimerisse ilma uuemat tegevust kaotamata

@@ -22,20 +22,39 @@ export function trackerElapsedMilliseconds(timer: TrackerTimer, now = Date.now()
   return timer.elapsedMilliseconds + Math.max(0, now - Date.parse(timer.startedAt))
 }
 
-export function completeTrackerSession(state: TrackerState, completedCount: number, endedAt = new Date()) {
+export function trackerSessionProgress(timer: TrackerTimer, completedCells: readonly string[]) {
+  const baselineCells = timer.sessionStartedCompletedCells
+  if (baselineCells) {
+    const baseline = new Set(baselineCells)
+    const current = new Set(completedCells)
+    const completed = completedCells.reduce((total, id) => total + (baseline.has(id) ? 0 : 1), 0)
+    const reopened = baselineCells.reduce((total, id) => total + (current.has(id) ? 0 : 1), 0)
+    return { completed, reopened, net: completed - reopened }
+  }
+  const delta = completedCells.length - (timer.sessionStartedCompletedCount ?? completedCells.length)
+  return { completed: Math.max(0, delta), reopened: Math.max(0, -delta), net: delta }
+}
+
+export function trackerSessionNetStitches(session: Pick<TrackerState['sessions'][number], 'stitchesCompleted' | 'stitchesReopened'>) {
+  return session.stitchesCompleted - session.stitchesReopened
+}
+
+export function completeTrackerSession(state: TrackerState, completedCells: readonly string[], endedAt = new Date()) {
   const startedAt = state.timer.startedAt
   if (!startedAt) return false
   const durationMilliseconds = Math.max(0, endedAt.getTime() - Date.parse(startedAt))
-  const baseline = state.timer.sessionStartedCompletedCount ?? completedCount
+  const progress = trackerSessionProgress(state.timer, completedCells)
   state.timer.elapsedMilliseconds += durationMilliseconds
   state.timer.startedAt = null
   state.timer.sessionStartedCompletedCount = null
+  state.timer.sessionStartedCompletedCells = null
   state.sessions.push({
     id: crypto.randomUUID(),
     startedAt,
     endedAt: endedAt.toISOString(),
     durationMilliseconds,
-    stitchesCompleted: Math.max(0, completedCount - baseline),
+    stitchesCompleted: progress.completed,
+    stitchesReopened: progress.reopened,
   })
   if (state.sessions.length > MAX_TRACKER_SESSIONS) state.sessions.shift()
   return true

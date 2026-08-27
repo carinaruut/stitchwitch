@@ -308,18 +308,19 @@ export function useTracker(pattern: Ref<PatternProject>, tracker: Ref<TrackerSta
     if (state.timer.startedAt) return
     state.timer.startedAt = new Date().toISOString()
     state.timer.sessionStartedCompletedCount = completedCount.value
+    state.timer.sessionStartedCompletedCells = [...state.progress.completedCells]
     changed()
   }
 
   function pauseTimer() {
-    if (!tracker.value || !completeTrackerSession(tracker.value, completedCount.value)) return
+    if (!tracker.value || !completeTrackerSession(tracker.value, tracker.value.progress.completedCells)) return
     changed()
   }
 
   function resetTimer() {
     const state = ensureTracker()
     const archivedAt = new Date()
-    if (state.timer.startedAt) completeTrackerSession(state, completedCount.value, archivedAt)
+    if (state.timer.startedAt) completeTrackerSession(state, state.progress.completedCells, archivedAt)
     if (state.timer.elapsedMilliseconds > 0 || state.sessions.length > 0) {
       state.sessionArchives.push({
         id: crypto.randomUUID(),
@@ -329,7 +330,7 @@ export function useTracker(pattern: Ref<PatternProject>, tracker: Ref<TrackerSta
       })
       if (state.sessionArchives.length > MAX_TRACKER_SESSION_ARCHIVES) state.sessionArchives.shift()
     }
-    state.timer = { elapsedMilliseconds: 0, startedAt: null, sessionStartedCompletedCount: null }
+    state.timer = { elapsedMilliseconds: 0, startedAt: null, sessionStartedCompletedCount: null, sessionStartedCompletedCells: null }
     state.sessions = []
     changed()
   }

@@ -26,6 +26,7 @@ export interface TrackerTimer {
   elapsedMilliseconds: number
   startedAt: string | null
   sessionStartedCompletedCount?: number | null
+  sessionStartedCompletedCells?: string[] | null
 }
 
 export interface TrackerSession {
@@ -34,6 +35,7 @@ export interface TrackerSession {
   endedAt: string
   durationMilliseconds: number
   stitchesCompleted: number
+  stitchesReopened: number
 }
 
 export interface TrackerSessionArchive {

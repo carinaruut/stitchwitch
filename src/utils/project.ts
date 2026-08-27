@@ -20,8 +20,8 @@ function validPreferences(value: unknown): TrackerPreferences | undefined {
   }
 }
 
-function asTimer(value: unknown): TrackerTimer {
-  if (value === undefined) return { elapsedMilliseconds: 0, startedAt: null, sessionStartedCompletedCount: null }
+function asTimer(value: unknown, validCellIds?: Set<string>): TrackerTimer {
+  if (value === undefined) return { elapsedMilliseconds: 0, startedAt: null, sessionStartedCompletedCount: null, sessionStartedCompletedCells: null }
   if (!value || typeof value !== 'object') throw appError('tracker.timer')
   const timer = value as Partial<TrackerTimer>
   if (!Number.isSafeInteger(timer.elapsedMilliseconds) || timer.elapsedMilliseconds! < 0
@@ -29,10 +29,16 @@ function asTimer(value: unknown): TrackerTimer {
     || (timer.sessionStartedCompletedCount !== undefined && timer.sessionStartedCompletedCount !== null
       && (!Number.isSafeInteger(timer.sessionStartedCompletedCount) || timer.sessionStartedCompletedCount < 0))) throw appError('tracker.timer')
   const startedAt = timer.startedAt ?? null
+  const startedCells = timer.sessionStartedCompletedCells
+  if (startedCells !== undefined && startedCells !== null
+    && (!Array.isArray(startedCells)
+      || startedCells.some((id) => typeof id !== 'string' || (validCellIds && !validCellIds.has(id)))
+      || new Set(startedCells).size !== startedCells.length)) throw appError('tracker.timer')
   return {
     elapsedMilliseconds: timer.elapsedMilliseconds!,
     startedAt,
     sessionStartedCompletedCount: startedAt ? timer.sessionStartedCompletedCount ?? null : null,
+    sessionStartedCompletedCells: startedAt && Array.isArray(startedCells) ? [...startedCells].sort() : null,
   }
 }
 
@@ -48,7 +54,8 @@ function asSessions(value: unknown): TrackerSession[] {
     if (typeof session.id !== 'string' || !session.id || session.id.length > 100 || ids.has(session.id)
       || Number.isNaN(started) || Number.isNaN(ended) || ended < started
       || !Number.isSafeInteger(session.durationMilliseconds) || session.durationMilliseconds! < 0
-      || !Number.isSafeInteger(session.stitchesCompleted) || session.stitchesCompleted! < 0) throw appError('tracker.sessions')
+      || !Number.isSafeInteger(session.stitchesCompleted) || session.stitchesCompleted! < 0
+      || (session.stitchesReopened !== undefined && (!Number.isSafeInteger(session.stitchesReopened) || session.stitchesReopened! < 0))) throw appError('tracker.sessions')
     ids.add(session.id)
     return {
       id: session.id,
@@ -56,6 +63,7 @@ function asSessions(value: unknown): TrackerSession[] {
       endedAt: session.endedAt!,
       durationMilliseconds: session.durationMilliseconds!,
       stitchesCompleted: session.stitchesCompleted!,
+      stitchesReopened: session.stitchesReopened ?? 0,
     }
   })
 }
@@ -182,7 +190,7 @@ export function asTrackerState(value: unknown, pattern: PatternProject): Tracker
   const preferences = validPreferences(source.preferences)
   return {
     progress: { ...settings, completedCells: [...progressSource.completedCells as string[]].sort() },
-    timer: asTimer(source.timer),
+    timer: asTimer(source.timer, validIds),
     ...asNotes(source, pattern),
     counters: asCounters(source.counters),
     sessions: asSessions(source.sessions),
@@ -202,7 +210,7 @@ export function createTrackerState(preferences?: TrackerPreferences): TrackerSta
       alternateRows: false,
       updatedAt: new Date().toISOString(),
     },
-    timer: { elapsedMilliseconds: 0, startedAt: null, sessionStartedCompletedCount: null },
+    timer: { elapsedMilliseconds: 0, startedAt: null, sessionStartedCompletedCount: null, sessionStartedCompletedCells: null },
     projectNote: '',
     rowNotes: {},
     counters: [],
@@ -226,7 +234,7 @@ export function asStitchProject(value: unknown): StitchProject {
       pattern,
       tracker: {
         progress: legacyProgress(source.progress, pattern),
-        timer: asTimer(source.timer),
+        timer: asTimer(source.timer, new Set(renderGrid(pattern.cells, pattern.horizontalRepeats, pattern.verticalRepeats, pattern.repeatBoxes, pattern.rowIds, pattern.columnIds).cellIds.flat())),
         projectNote: '',
         rowNotes: {},
         counters: [],
