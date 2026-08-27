@@ -27,6 +27,31 @@ tracker:
     start: Start timer
     pause: Pause timer
     reset: Reset timer
+  sessions:
+    title: Session history
+    description: Review time and progress recorded while the Tracker timer was running.
+    close: Close session history
+    totalTime: Total time
+    totalSessions: Sessions
+    totalStitches: Stitches recorded
+    inProgress: Session in progress
+    started: Started {date}
+    stitches: '{count} stitches'
+    legacyTime: '{duration} was recorded by the earlier timer and has no session details.'
+    history: Recorded sessions
+    historyDescription: Pausing the timer records the current session here.
+    empty: No completed sessions yet.
+    start: Start {date}
+    end: End {date}
+    duration: Duration
+    completed: Stitches completed
+    remove: Delete session started {date}
+    showPrevious: Show previous history
+    hidePrevious: Hide previous history
+    previousGroup: Timer reset {date}
+    groupSummary: '{duration} · {sessions} sessions · {stitches} stitches'
+    removePrevious: Delete history from reset {date}
+    noSessionDetails: This reset contains earlier timer time without individual session details.
   tools:
     title: Notes and counters
     description: Keep project reminders, row notes, and reusable counts together.

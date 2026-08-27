@@ -1,5 +1,5 @@
 import type { PatternProject } from '../types/pattern'
-import type { TrackerDirection, TrackerProgress, TrackerStartRow, TrackerState, TrackerTimer } from '../types/tracker'
+import { MAX_TRACKER_SESSIONS, type TrackerDirection, type TrackerProgress, type TrackerStartRow, type TrackerState, type TrackerTimer } from '../types/tracker'
 import type { RenderedGrid } from './grid'
 
 export const MAX_TRACKER_STITCHES = 50_000
@@ -20,6 +20,25 @@ export function trackerTotal(pattern: PatternProject) {
 export function trackerElapsedMilliseconds(timer: TrackerTimer, now = Date.now()) {
   if (!timer.startedAt) return timer.elapsedMilliseconds
   return timer.elapsedMilliseconds + Math.max(0, now - Date.parse(timer.startedAt))
+}
+
+export function completeTrackerSession(state: TrackerState, completedCount: number, endedAt = new Date()) {
+  const startedAt = state.timer.startedAt
+  if (!startedAt) return false
+  const durationMilliseconds = Math.max(0, endedAt.getTime() - Date.parse(startedAt))
+  const baseline = state.timer.sessionStartedCompletedCount ?? completedCount
+  state.timer.elapsedMilliseconds += durationMilliseconds
+  state.timer.startedAt = null
+  state.timer.sessionStartedCompletedCount = null
+  state.sessions.push({
+    id: crypto.randomUUID(),
+    startedAt,
+    endedAt: endedAt.toISOString(),
+    durationMilliseconds,
+    stitchesCompleted: Math.max(0, completedCount - baseline),
+  })
+  if (state.sessions.length > MAX_TRACKER_SESSIONS) state.sessions.shift()
+  return true
 }
 
 function rowDirection(logicalRow: number, first: TrackerDirection, alternate: boolean): TrackerDirection {

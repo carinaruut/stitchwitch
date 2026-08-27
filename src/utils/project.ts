@@ -1,5 +1,5 @@
 import type { PatternProject } from '../types/pattern'
-import { MAX_TRACKER_COUNTER_NAME_LENGTH, MAX_TRACKER_COUNTERS, MAX_TRACKER_PROJECT_NOTE_LENGTH, MAX_TRACKER_ROW_NOTE_LENGTH, type LegacyTrackerProgress, type StitchProject, type TrackerCounter, type TrackerPreferences, type TrackerProgress, type TrackerState, type TrackerTimer } from '../types/tracker'
+import { MAX_TRACKER_COUNTER_NAME_LENGTH, MAX_TRACKER_COUNTERS, MAX_TRACKER_PROJECT_NOTE_LENGTH, MAX_TRACKER_ROW_NOTE_LENGTH, MAX_TRACKER_SESSION_ARCHIVES, MAX_TRACKER_SESSIONS, type LegacyTrackerProgress, type StitchProject, type TrackerCounter, type TrackerPreferences, type TrackerProgress, type TrackerSession, type TrackerSessionArchive, type TrackerState, type TrackerTimer } from '../types/tracker'
 import { renderGrid } from './grid'
 import { appError } from './appError'
 import { asPatternProject } from './validation'
@@ -21,12 +21,63 @@ function validPreferences(value: unknown): TrackerPreferences | undefined {
 }
 
 function asTimer(value: unknown): TrackerTimer {
-  if (value === undefined) return { elapsedMilliseconds: 0, startedAt: null }
+  if (value === undefined) return { elapsedMilliseconds: 0, startedAt: null, sessionStartedCompletedCount: null }
   if (!value || typeof value !== 'object') throw appError('tracker.timer')
   const timer = value as Partial<TrackerTimer>
   if (!Number.isSafeInteger(timer.elapsedMilliseconds) || timer.elapsedMilliseconds! < 0
-    || (timer.startedAt !== null && (typeof timer.startedAt !== 'string' || Number.isNaN(Date.parse(timer.startedAt))))) throw appError('tracker.timer')
-  return { elapsedMilliseconds: timer.elapsedMilliseconds!, startedAt: timer.startedAt ?? null }
+    || (timer.startedAt !== null && (typeof timer.startedAt !== 'string' || Number.isNaN(Date.parse(timer.startedAt))))
+    || (timer.sessionStartedCompletedCount !== undefined && timer.sessionStartedCompletedCount !== null
+      && (!Number.isSafeInteger(timer.sessionStartedCompletedCount) || timer.sessionStartedCompletedCount < 0))) throw appError('tracker.timer')
+  const startedAt = timer.startedAt ?? null
+  return {
+    elapsedMilliseconds: timer.elapsedMilliseconds!,
+    startedAt,
+    sessionStartedCompletedCount: startedAt ? timer.sessionStartedCompletedCount ?? null : null,
+  }
+}
+
+function asSessions(value: unknown): TrackerSession[] {
+  if (value === undefined) return []
+  if (!Array.isArray(value) || value.length > MAX_TRACKER_SESSIONS) throw appError('tracker.sessions')
+  const ids = new Set<string>()
+  return value.map((item) => {
+    if (!item || typeof item !== 'object') throw appError('tracker.sessions')
+    const session = item as Partial<TrackerSession>
+    const started = typeof session.startedAt === 'string' ? Date.parse(session.startedAt) : Number.NaN
+    const ended = typeof session.endedAt === 'string' ? Date.parse(session.endedAt) : Number.NaN
+    if (typeof session.id !== 'string' || !session.id || session.id.length > 100 || ids.has(session.id)
+      || Number.isNaN(started) || Number.isNaN(ended) || ended < started
+      || !Number.isSafeInteger(session.durationMilliseconds) || session.durationMilliseconds! < 0
+      || !Number.isSafeInteger(session.stitchesCompleted) || session.stitchesCompleted! < 0) throw appError('tracker.sessions')
+    ids.add(session.id)
+    return {
+      id: session.id,
+      startedAt: session.startedAt!,
+      endedAt: session.endedAt!,
+      durationMilliseconds: session.durationMilliseconds!,
+      stitchesCompleted: session.stitchesCompleted!,
+    }
+  })
+}
+
+function asSessionArchives(value: unknown): TrackerSessionArchive[] {
+  if (value === undefined) return []
+  if (!Array.isArray(value) || value.length > MAX_TRACKER_SESSION_ARCHIVES) throw appError('tracker.sessions')
+  const ids = new Set<string>()
+  return value.map((item) => {
+    if (!item || typeof item !== 'object') throw appError('tracker.sessions')
+    const archive = item as Partial<TrackerSessionArchive>
+    if (typeof archive.id !== 'string' || !archive.id || archive.id.length > 100 || ids.has(archive.id)
+      || typeof archive.archivedAt !== 'string' || Number.isNaN(Date.parse(archive.archivedAt))
+      || !Number.isSafeInteger(archive.elapsedMilliseconds) || archive.elapsedMilliseconds! < 0) throw appError('tracker.sessions')
+    ids.add(archive.id)
+    return {
+      id: archive.id,
+      archivedAt: archive.archivedAt,
+      elapsedMilliseconds: archive.elapsedMilliseconds!,
+      sessions: asSessions(archive.sessions),
+    }
+  })
 }
 
 function asNotes(source: Record<string, unknown>, pattern: PatternProject) {
@@ -119,6 +170,8 @@ export function asTrackerState(value: unknown, pattern: PatternProject): Tracker
     timer: asTimer(source.timer),
     ...asNotes(source, pattern),
     counters: asCounters(source.counters),
+    sessions: asSessions(source.sessions),
+    sessionArchives: asSessionArchives(source.sessionArchives),
     ...(preferences ? { preferences } : {}),
   }
 }
@@ -133,10 +186,12 @@ export function createTrackerState(preferences?: TrackerPreferences): TrackerSta
       alternateRows: false,
       updatedAt: new Date().toISOString(),
     },
-    timer: { elapsedMilliseconds: 0, startedAt: null },
+    timer: { elapsedMilliseconds: 0, startedAt: null, sessionStartedCompletedCount: null },
     projectNote: '',
     rowNotes: {},
     counters: [],
+    sessions: [],
+    sessionArchives: [],
     ...(preferences ? { preferences: { ...preferences } } : {}),
   }
 }
@@ -158,6 +213,8 @@ export function asStitchProject(value: unknown): StitchProject {
         projectNote: '',
         rowNotes: {},
         counters: [],
+        sessions: [],
+        sessionArchives: [],
         ...(validPreferences(source.preferences) ? { preferences: validPreferences(source.preferences) } : {}),
       },
     }

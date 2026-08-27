@@ -104,7 +104,7 @@ function createProjectManager() {
     const session: ProjectSession = {
       id,
       pattern,
-      tracker: useTracker(pattern.project, pattern.tracker),
+      tracker: useTracker(pattern.project, pattern.tracker, pattern.scheduleAutosave),
       workspace: ref(options.workspace ?? 'editor'),
       downloadBackupNeeded: ref(options.backupNeeded ?? Boolean(options.recovered)),
       dispose: () => {},

@@ -27,6 +27,31 @@ tracker:
     start: Käivita taimer
     pause: Peata taimer
     reset: Lähtesta taimer
+  sessions:
+    title: Seansiajalugu
+    description: Vaata tööjärje taimeriga salvestatud aega ja edenemist.
+    close: Sulge seansiajalugu
+    totalTime: Koguaeg
+    totalSessions: Seansid
+    totalStitches: Salvestatud pisted
+    inProgress: Seanss käib
+    started: Algas {date}
+    stitches: '{count} pistet'
+    legacyTime: 'Varasema taimeriga salvestati {duration}, mille kohta seansi üksikasjad puuduvad.'
+    history: Salvestatud seansid
+    historyDescription: Taimeri peatamisel salvestatakse praegune seanss siia.
+    empty: Lõpetatud seansse pole veel.
+    start: Algus {date}
+    end: Lõpp {date}
+    duration: Kestus
+    completed: Tehtud pisted
+    remove: Kustuta {date} alanud seanss
+    showPrevious: Näita varasemat ajalugu
+    hidePrevious: Peida varasem ajalugu
+    previousGroup: Taimer lähtestati {date}
+    groupSummary: '{duration} · {sessions} seanssi · {stitches} pistet'
+    removePrevious: Kustuta {date} lähtestamise ajalugu
+    noSessionDetails: See lähtestamine sisaldab varasema taimeri aega ilma üksikute seansside üksikasjadeta.
   tools:
     title: Märkmed ja loendurid
     description: Hoia projekti meeldetuletused, reamärkmed ja loendurid ühes kohas.

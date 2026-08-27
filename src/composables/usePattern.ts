@@ -1127,6 +1127,7 @@ export function createPattern(initialDocument: StitchProject, options: PatternOp
     deleteSelectedColumns,
     clearGrid,
     flushAutosave,
+    scheduleAutosave,
     setSelection,
     setHeaderSelection,
     setMagicSelection,

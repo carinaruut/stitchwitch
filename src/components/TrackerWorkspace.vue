@@ -4,6 +4,7 @@ import { useI18n } from 'vue-i18n'
 import ColorLegend from '../components/ColorLegend.vue'
 import TrackerGrid from '../components/TrackerGrid.vue'
 import TrackerNotesCounters from '../components/TrackerNotesCounters.vue'
+import TrackerSessions from '../components/TrackerSessions.vue'
 import AppDropdown from '../components/AppDropdown.vue'
 import AppModal from '../components/AppModal.vue'
 import WorkspaceActions from './WorkspaceActions.vue'
@@ -64,6 +65,7 @@ const showAnnotations = ref(savedPreferences.showAnnotations ?? true)
 const addingComment = ref(false)
 const timerOpen = ref(false)
 const toolsModalOpen = ref(false)
+const sessionsModalOpen = ref(false)
 const selectedCommentId = ref<string | null>(null)
 const wakeLockSupported = typeof navigator !== 'undefined' && 'wakeLock' in navigator
 const fullscreenSupported = typeof document !== 'undefined' && document.fullscreenEnabled
@@ -578,6 +580,19 @@ function cancelActiveModal() {
                   />
                 </button>
               </div>
+              <button
+                class="btn btn-ghost btn-square btn-sm"
+                type="button"
+                :aria-label="t('tracker.sessions.title')"
+                :title="t('tracker.sessions.title')"
+                aria-haspopup="dialog"
+                @click="sessionsModalOpen = true"
+              >
+                <span
+                  class="mdi mdi-history text-xl"
+                  aria-hidden="true"
+                />
+              </button>
               <div
                 class="tooltip"
                 :data-tip="t('tracker.comments.add')"
@@ -854,6 +869,20 @@ function cancelActiveModal() {
   >
     <TrackerNotesCounters
       :row-ids="pattern.project.value.rowIds"
+      :state="state"
+    />
+  </AppModal>
+
+  <AppModal
+    :open="sessionsModalOpen"
+    :title="t('tracker.sessions.title')"
+    :description="t('tracker.sessions.description')"
+    :close-label="t('tracker.sessions.close')"
+    size="md"
+    @close="sessionsModalOpen = false"
+  >
+    <TrackerSessions
+      :now="timerNow"
       :state="state"
     />
   </AppModal>

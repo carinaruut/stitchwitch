@@ -1,9 +1,9 @@
 import { computed, ref, type Ref } from 'vue'
 import type { PaletteEntry, PatternAnnotation, PatternProject } from '../types/pattern'
-import { MAX_TRACKER_COUNTER_NAME_LENGTH, MAX_TRACKER_COUNTERS, MAX_TRACKER_PROJECT_NOTE_LENGTH, MAX_TRACKER_ROW_NOTE_LENGTH, type TrackerCompletionMode, type TrackerCounter, type TrackerDirection, type TrackerPreferences, type TrackerProgress, type TrackerStartRow, type TrackerState } from '../types/tracker'
+import { MAX_TRACKER_COUNTER_NAME_LENGTH, MAX_TRACKER_COUNTERS, MAX_TRACKER_PROJECT_NOTE_LENGTH, MAX_TRACKER_ROW_NOTE_LENGTH, MAX_TRACKER_SESSION_ARCHIVES, type TrackerCompletionMode, type TrackerCounter, type TrackerDirection, type TrackerPreferences, type TrackerProgress, type TrackerStartRow, type TrackerState } from '../types/tracker'
 import { normalizeColor } from '../utils/colors'
 import { createTrackerState } from '../utils/project'
-import { orderedCellIds, stitchOrdinal, trackerElapsedMilliseconds, trackerTotal } from '../utils/tracker'
+import { completeTrackerSession, orderedCellIds, stitchOrdinal, trackerTotal } from '../utils/tracker'
 import { paletteEntries as completePaletteEntries, reorderPaletteEntries } from '../utils/palette'
 
 type ProgressSnapshot = Omit<TrackerProgress, 'updatedAt'>
@@ -32,7 +32,7 @@ function trackerSnapshot(state: TrackerState, pattern: PatternProject): TrackerS
   }
 }
 
-export function useTracker(pattern: Ref<PatternProject>, tracker: Ref<TrackerState | undefined>) {
+export function useTracker(pattern: Ref<PatternProject>, tracker: Ref<TrackerState | undefined>, scheduleAutosave: () => void = () => {}) {
   const undoStack = ref<TrackerSnapshot[]>([])
   const redoStack = ref<TrackerSnapshot[]>([])
   const completedCount = computed(() => tracker.value?.progress.completedCells.length ?? 0)
@@ -56,6 +56,7 @@ export function useTracker(pattern: Ref<PatternProject>, tracker: Ref<TrackerSta
 
   function changed() {
     if (tracker.value) tracker.value.progress.updatedAt = new Date().toISOString()
+    scheduleAutosave()
   }
 
   function setPreferences(preferences: TrackerPreferences) {
@@ -306,19 +307,46 @@ export function useTracker(pattern: Ref<PatternProject>, tracker: Ref<TrackerSta
     const state = ensureTracker()
     if (state.timer.startedAt) return
     state.timer.startedAt = new Date().toISOString()
+    state.timer.sessionStartedCompletedCount = completedCount.value
     changed()
   }
 
   function pauseTimer() {
-    if (!tracker.value?.timer.startedAt) return
-    tracker.value.timer.elapsedMilliseconds = trackerElapsedMilliseconds(tracker.value.timer)
-    tracker.value.timer.startedAt = null
+    if (!tracker.value || !completeTrackerSession(tracker.value, completedCount.value)) return
     changed()
   }
 
   function resetTimer() {
     const state = ensureTracker()
-    state.timer = { elapsedMilliseconds: 0, startedAt: null }
+    const archivedAt = new Date()
+    if (state.timer.startedAt) completeTrackerSession(state, completedCount.value, archivedAt)
+    if (state.timer.elapsedMilliseconds > 0 || state.sessions.length > 0) {
+      state.sessionArchives.push({
+        id: crypto.randomUUID(),
+        archivedAt: archivedAt.toISOString(),
+        elapsedMilliseconds: state.timer.elapsedMilliseconds,
+        sessions: state.sessions.map((session) => ({ ...session })),
+      })
+      if (state.sessionArchives.length > MAX_TRACKER_SESSION_ARCHIVES) state.sessionArchives.shift()
+    }
+    state.timer = { elapsedMilliseconds: 0, startedAt: null, sessionStartedCompletedCount: null }
+    state.sessions = []
+    changed()
+  }
+
+  function removeSession(id: string) {
+    const state = tracker.value
+    const session = state?.sessions.find((item) => item.id === id)
+    if (!state || !session) return
+    state.sessions = state.sessions.filter((item) => item.id !== id)
+    state.timer.elapsedMilliseconds = Math.max(0, state.timer.elapsedMilliseconds - session.durationMilliseconds)
+    changed()
+  }
+
+  function removeSessionArchive(id: string) {
+    const state = tracker.value
+    if (!state || !state.sessionArchives.some((archive) => archive.id === id)) return
+    state.sessionArchives = state.sessionArchives.filter((archive) => archive.id !== id)
     changed()
   }
 
@@ -356,5 +384,7 @@ export function useTracker(pattern: Ref<PatternProject>, tracker: Ref<TrackerSta
     startTimer,
     pauseTimer,
     resetTimer,
+    removeSession,
+    removeSessionArchive,
   }
 }

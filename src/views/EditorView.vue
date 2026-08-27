@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, toRaw, watch } from 'vue'
 import { onBeforeRouteLeave } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import TopNavbar from '../components/TopNavbar.vue'
@@ -33,7 +33,7 @@ import { pickScreenColor } from '../utils/eyeDropper'
 import { renderGrid } from '../utils/grid'
 import { orderedColorCounts } from '../utils/palette'
 import { renderAnnotations as renderPatternAnnotations } from '../utils/annotations'
-import { reconcileTracker, trackerElapsedMilliseconds } from '../utils/tracker'
+import { completeTrackerSession, reconcileTracker } from '../utils/tracker'
 
 const CANVAS_FULL_HEIGHT_KEY = 'stitch-canvas-full-height'
 const CANVAS_SYMBOLS_KEY = 'stitch-canvas-symbols'
@@ -196,16 +196,13 @@ function saveProject() {
   try {
     pattern.flushAutosave()
     const tracker = pattern.tracker.value
+    const downloadedTracker = tracker ? structuredClone(toRaw(tracker)) : undefined
+    if (downloadedTracker) completeTrackerSession(downloadedTracker, downloadedTracker.progress.completedCells.length)
     downloadProject({
       format: 'stitch-project',
       version: 1,
       pattern: pattern.project.value,
-      ...(tracker ? {
-        tracker: {
-          ...tracker,
-          timer: { elapsedMilliseconds: trackerElapsedMilliseconds(tracker.timer), startedAt: null },
-        },
-      } : {}),
+      ...(downloadedTracker ? { tracker: downloadedTracker } : {}),
     })
     downloadBackupNeeded.value = tracker?.timer.startedAt != null
     void nextTick(() => { downloadBackupNeeded.value = tracker?.timer.startedAt != null })
