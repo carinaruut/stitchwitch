@@ -474,7 +474,7 @@ function formatDuration(milliseconds: number) {
             <li
               v-for="session in [...archive.sessions].reverse()"
               :key="session.id"
-              class="grid gap-2 rounded-box border border-secondary/25 bg-base-100/70 p-3 text-sm sm:grid-cols-[1fr_auto_auto] sm:items-center"
+              class="grid gap-2 rounded-box border border-secondary/25 bg-base-100/70 p-3 text-sm sm:grid-cols-[1fr_auto_auto_auto] sm:items-center"
             >
               <div>
                 <time
@@ -487,6 +487,18 @@ function formatDuration(milliseconds: number) {
               </div>
               <span class="font-mono font-semibold tabular-nums">{{ formatDuration(session.durationMilliseconds) }}</span>
               <span class="text-xs text-base-content/65">{{ t('tracker.sessions.stitches', { count: n(session.stitchesCompleted, 'integer') }) }}</span>
+              <button
+                class="btn btn-ghost btn-sm"
+                type="button"
+                :title="t('tracker.sessions.restoreSessionDescription', { date: d(new Date(session.startedAt), 'short') })"
+                @click="state.restoreArchivedSession(archive.id, session.id)"
+              >
+                <span
+                  class="mdi mdi-backup-restore text-lg"
+                  aria-hidden="true"
+                />
+                {{ t('tracker.sessions.restoreSession') }}
+              </button>
             </li>
           </ol>
         </article>

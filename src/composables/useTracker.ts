@@ -355,9 +355,31 @@ export function useTracker(pattern: Ref<PatternProject>, tracker: Ref<TrackerSta
     const archive = state?.sessionArchives.at(-1)
     if (!state || !archive) return
     const sessions = new Map([...archive.sessions, ...state.sessions].map((session) => [session.id, session]))
-    state.sessions = [...sessions.values()].slice(-MAX_TRACKER_SESSIONS).map((session) => ({ ...session }))
+    state.sessions = [...sessions.values()]
+      .sort((first, second) => Date.parse(first.startedAt) - Date.parse(second.startedAt))
+      .slice(-MAX_TRACKER_SESSIONS)
+      .map((session) => ({ ...session }))
     state.timer.elapsedMilliseconds = Math.min(Number.MAX_SAFE_INTEGER, state.timer.elapsedMilliseconds + archive.elapsedMilliseconds)
     state.sessionArchives = state.sessionArchives.slice(0, -1)
+    changed()
+  }
+
+  function restoreArchivedSession(archiveId: string, sessionId: string) {
+    const state = tracker.value
+    const archive = state?.sessionArchives.find((item) => item.id === archiveId)
+    const session = archive?.sessions.find((item) => item.id === sessionId)
+    if (!state || !archive || !session) return
+    if (!state.sessions.some((item) => item.id === session.id)) {
+      state.sessions = [...state.sessions, { ...session }]
+        .sort((first, second) => Date.parse(first.startedAt) - Date.parse(second.startedAt))
+        .slice(-MAX_TRACKER_SESSIONS)
+      state.timer.elapsedMilliseconds = Math.min(Number.MAX_SAFE_INTEGER, state.timer.elapsedMilliseconds + session.durationMilliseconds)
+    }
+    archive.sessions = archive.sessions.filter((item) => item.id !== sessionId)
+    archive.elapsedMilliseconds = Math.max(0, archive.elapsedMilliseconds - session.durationMilliseconds)
+    if (archive.sessions.length === 0 && archive.elapsedMilliseconds === 0) {
+      state.sessionArchives = state.sessionArchives.filter((item) => item.id !== archiveId)
+    }
     changed()
   }
 
@@ -404,6 +426,7 @@ export function useTracker(pattern: Ref<PatternProject>, tracker: Ref<TrackerSta
     removeSession,
     removeSessionArchive,
     restoreLastSessionArchive,
+    restoreArchivedSession,
     setDailyGoal,
   }
 }

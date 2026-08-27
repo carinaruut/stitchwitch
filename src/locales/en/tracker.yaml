@@ -53,6 +53,8 @@ tracker:
     removePrevious: Delete history from reset {date}
     restorePrevious: Restore
     restorePreviousDescription: Restore this latest reset into the current timer without losing newer activity
+    restoreSession: Restore
+    restoreSessionDescription: Restore the session started {date} into the current timer
     noSessionDetails: This reset contains earlier timer time without individual session details.
   goals:
     title: Daily goal
