@@ -457,7 +457,7 @@ function cancelActiveModal() {
       <section class="card border border-base-300 bg-base-100">
         <div class="card-body gap-4 p-3 sm:p-5">
           <div
-            class="flex flex-wrap items-center gap-1 rounded-box border border-base-300 bg-base-200/50 p-1.5"
+            class="flex flex-wrap items-center gap-1 rounded-box border border-base-300 bg-base-200/70 p-1.5"
             :aria-label="t('tracker.actions.label')"
           >
             <AppDropdown
@@ -466,7 +466,7 @@ function cancelActiveModal() {
             >
               <template #trigger="{ open, panelId }">
                 <button
-                  class="btn btn-ghost btn-square btn-sm"
+                  class="btn btn-ghost btn-sm"
                   type="button"
                   :aria-label="t('tracker.controls.trackingOptions')"
                   :title="t('tracker.controls.trackingOptions')"
@@ -532,34 +532,42 @@ function cancelActiveModal() {
               </div>
             </AppDropdown>
             <div class="flex items-center gap-1">
-              <button
-                class="btn btn-ghost btn-square btn-sm"
-                type="button"
-                :disabled="!state.canUndo.value"
-                :aria-label="t('tracker.actions.undo')"
-                :title="t('tracker.actions.undo')"
-                aria-keyshortcuts="Control+Z Meta+Z"
-                @click="state.undo"
+              <div
+                class="tooltip"
+                :data-tip="t('tracker.actions.undo')"
               >
-                <span
-                  class="mdi mdi-undo text-lg"
-                  aria-hidden="true"
-                />
-              </button>
-              <button
-                class="btn btn-ghost btn-square btn-sm"
-                type="button"
-                :disabled="!state.canRedo.value"
-                :aria-label="t('tracker.actions.redo')"
-                :title="t('tracker.actions.redo')"
-                aria-keyshortcuts="Control+Y Control+Shift+Z Meta+Shift+Z"
-                @click="state.redo"
+                <button
+                  class="btn btn-ghost btn-sm"
+                  type="button"
+                  :disabled="!state.canUndo.value"
+                  :aria-label="t('tracker.actions.undo')"
+                  aria-keyshortcuts="Control+Z Meta+Z"
+                  @click="state.undo"
+                >
+                  <span
+                    class="mdi mdi-undo text-xl"
+                    aria-hidden="true"
+                  />
+                </button>
+              </div>
+              <div
+                class="tooltip"
+                :data-tip="t('tracker.actions.redo')"
               >
-                <span
-                  class="mdi mdi-redo text-lg"
-                  aria-hidden="true"
-                />
-              </button>
+                <button
+                  class="btn btn-ghost btn-sm"
+                  type="button"
+                  :disabled="!state.canRedo.value"
+                  :aria-label="t('tracker.actions.redo')"
+                  aria-keyshortcuts="Control+Y Control+Shift+Z Meta+Shift+Z"
+                  @click="state.redo"
+                >
+                  <span
+                    class="mdi mdi-redo text-xl"
+                    aria-hidden="true"
+                  />
+                </button>
+              </div>
             </div>
             <div class="contents">
               <div
@@ -567,7 +575,7 @@ function cancelActiveModal() {
                 :data-tip="t('tracker.timer.toggle')"
               >
                 <button
-                  class="btn btn-square btn-sm"
+                  class="btn btn-sm"
                   :class="timerOpen ? 'btn-primary' : 'btn-ghost'"
                   type="button"
                   :aria-label="t('tracker.timer.toggle')"
@@ -580,25 +588,29 @@ function cancelActiveModal() {
                   />
                 </button>
               </div>
-              <button
-                class="btn btn-ghost btn-square btn-sm"
-                type="button"
-                :aria-label="t('tracker.sessions.title')"
-                :title="t('tracker.sessions.title')"
-                aria-haspopup="dialog"
-                @click="sessionsModalOpen = true"
+              <div
+                class="tooltip"
+                :data-tip="t('tracker.sessions.title')"
               >
-                <span
-                  class="mdi mdi-history text-xl"
-                  aria-hidden="true"
-                />
-              </button>
+                <button
+                  class="btn btn-ghost btn-sm"
+                  type="button"
+                  :aria-label="t('tracker.sessions.title')"
+                  aria-haspopup="dialog"
+                  @click="sessionsModalOpen = true"
+                >
+                  <span
+                    class="mdi mdi-history text-xl"
+                    aria-hidden="true"
+                  />
+                </button>
+              </div>
               <div
                 class="tooltip"
                 :data-tip="t('tracker.comments.add')"
               >
                 <button
-                  class="btn btn-square btn-sm"
+                  class="btn btn-sm"
                   :class="addingComment ? 'btn-primary' : 'btn-ghost'"
                   type="button"
                   :aria-label="t('tracker.comments.add')"
@@ -606,37 +618,41 @@ function cancelActiveModal() {
                   @click="addingComment = !addingComment; if (addingComment) showAnnotations = true"
                 >
                   <span
-                    class="mdi mdi-comment-plus-outline text-lg"
+                    class="mdi mdi-comment-plus-outline text-xl"
                     aria-hidden="true"
                   />
                 </button>
               </div>
-              <button
-                class="btn btn-ghost btn-square btn-sm"
-                type="button"
-                :aria-label="t('tracker.tools.title')"
-                :title="t('tracker.tools.title')"
-                aria-haspopup="dialog"
-                @click="toolsModalOpen = true"
+              <div
+                class="tooltip"
+                :data-tip="t('tracker.tools.title')"
               >
-                <span
-                  class="mdi mdi-notebook-edit-outline text-xl"
-                  aria-hidden="true"
-                />
-              </button>
+                <button
+                  class="btn btn-ghost btn-sm"
+                  type="button"
+                  :aria-label="t('tracker.tools.title')"
+                  aria-haspopup="dialog"
+                  @click="toolsModalOpen = true"
+                >
+                  <span
+                    class="mdi mdi-notebook-edit-outline text-xl"
+                    aria-hidden="true"
+                  />
+                </button>
+              </div>
               <div
                 v-if="fullscreenSupported"
                 class="tooltip"
                 :data-tip="t(trackerFullscreen ? 'tracker.controls.exitFullscreen' : 'tracker.controls.fullscreen')"
               >
                 <button
-                  class="btn btn-ghost btn-square btn-sm"
+                  class="btn btn-ghost btn-sm"
                   type="button"
                   :aria-label="t(trackerFullscreen ? 'tracker.controls.exitFullscreen' : 'tracker.controls.fullscreen')"
                   @click="toggleFullscreen"
                 >
                   <span
-                    class="mdi text-lg"
+                    class="mdi text-xl"
                     :class="trackerFullscreen ? 'mdi-fullscreen-exit' : 'mdi-fullscreen'"
                     aria-hidden="true"
                   />
@@ -647,14 +663,14 @@ function cancelActiveModal() {
                 :data-tip="t('tracker.actions.reset')"
               >
                 <button
-                  class="btn btn-ghost btn-square btn-sm text-error"
+                  class="btn btn-ghost btn-sm text-error"
                   type="button"
                   :disabled="state.completedCount.value === 0"
                   :aria-label="t('tracker.actions.reset')"
                   @click="resetModalOpen = true"
                 >
                   <span
-                    class="mdi mdi-restart text-lg"
+                    class="mdi mdi-restart text-xl"
                     aria-hidden="true"
                   />
                 </button>
@@ -748,7 +764,7 @@ function cancelActiveModal() {
           </div>
           <div
             v-if="timerOpen"
-            class="flex flex-wrap items-center justify-between gap-3 rounded-box border border-base-300 bg-base-200/50 px-3 py-2"
+            class="flex flex-wrap items-center justify-between gap-3 rounded-box border border-base-300 bg-base-200/70 px-3 py-2"
           >
             <div class="flex items-center gap-2">
               <span
@@ -762,20 +778,20 @@ function cancelActiveModal() {
             </div>
             <div class="flex items-center gap-1">
               <button
-                class="btn btn-primary btn-square btn-sm"
+                class="btn btn-primary btn-sm"
                 type="button"
                 :aria-label="t(timerRunning ? 'tracker.timer.pause' : 'tracker.timer.start')"
                 :title="t(timerRunning ? 'tracker.timer.pause' : 'tracker.timer.start')"
                 @click="timerRunning ? state.pauseTimer() : state.startTimer()"
               >
                 <span
-                  class="mdi text-lg"
+                  class="mdi text-xl"
                   :class="timerRunning ? 'mdi-pause' : 'mdi-play'"
                   aria-hidden="true"
                 />
               </button>
               <button
-                class="btn btn-ghost btn-square btn-sm"
+                class="btn btn-ghost btn-sm"
                 type="button"
                 :disabled="elapsedMilliseconds === 0"
                 :aria-label="t('tracker.timer.reset')"
@@ -783,7 +799,7 @@ function cancelActiveModal() {
                 @click="state.resetTimer()"
               >
                 <span
-                  class="mdi mdi-restart text-lg"
+                  class="mdi mdi-restart text-xl"
                   aria-hidden="true"
                 />
               </button>
