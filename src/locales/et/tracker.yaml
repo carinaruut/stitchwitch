@@ -52,6 +52,28 @@ tracker:
     groupSummary: '{duration} · {sessions} seanssi · {stitches} pistet'
     removePrevious: Kustuta {date} lähtestamise ajalugu
     noSessionDetails: See lähtestamine sisaldab varasema taimeri aega ilma üksikute seansside üksikasjadeta.
+  goals:
+    title: Päevaeesmärk
+    description: Määra päeva siht ja prognoosi valmimist salvestatud töökiiruse põhjal.
+    metric: Eesmärgi tüüp
+    stitches: Pisted
+    time: Taimeri aeg
+    stitchesPerDay: Pisteid päevas
+    minutesPerDay: Minuteid päevas
+    set: Määra eesmärk
+    update: Uuenda eesmärki
+    today: Tänane edenemine
+    stitchProgress: '{current} pistet {target}-st'
+    timeProgress: '{current} / {target}'
+    estimate: Valmimise prognoos
+    estimatedCompletion: Eeldatav valmimine {date}
+    workRemaining: '{duration} aktiivset tööaega · Eesmärgipäevade prognoos: {days}'
+    estimateBasis: Arvutus põhineb ainult taimeriga salvestatud seanssidel; tegevuseta päevad töökiirust ei vähenda.
+    workRemainingActiveDays: '{duration} aktiivset tööaega · Aktiivsete päevade prognoos: {days}'
+    activeDayBasis: Põhineb salvestatud tegevusega päevade keskmisel pistete arvul; tegevuseta päevad jäetakse välja.
+    needsSessions: Prognoosi arvutamiseks salvesta taimeriga vähemalt {count} pistet.
+    complete: Muster on valmis
+    remove: Eemalda eesmärk
   tools:
     title: Märkmed ja loendurid
     description: Hoia projekti meeldetuletused, reamärkmed ja loendurid ühes kohas.

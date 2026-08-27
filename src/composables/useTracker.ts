@@ -1,6 +1,6 @@
 import { computed, ref, type Ref } from 'vue'
 import type { PaletteEntry, PatternAnnotation, PatternProject } from '../types/pattern'
-import { MAX_TRACKER_COUNTER_NAME_LENGTH, MAX_TRACKER_COUNTERS, MAX_TRACKER_PROJECT_NOTE_LENGTH, MAX_TRACKER_ROW_NOTE_LENGTH, MAX_TRACKER_SESSION_ARCHIVES, type TrackerCompletionMode, type TrackerCounter, type TrackerDirection, type TrackerPreferences, type TrackerProgress, type TrackerStartRow, type TrackerState } from '../types/tracker'
+import { MAX_TRACKER_COUNTER_NAME_LENGTH, MAX_TRACKER_COUNTERS, MAX_TRACKER_PROJECT_NOTE_LENGTH, MAX_TRACKER_ROW_NOTE_LENGTH, MAX_TRACKER_SESSION_ARCHIVES, type TrackerCompletionMode, type TrackerCounter, type TrackerDailyGoal, type TrackerDirection, type TrackerPreferences, type TrackerProgress, type TrackerStartRow, type TrackerState } from '../types/tracker'
 import { normalizeColor } from '../utils/colors'
 import { createTrackerState } from '../utils/project'
 import { completeTrackerSession, orderedCellIds, stitchOrdinal, trackerTotal } from '../utils/tracker'
@@ -350,6 +350,12 @@ export function useTracker(pattern: Ref<PatternProject>, tracker: Ref<TrackerSta
     changed()
   }
 
+  function setDailyGoal(goal: TrackerDailyGoal | null) {
+    const state = ensureTracker()
+    state.dailyGoal = goal ? { ...goal } : null
+    changed()
+  }
+
   return {
     tracker,
     completedCount,
@@ -386,5 +392,6 @@ export function useTracker(pattern: Ref<PatternProject>, tracker: Ref<TrackerSta
     resetTimer,
     removeSession,
     removeSessionArchive,
+    setDailyGoal,
   }
 }

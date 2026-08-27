@@ -10,6 +10,8 @@ export const MAX_TRACKER_COUNTERS = 50
 export const MAX_TRACKER_COUNTER_NAME_LENGTH = 100
 export const MAX_TRACKER_SESSIONS = 5000
 export const MAX_TRACKER_SESSION_ARCHIVES = 500
+export const MAX_TRACKER_DAILY_STITCH_GOAL = 50_000
+export const MAX_TRACKER_DAILY_TIME_GOAL_MINUTES = 1_440
 
 export interface TrackerProgress {
   completedCells: string[]
@@ -41,6 +43,10 @@ export interface TrackerSessionArchive {
   sessions: TrackerSession[]
 }
 
+export type TrackerDailyGoal =
+  | { type: 'stitches'; targetStitches: number }
+  | { type: 'time'; targetMinutes: number }
+
 export interface TrackerPreferences {
   display: PatternDisplay
   cellSize: number
@@ -64,6 +70,7 @@ export interface TrackerState {
   counters: TrackerCounter[]
   sessions: TrackerSession[]
   sessionArchives: TrackerSessionArchive[]
+  dailyGoal: TrackerDailyGoal | null
   preferences?: TrackerPreferences
 }
 

@@ -52,6 +52,28 @@ tracker:
     groupSummary: '{duration} · {sessions} sessions · {stitches} stitches'
     removePrevious: Delete history from reset {date}
     noSessionDetails: This reset contains earlier timer time without individual session details.
+  goals:
+    title: Daily goal
+    description: Set a daily target and forecast completion from recorded stitching speed.
+    metric: Goal type
+    stitches: Stitches
+    time: Timer time
+    stitchesPerDay: Stitches per day
+    minutesPerDay: Minutes per day
+    set: Set goal
+    update: Update goal
+    today: Today's progress
+    stitchProgress: '{current} of {target} stitches'
+    timeProgress: '{current} of {target}'
+    estimate: Completion estimate
+    estimatedCompletion: Estimated completion {date}
+    workRemaining: '{duration} of active work remaining · Goal-day estimate: {days}'
+    estimateBasis: Based only on recorded timer sessions; days without activity do not reduce your speed.
+    workRemainingActiveDays: '{duration} of active work remaining · Active-day estimate: {days}'
+    activeDayBasis: Based on average stitches on days with recorded activity; inactive days are excluded.
+    needsSessions: Record at least {count} timed stitches to calculate an estimate.
+    complete: Pattern complete
+    remove: Remove goal
   tools:
     title: Notes and counters
     description: Keep project reminders, row notes, and reusable counts together.

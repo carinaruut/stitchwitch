@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { TrackerController } from '../composables/useProjects'
+import { MAX_TRACKER_DAILY_STITCH_GOAL, MAX_TRACKER_DAILY_TIME_GOAL_MINUTES, type TrackerDailyGoal, type TrackerSession } from '../types/tracker'
 import { trackerElapsedMilliseconds } from '../utils/tracker'
 
+const MIN_ESTIMATE_STITCHES = 10
 const props = defineProps<{ now: number; state: TrackerController }>()
 const { d, n, t } = useI18n({ useScope: 'global' })
 const activeTracker = computed(() => props.state.tracker.value!)
@@ -27,6 +29,102 @@ const currentDuration = computed(() => activeTracker.value.timer.startedAt
 const currentStitches = computed(() => activeTracker.value.timer.startedAt
   ? Math.max(0, props.state.completedCount.value - (activeTracker.value.timer.sessionStartedCompletedCount ?? props.state.completedCount.value))
   : 0)
+const allSessions = computed(() => [
+  ...activeTracker.value.sessions,
+  ...activeTracker.value.sessionArchives.flatMap((archive) => archive.sessions),
+])
+const goalType = ref<TrackerDailyGoal['type']>(activeTracker.value.dailyGoal?.type ?? 'stitches')
+const goalTarget = ref(activeTracker.value.dailyGoal?.type === 'time'
+  ? activeTracker.value.dailyGoal.targetMinutes
+  : activeTracker.value.dailyGoal?.targetStitches ?? 100)
+const goalTargetMaximum = computed(() => goalType.value === 'stitches' ? MAX_TRACKER_DAILY_STITCH_GOAL : MAX_TRACKER_DAILY_TIME_GOAL_MINUTES)
+const goalTargetValid = computed(() => Number.isSafeInteger(Number(goalTarget.value)) && Number(goalTarget.value) >= 1 && Number(goalTarget.value) <= goalTargetMaximum.value)
+const todayStart = computed(() => new Date(new Date(props.now).setHours(0, 0, 0, 0)).getTime())
+const tomorrowStart = computed(() => new Date(new Date(props.now).setHours(24, 0, 0, 0)).getTime())
+const todayDuration = computed(() => allSessions.value.reduce((total, session) => total + durationWithinToday(session), 0) + activeDurationToday.value)
+const todayStitches = computed(() => allSessions.value.reduce((total, session) => {
+  const endedAt = Date.parse(session.endedAt)
+  return total + (endedAt >= todayStart.value && endedAt < tomorrowStart.value ? session.stitchesCompleted : 0)
+}, 0) + currentStitches.value)
+const activeDurationToday = computed(() => activeTracker.value.timer.startedAt
+  ? Math.max(0, props.now - Math.max(todayStart.value, Date.parse(activeTracker.value.timer.startedAt)))
+  : 0)
+const goalProgress = computed(() => activeTracker.value.dailyGoal?.type === 'time' ? todayDuration.value : todayStitches.value)
+const goalTargetValue = computed(() => activeTracker.value.dailyGoal?.type === 'time'
+  ? activeTracker.value.dailyGoal.targetMinutes * 60_000
+  : activeTracker.value.dailyGoal?.targetStitches ?? 0)
+const goalPercentage = computed(() => goalTargetValue.value > 0 ? Math.min(1, goalProgress.value / goalTargetValue.value) : 0)
+const speedDuration = computed(() => allSessions.value.reduce((total, session) => total + session.durationMilliseconds, 0) + currentDuration.value)
+const speedStitches = computed(() => allSessions.value.reduce((total, session) => total + session.stitchesCompleted, 0) + currentStitches.value)
+const activeDays = computed(() => {
+  const days = new Set(allSessions.value.filter((session) => session.stitchesCompleted > 0).map((session) => localDayKey(Date.parse(session.endedAt))))
+  if (currentStitches.value > 0) days.add(localDayKey(props.now))
+  return days.size
+})
+const millisecondsPerStitch = computed(() => speedStitches.value >= MIN_ESTIMATE_STITCHES && speedDuration.value > 0 ? speedDuration.value / speedStitches.value : null)
+const remainingStitches = computed(() => Math.max(0, props.state.totalCount.value - props.state.completedCount.value))
+const estimatedWorkRemaining = computed(() => millisecondsPerStitch.value === null ? null : remainingStitches.value * millisecondsPerStitch.value)
+const estimatedActiveDays = computed(() => activeDays.value > 0
+  ? Math.ceil(remainingStitches.value / (speedStitches.value / activeDays.value))
+  : null)
+const estimatedActiveDayOffset = computed(() => {
+  if (activeDays.value === 0) return null
+  const averageStitches = speedStitches.value / activeDays.value
+  const availableToday = Math.max(0, averageStitches - todayStitches.value)
+  return remainingStitches.value <= availableToday ? 0 : Math.ceil((remainingStitches.value - availableToday) / averageStitches)
+})
+const estimatedGoalDays = computed(() => {
+  const goal = activeTracker.value.dailyGoal
+  if (!goal || estimatedWorkRemaining.value === null) return null
+  if (remainingStitches.value === 0) return 0
+  return Math.ceil(goal.type === 'stitches'
+    ? remainingStitches.value / goal.targetStitches
+    : estimatedWorkRemaining.value / (goal.targetMinutes * 60_000))
+})
+const estimatedCompletion = computed(() => {
+  const goal = activeTracker.value.dailyGoal
+  if (estimatedWorkRemaining.value === null) return null
+  if (!goal) {
+    if (estimatedActiveDayOffset.value === null) return null
+    const completion = new Date(props.now)
+    completion.setDate(completion.getDate() + estimatedActiveDayOffset.value)
+    return completion
+  }
+  const remaining = goal.type === 'stitches' ? remainingStitches.value : estimatedWorkRemaining.value
+  const target = goal.type === 'stitches' ? goal.targetStitches : goal.targetMinutes * 60_000
+  const availableToday = Math.max(0, target - goalProgress.value)
+  const dayOffset = remaining <= availableToday ? 0 : Math.ceil((remaining - availableToday) / target)
+  const completion = new Date(props.now)
+  completion.setDate(completion.getDate() + dayOffset)
+  return completion
+})
+
+watch(() => activeTracker.value.dailyGoal, (goal) => {
+  if (!goal) return
+  goalType.value = goal.type
+  goalTarget.value = goal.type === 'time' ? goal.targetMinutes : goal.targetStitches
+})
+
+function durationWithinToday(session: TrackerSession) {
+  const startedAt = Date.parse(session.startedAt)
+  const endedAt = Date.parse(session.endedAt)
+  const wallDuration = endedAt - startedAt
+  const overlap = Math.max(0, Math.min(endedAt, tomorrowStart.value) - Math.max(startedAt, todayStart.value))
+  return wallDuration > 0 ? Math.round(session.durationMilliseconds * overlap / wallDuration) : 0
+}
+
+function localDayKey(timestamp: number) {
+  const date = new Date(timestamp)
+  return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`
+}
+
+function saveGoal() {
+  if (!goalTargetValid.value) return
+  const target = Number(goalTarget.value)
+  props.state.setDailyGoal(goalType.value === 'time'
+    ? { type: 'time', targetMinutes: target }
+    : { type: 'stitches', targetStitches: target })
+}
 
 function formatDuration(milliseconds: number) {
   const seconds = Math.max(0, Math.floor(milliseconds / 1000))
@@ -38,6 +136,126 @@ function formatDuration(milliseconds: number) {
 
 <template>
   <div class="space-y-5">
+    <section class="rounded-box border border-primary/25 bg-primary/10 p-4">
+      <div class="flex items-start gap-3">
+        <span
+          class="mdi mdi-target text-2xl text-primary"
+          aria-hidden="true"
+        />
+        <div class="min-w-0 flex-1">
+          <h3 class="font-semibold">
+            {{ t('tracker.goals.title') }}
+          </h3>
+          <p class="mt-1 text-xs text-base-content/60">
+            {{ t('tracker.goals.description') }}
+          </p>
+        </div>
+      </div>
+
+      <form
+        class="mt-4 grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end"
+        @submit.prevent="saveGoal"
+      >
+        <label class="form-control gap-1">
+          <span class="text-xs font-semibold">{{ t('tracker.goals.metric') }}</span>
+          <select
+            v-model="goalType"
+            class="select select-bordered select-sm w-full"
+          >
+            <option value="stitches">{{ t('tracker.goals.stitches') }}</option>
+            <option value="time">{{ t('tracker.goals.time') }}</option>
+          </select>
+        </label>
+        <label class="form-control gap-1">
+          <span class="text-xs font-semibold">{{ t(goalType === 'time' ? 'tracker.goals.minutesPerDay' : 'tracker.goals.stitchesPerDay') }}</span>
+          <input
+            v-model.number="goalTarget"
+            class="input input-bordered input-sm w-full"
+            type="number"
+            min="1"
+            :max="goalTargetMaximum"
+            step="1"
+            required
+          >
+        </label>
+        <button
+          class="btn btn-primary btn-sm"
+          type="submit"
+          :disabled="!goalTargetValid"
+        >
+          {{ t(activeTracker.dailyGoal ? 'tracker.goals.update' : 'tracker.goals.set') }}
+        </button>
+      </form>
+
+      <template v-if="activeTracker.dailyGoal">
+        <div class="mt-4 flex items-end justify-between gap-3 text-sm">
+          <div>
+            <p class="font-semibold">
+              {{ t('tracker.goals.today') }}
+            </p>
+            <p class="mt-0.5 text-xs text-base-content/60">
+              {{ activeTracker.dailyGoal.type === 'time'
+                ? t('tracker.goals.timeProgress', { current: formatDuration(todayDuration), target: formatDuration(goalTargetValue) })
+                : t('tracker.goals.stitchProgress', { current: n(todayStitches, 'integer'), target: n(goalTargetValue, 'integer') }) }}
+            </p>
+          </div>
+          <span class="font-bold tabular-nums">{{ n(goalPercentage, 'percent') }}</span>
+        </div>
+        <progress
+          class="progress progress-primary mt-2 w-full"
+          :value="goalProgress"
+          :max="goalTargetValue"
+        />
+        <div class="mt-4 flex justify-end border-t border-primary/20 pt-4">
+          <button
+            class="btn btn-ghost btn-sm text-error"
+            type="button"
+            @click="state.setDailyGoal(null)"
+          >
+            {{ t('tracker.goals.remove') }}
+          </button>
+        </div>
+      </template>
+    </section>
+
+    <section class="rounded-box border border-base-300 bg-base-200/40 p-4">
+      <div class="flex items-start gap-3">
+        <span
+          class="mdi mdi-calendar-clock-outline text-2xl text-secondary"
+          aria-hidden="true"
+        />
+        <div class="min-w-0 flex-1">
+          <p class="text-xs font-semibold uppercase tracking-wide text-base-content/55">
+            {{ t('tracker.goals.estimate') }}
+          </p>
+          <template v-if="estimatedWorkRemaining !== null && estimatedCompletion">
+            <p class="mt-1 font-semibold">
+              {{ remainingStitches === 0
+                ? t('tracker.goals.complete')
+                : t('tracker.goals.estimatedCompletion', { date: d(estimatedCompletion, 'short') }) }}
+            </p>
+            <p
+              v-if="remainingStitches > 0"
+              class="mt-0.5 text-xs text-base-content/60"
+            >
+              {{ activeTracker.dailyGoal
+                ? t('tracker.goals.workRemaining', { duration: formatDuration(estimatedWorkRemaining), days: n(estimatedGoalDays ?? 0, 'integer') })
+                : t('tracker.goals.workRemainingActiveDays', { duration: formatDuration(estimatedWorkRemaining), days: n(estimatedActiveDays ?? 0, 'integer') }) }}
+            </p>
+            <p class="mt-1 text-xs text-base-content/50">
+              {{ t(activeTracker.dailyGoal ? 'tracker.goals.estimateBasis' : 'tracker.goals.activeDayBasis') }}
+            </p>
+          </template>
+          <p
+            v-else
+            class="mt-1 text-xs text-base-content/60"
+          >
+            {{ t('tracker.goals.needsSessions', { count: n(MIN_ESTIMATE_STITCHES, 'integer') }) }}
+          </p>
+        </div>
+      </div>
+    </section>
+
     <dl class="grid gap-3 sm:grid-cols-3">
       <div class="rounded-box border border-base-300 bg-base-200/40 p-4">
         <dt class="text-xs font-semibold uppercase tracking-wide text-base-content/55">

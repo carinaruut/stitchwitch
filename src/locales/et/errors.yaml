@@ -38,6 +38,7 @@ tracker:
   notes: Tööjärje märkmed ei sobi.
   counters: Tööjärje loendurid ei sobi.
   sessions: Tööjärje seansiajalugu ei sobi.
+  goals: Tööjärje edenemise eesmärk ei sobi.
 files:
   projectTooLarge: Projektifail on liiga suur.
   selectedTooLarge: Valitud fail on liiga suur.

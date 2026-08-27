@@ -1,5 +1,5 @@
 import type { PatternProject } from '../types/pattern'
-import { MAX_TRACKER_COUNTER_NAME_LENGTH, MAX_TRACKER_COUNTERS, MAX_TRACKER_PROJECT_NOTE_LENGTH, MAX_TRACKER_ROW_NOTE_LENGTH, MAX_TRACKER_SESSION_ARCHIVES, MAX_TRACKER_SESSIONS, type LegacyTrackerProgress, type StitchProject, type TrackerCounter, type TrackerPreferences, type TrackerProgress, type TrackerSession, type TrackerSessionArchive, type TrackerState, type TrackerTimer } from '../types/tracker'
+import { MAX_TRACKER_COUNTER_NAME_LENGTH, MAX_TRACKER_COUNTERS, MAX_TRACKER_DAILY_STITCH_GOAL, MAX_TRACKER_DAILY_TIME_GOAL_MINUTES, MAX_TRACKER_PROJECT_NOTE_LENGTH, MAX_TRACKER_ROW_NOTE_LENGTH, MAX_TRACKER_SESSION_ARCHIVES, MAX_TRACKER_SESSIONS, type LegacyTrackerProgress, type StitchProject, type TrackerCounter, type TrackerDailyGoal, type TrackerPreferences, type TrackerProgress, type TrackerSession, type TrackerSessionArchive, type TrackerState, type TrackerTimer } from '../types/tracker'
 import { renderGrid } from './grid'
 import { appError } from './appError'
 import { asPatternProject } from './validation'
@@ -78,6 +78,21 @@ function asSessionArchives(value: unknown): TrackerSessionArchive[] {
       sessions: asSessions(archive.sessions),
     }
   })
+}
+
+function asDailyGoal(value: unknown): TrackerDailyGoal | null {
+  if (value === undefined || value === null) return null
+  if (!value || typeof value !== 'object') throw appError('tracker.goals')
+  const goal = value as Partial<TrackerDailyGoal> & { targetStitches?: unknown; targetMinutes?: unknown }
+  if (goal.type === 'stitches' && Number.isSafeInteger(goal.targetStitches)
+    && goal.targetStitches! >= 1 && goal.targetStitches! <= MAX_TRACKER_DAILY_STITCH_GOAL) {
+    return { type: 'stitches', targetStitches: goal.targetStitches! }
+  }
+  if (goal.type === 'time' && Number.isSafeInteger(goal.targetMinutes)
+    && goal.targetMinutes! >= 1 && goal.targetMinutes! <= MAX_TRACKER_DAILY_TIME_GOAL_MINUTES) {
+    return { type: 'time', targetMinutes: goal.targetMinutes! }
+  }
+  throw appError('tracker.goals')
 }
 
 function asNotes(source: Record<string, unknown>, pattern: PatternProject) {
@@ -172,6 +187,7 @@ export function asTrackerState(value: unknown, pattern: PatternProject): Tracker
     counters: asCounters(source.counters),
     sessions: asSessions(source.sessions),
     sessionArchives: asSessionArchives(source.sessionArchives),
+    dailyGoal: asDailyGoal(source.dailyGoal),
     ...(preferences ? { preferences } : {}),
   }
 }
@@ -192,6 +208,7 @@ export function createTrackerState(preferences?: TrackerPreferences): TrackerSta
     counters: [],
     sessions: [],
     sessionArchives: [],
+    dailyGoal: null,
     ...(preferences ? { preferences: { ...preferences } } : {}),
   }
 }
@@ -215,6 +232,7 @@ export function asStitchProject(value: unknown): StitchProject {
         counters: [],
         sessions: [],
         sessionArchives: [],
+        dailyGoal: null,
         ...(validPreferences(source.preferences) ? { preferences: validPreferences(source.preferences) } : {}),
       },
     }
