@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import ColorLegend from '../components/ColorLegend.vue'
+import TrackerCongratulations from '../components/TrackerCongratulations.vue'
 import TrackerGrid from '../components/TrackerGrid.vue'
 import TrackerNotesCounters from '../components/TrackerNotesCounters.vue'
 import TrackerSessions from '../components/TrackerSessions.vue'
@@ -902,6 +903,11 @@ function cancelActiveModal() {
       :state="state"
     />
   </AppModal>
+
+  <TrackerCongratulations
+    :name="pattern.project.value.name"
+    :state="state"
+  />
 
   <div
     v-if="confirmation"

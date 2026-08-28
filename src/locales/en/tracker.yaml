@@ -21,6 +21,25 @@ tracker:
     completed: '{completed} of {total} stitches completed'
     percentComplete: '{percentage} complete'
     updated: Updated {date}
+  congratulations:
+    title: Congratulations!
+    description: You completed {name}.
+    patternComplete: Every stitch is complete
+    patternStitches: '{count} stitches crossed out'
+    stats: Timed project statistics
+    overallTime: Overall time
+    doneStitches: Done stitches
+    sessionCount: Sessions
+    averageSessionTime: Average session time
+    longestSession: Longest session
+    mostStitches: Most stitches in one session
+    fastestSession: Fastest session
+    fastestSessionValue: '{stitches} stitches in {duration}'
+    averageSpeed: Average speed per stitch
+    perStitch: '{duration} per stitch'
+    notAvailable: Not available
+    close: Close congratulations
+    action: Celebrate
   timer:
     toggle: Timer
     elapsed: 'Elapsed time: {time}'

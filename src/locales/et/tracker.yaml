@@ -21,6 +21,25 @@ tracker:
     completed: '{completed} pistet {total}-st tehtud'
     percentComplete: '{percentage} tehtud'
     updated: Uuendatud {date}
+  congratulations:
+    title: Palju õnne!
+    description: Lõpetasid projekti {name}.
+    patternComplete: Kõik pisted on tehtud
+    patternStitches: '{count} pistet maha tõmmatud'
+    stats: Taimeriga mõõdetud statistika
+    overallTime: Koguaeg
+    doneStitches: Tehtud pisted
+    sessionCount: Seansid
+    averageSessionTime: Seansi keskmine kestus
+    longestSession: Pikim seanss
+    mostStitches: Enim pisteid ühes seansis
+    fastestSession: Kiireim seanss
+    fastestSessionValue: '{stitches} pistet ajaga {duration}'
+    averageSpeed: Keskmine aeg piste kohta
+    perStitch: '{duration} piste kohta'
+    notAvailable: Pole saadaval
+    close: Sulge õnnitlus
+    action: Tähista
   timer:
     toggle: Taimer
     elapsed: 'Kulunud aeg: {time}'
