@@ -94,7 +94,7 @@ function toggleDetails(event: Event) {
       align="left"
       fixed-width
       :open="open"
-      panel-class="flex w-[min(24rem,calc(100vw-1.5rem))] min-w-0 flex-col gap-3 p-4"
+      panel-class="app-settings-panel w-[min(24rem,calc(100vw-1.5rem))] min-w-0"
       @update:open="emit('update:open', $event)"
     >
       <template #trigger="{ open: dropdownOpen, panelId }">
@@ -137,8 +137,8 @@ function toggleDetails(event: Event) {
           />
         </div>
       </template>
-      <label class="flex w-full min-w-0 flex-col items-stretch gap-1">
-        <span class="text-xs font-semibold">{{ t('controls.palette.name') }}</span>
+      <label class="app-field w-full">
+        <span class="app-field-label">{{ t('controls.palette.name') }}</span>
         <input
           class="input input-bordered input-sm w-full min-w-0"
           type="text"
@@ -147,8 +147,8 @@ function toggleDetails(event: Event) {
           @change="updateField('name', $event)"
         >
       </label>
-      <label class="flex w-full min-w-0 flex-col items-stretch gap-1">
-        <span class="text-xs font-semibold">{{ t('controls.palette.brand') }}</span>
+      <label class="app-field w-full">
+        <span class="app-field-label">{{ t('controls.palette.brand') }}</span>
         <input
           class="input input-bordered input-sm w-full min-w-0"
           type="text"
@@ -157,8 +157,8 @@ function toggleDetails(event: Event) {
           @change="updateField('brand', $event)"
         >
       </label>
-      <label class="flex w-full min-w-0 flex-col items-stretch gap-1">
-        <span class="text-xs font-semibold">{{ t('controls.palette.code') }}</span>
+      <label class="app-field w-full">
+        <span class="app-field-label">{{ t('controls.palette.code') }}</span>
         <input
           class="input input-bordered input-sm w-full min-w-0"
           type="text"
@@ -167,8 +167,8 @@ function toggleDetails(event: Event) {
           @change="updateField('code', $event)"
         >
       </label>
-      <label class="flex w-full min-w-0 flex-col items-stretch gap-1">
-        <span class="text-xs font-semibold">{{ t('controls.palette.notes') }}</span>
+      <label class="app-field w-full">
+        <span class="app-field-label">{{ t('controls.palette.notes') }}</span>
         <textarea
           class="textarea textarea-bordered min-h-20 w-full min-w-0 text-sm"
           maxlength="1000"
@@ -178,9 +178,9 @@ function toggleDetails(event: Event) {
       </label>
       <div
         v-if="allowColorSwitch"
-        class="border-t border-base-300 pt-3"
+        class="app-settings-section"
       >
-        <p class="mb-2 text-xs font-semibold">
+        <p class="app-field-label">
           {{ t('controls.palette.switchColor') }}
         </p>
         <div class="flex flex-wrap gap-2 pb-1">
@@ -214,10 +214,10 @@ function toggleDetails(event: Event) {
         </div>
         <div
           v-if="pickerOpen"
-          class="mt-3 rounded-box border border-base-300 bg-base-200/40 p-3"
+          class="app-inset-panel grid gap-3"
         >
           <VisualColorPicker v-model="draftColor" />
-          <div class="mt-3 flex items-center gap-2">
+          <div class="flex items-center gap-2">
             <span
               class="size-9 rounded-box border border-base-content/25 shadow-sm"
               :style="{ backgroundColor: draftColor }"

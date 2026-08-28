@@ -243,11 +243,11 @@ onBeforeUnmount(() => {
 
     <div
       id="project-workspace"
-      class="min-w-0 p-3 sm:p-5"
+      class="app-page min-w-0"
       role="tabpanel"
       :aria-labelledby="`project-tab-${projects.activeProjectId.value}`"
     >
-      <main class="mx-auto max-w-360 space-y-4">
+      <main class="app-page-stack mx-auto max-w-360">
         <PatternEditorWorkspace
           v-if="workspace === 'editor'"
           ref="editorWorkspace"

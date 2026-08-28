@@ -250,8 +250,8 @@ function adjustWheel(event: KeyboardEvent) {
         </div>
       </div>
 
-      <label class="mt-3 block">
-        <span class="mb-1 flex justify-between text-xs font-semibold">
+      <label class="app-field mt-3">
+        <span class="app-field-label flex justify-between">
           <span>{{ t(mode === 'spectrum' ? 'controls.color.hue' : 'controls.color.brightness') }}</span>
           <span class="font-mono text-base-content/60">{{ mode === 'spectrum' ? `${Math.round(hsv.hue)}°` : `${Math.round(hsv.value * 100)}%` }}</span>
         </span>

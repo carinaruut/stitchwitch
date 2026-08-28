@@ -46,7 +46,7 @@ function request(action: () => void) {
         />
       </button>
     </template>
-    <ul class="menu w-44 p-2">
+    <ul class="menu app-menu w-44">
       <li>
         <button
           type="button"

@@ -81,7 +81,8 @@ function toggleAddingComment() {
 
 <template>
   <div
-    class="flex flex-wrap items-center gap-1 rounded-box border border-base-300 bg-base-200/70 p-1.5"
+    class="app-toolbar rounded-box border border-base-300 bg-base-200/70"
+    role="toolbar"
     :aria-label="t('tracker.actions.label')"
   >
     <TrackerOrderDropdown

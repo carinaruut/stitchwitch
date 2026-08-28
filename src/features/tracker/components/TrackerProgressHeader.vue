@@ -15,7 +15,7 @@ const { d, n, t } = useI18n({ useScope: 'global' })
 
 <template>
   <section class="card border border-base-300 bg-base-100">
-    <div class="card-body gap-4 p-4 sm:p-5">
+    <div class="card-body app-card-body">
       <div class="flex flex-wrap items-start justify-between gap-4">
         <div>
           <p class="text-xs font-semibold uppercase tracking-widest text-primary-content">

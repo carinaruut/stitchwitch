@@ -135,7 +135,7 @@ defineExpose({
 
 <template>
   <section class="card border border-base-300 bg-base-100">
-    <div class="card-body gap-3 p-3 sm:p-5">
+    <div class="card-body app-card-body">
       <EditorProjectHeader
         ref="projectHeader"
         :name="pattern.project.value.name"

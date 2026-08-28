@@ -80,7 +80,7 @@ function formatDuration(milliseconds: number, precise = false) {
     :close-on-backdrop="false"
     @close="completedAt = null"
   >
-    <div class="space-y-5">
+    <div class="app-page-stack">
       <div class="flex flex-col items-center rounded-box bg-success/10 px-5 py-7 text-center">
         <div class="grid size-16 place-items-center rounded-full bg-success text-success-content shadow-sm">
           <span
@@ -101,7 +101,7 @@ function formatDuration(milliseconds: number, precise = false) {
           {{ t('tracker.congratulations.stats') }}
         </h3>
         <dl class="grid grid-cols-2 gap-2 sm:grid-cols-4">
-          <div class="col-span-2 rounded-box border border-primary/25 bg-primary/10 p-3 sm:col-span-4">
+          <div class="app-inset-panel col-span-2 border-primary/25 bg-primary/10 sm:col-span-4">
             <dt class="text-xs text-base-content/60">
               {{ t('tracker.congratulations.overallTime') }}
             </dt>
@@ -109,7 +109,7 @@ function formatDuration(milliseconds: number, precise = false) {
               {{ formatDuration(completionStats.overallTime) }}
             </dd>
           </div>
-          <div class="rounded-box border border-base-300 bg-base-200/40 p-3">
+          <div class="app-inset-panel">
             <dt class="text-xs text-base-content/60">
               {{ t('tracker.congratulations.doneStitches') }}
             </dt>
@@ -117,7 +117,7 @@ function formatDuration(milliseconds: number, precise = false) {
               {{ n(completionStats.doneStitches, 'integer') }}
             </dd>
           </div>
-          <div class="rounded-box border border-base-300 bg-base-200/40 p-3">
+          <div class="app-inset-panel">
             <dt class="text-xs text-base-content/60">
               {{ t('tracker.congratulations.sessionCount') }}
             </dt>
@@ -125,7 +125,7 @@ function formatDuration(milliseconds: number, precise = false) {
               {{ n(completionStats.sessionCount, 'integer') }}
             </dd>
           </div>
-          <div class="rounded-box border border-base-300 bg-base-200/40 p-3">
+          <div class="app-inset-panel">
             <dt class="text-xs text-base-content/60">
               {{ t('tracker.congratulations.averageSessionTime') }}
             </dt>
@@ -133,7 +133,7 @@ function formatDuration(milliseconds: number, precise = false) {
               {{ completionStats.averageSessionTime === null ? t('tracker.congratulations.notAvailable') : formatDuration(completionStats.averageSessionTime) }}
             </dd>
           </div>
-          <div class="rounded-box border border-base-300 bg-base-200/40 p-3">
+          <div class="app-inset-panel">
             <dt class="text-xs text-base-content/60">
               {{ t('tracker.congratulations.longestSession') }}
             </dt>
@@ -141,7 +141,7 @@ function formatDuration(milliseconds: number, precise = false) {
               {{ completionStats.longestSession === null ? t('tracker.congratulations.notAvailable') : formatDuration(completionStats.longestSession) }}
             </dd>
           </div>
-          <div class="rounded-box border border-base-300 bg-base-200/40 p-3">
+          <div class="app-inset-panel">
             <dt class="text-xs text-base-content/60">
               {{ t('tracker.congratulations.mostStitches') }}
             </dt>
@@ -149,7 +149,7 @@ function formatDuration(milliseconds: number, precise = false) {
               {{ completionStats.mostStitches === null ? t('tracker.congratulations.notAvailable') : n(completionStats.mostStitches, 'integer') }}
             </dd>
           </div>
-          <div class="rounded-box border border-base-300 bg-base-200/40 p-3">
+          <div class="app-inset-panel">
             <dt class="text-xs text-base-content/60">
               {{ t('tracker.congratulations.averageSpeed') }}
             </dt>
@@ -157,7 +157,7 @@ function formatDuration(milliseconds: number, precise = false) {
               {{ completionStats.averageTimePerStitch === null ? t('tracker.congratulations.notAvailable') : t('tracker.congratulations.perStitch', { duration: formatDuration(completionStats.averageTimePerStitch, true) }) }}
             </dd>
           </div>
-          <div class="col-span-2 rounded-box border border-base-300 bg-base-200/40 p-3 sm:col-span-4">
+          <div class="app-inset-panel col-span-2 sm:col-span-4">
             <dt class="text-xs text-base-content/60">
               {{ t('tracker.congratulations.fastestSession') }}
             </dt>

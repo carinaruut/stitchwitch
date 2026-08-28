@@ -26,7 +26,7 @@ function deleteRows() {
 
 <template>
   <section class="card border border-base-300 bg-base-100">
-    <div class="card-body gap-3 p-4">
+    <div class="card-body app-settings-panel">
       <div class="flex items-center justify-between">
         <h2 class="card-title text-base">
           {{ t('controls.axis.rows') }}
@@ -75,7 +75,7 @@ function deleteRows() {
           />{{ t('controls.axis.addAtEnd') }}
         </button>
       </div>
-      <div class="grid grid-cols-2 gap-2 border-t border-base-300 pt-3">
+      <div class="app-settings-section grid-cols-2">
         <button
           class="btn btn-sm btn-outline"
           type="button"
@@ -97,7 +97,7 @@ function deleteRows() {
           />{{ t('controls.axis.eraseCurrent') }}
         </button>
       </div>
-      <div class="grid gap-2 border-t border-base-300 pt-3">
+      <div class="app-settings-section">
         <button
           class="btn btn-sm btn-error btn-outline"
           type="button"
@@ -109,12 +109,12 @@ function deleteRows() {
             aria-hidden="true"
           />{{ t('controls.axis.deleteCurrentRow', { number: selected + 1 }) }}
         </button>
-        <div>
+        <div class="app-field">
           <label
-            class="label-text text-xs font-medium"
+            class="app-field-label"
             for="rows-to-delete"
           >{{ t('controls.axis.deleteMultipleRows') }}</label>
-          <div class="join mt-1 flex">
+          <div class="join flex">
             <input
               id="rows-to-delete"
               v-model="selectionInput"
@@ -138,7 +138,7 @@ function deleteRows() {
           </div>
           <p
             id="rows-to-delete-help"
-            class="mt-1 text-xs"
+            class="text-xs"
             :class="selectionError ? 'text-error' : 'text-base-content/55'"
           >
             {{ t(selectionError ? 'controls.axis.rowsInvalid' : 'controls.axis.rowsHelp', { count }) }}

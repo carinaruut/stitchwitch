@@ -46,12 +46,12 @@ const formatSigned = (value: number) => formatSignedTrackerNumber(value, (number
 
     <div
       v-if="showPrevious"
-      class="space-y-4"
+      class="app-page-stack"
     >
       <article
         v-for="archive in archives"
         :key="archive.id"
-        class="rounded-box border border-secondary/35 bg-secondary/10 p-4"
+        class="app-settings-panel rounded-box border border-secondary/35 bg-secondary/10"
       >
         <header class="flex items-start justify-between gap-3">
           <div>
@@ -103,12 +103,12 @@ const formatSigned = (value: number) => formatSignedTrackerNumber(value, (number
         </p>
         <ol
           v-else
-          class="mt-3 space-y-2"
+          class="mt-3 grid gap-2"
         >
           <li
             v-for="session in [...archive.sessions].reverse()"
             :key="session.id"
-            class="grid gap-2 rounded-box border border-secondary/25 bg-base-100/70 p-3 text-sm sm:grid-cols-[1fr_auto_auto_auto] sm:items-center"
+            class="app-inset-panel grid gap-2 border-secondary/25 bg-base-100/70 text-sm sm:grid-cols-[1fr_auto_auto_auto] sm:items-center"
           >
             <div>
               <time

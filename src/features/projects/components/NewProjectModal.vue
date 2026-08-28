@@ -54,6 +54,7 @@ function submit() {
   >
     <form
       id="new-project-form"
+      class="app-page-stack"
       @submit.prevent="submit"
     >
       <div
@@ -65,16 +66,15 @@ function submit() {
       </div>
       <div
         class="grid gap-4 sm:grid-cols-2"
-        :class="errorKey ? 'mt-4' : ''"
       >
-        <label class="form-control sm:col-span-2"><span class="label-text mb-1">{{ t('controls.newProject.projectName') }}</span><input
+        <label class="app-field sm:col-span-2"><span class="app-field-label">{{ t('controls.newProject.projectName') }}</span><input
           v-model="form.name"
           class="input input-bordered w-full"
           required
           maxlength="100"
           autofocus
         ></label>
-        <label class="form-control"><span class="label-text mb-1">{{ t('controls.newProject.rows') }}</span><input
+        <label class="app-field"><span class="app-field-label">{{ t('controls.newProject.rows') }}</span><input
           v-model.number="form.rows"
           class="input input-bordered w-full"
           type="number"
@@ -82,7 +82,7 @@ function submit() {
           max="200"
           required
         ></label>
-        <label class="form-control"><span class="label-text mb-1">{{ t('controls.newProject.columns') }}</span><input
+        <label class="app-field"><span class="app-field-label">{{ t('controls.newProject.columns') }}</span><input
           v-model.number="form.columns"
           class="input input-bordered w-full"
           type="number"
@@ -90,19 +90,19 @@ function submit() {
           max="200"
           required
         ></label>
-        <label class="form-control sm:col-span-2"><span class="label-text mb-1">{{ t('controls.newProject.cellSize', { size: form.cellSize }) }}</span><input
+        <label class="app-field sm:col-span-2"><span class="app-field-label">{{ t('controls.newProject.cellSize', { size: form.cellSize }) }}</span><input
           v-model.number="form.cellSize"
           class="range range-primary"
           type="range"
           min="8"
           max="64"
         ></label>
-        <fieldset class="sm:col-span-2">
-          <legend class="label-text mb-2">
+        <fieldset class="app-field sm:col-span-2">
+          <legend class="app-field-label">
             {{ t('controls.newProject.backgroundColor') }}
           </legend>
-          <div class="rounded-box border border-base-300 bg-base-200/40 p-3">
-            <div class="mb-3 flex items-center gap-2">
+          <div class="app-inset-panel grid gap-3">
+            <div class="flex items-center gap-2">
               <span
                 class="size-9 rounded-box border border-base-content/25 shadow-sm"
                 :style="{ backgroundColor: form.backgroundColor }"
@@ -113,7 +113,7 @@ function submit() {
             <VisualColorPicker v-model="form.backgroundColor" />
           </div>
         </fieldset>
-        <label class="form-control"><span class="label-text mb-1">{{ t('controls.newProject.horizontalRepeats') }}</span><input
+        <label class="app-field"><span class="app-field-label">{{ t('controls.newProject.horizontalRepeats') }}</span><input
           v-model.number="form.horizontalRepeats"
           class="input input-bordered w-full"
           type="number"
@@ -121,7 +121,7 @@ function submit() {
           :max="MAX_REPEAT_COUNT"
           required
         ></label>
-        <label class="form-control"><span class="label-text mb-1">{{ t('controls.newProject.verticalRepeats') }}</span><input
+        <label class="app-field"><span class="app-field-label">{{ t('controls.newProject.verticalRepeats') }}</span><input
           v-model.number="form.verticalRepeats"
           class="input input-bordered w-full"
           type="number"

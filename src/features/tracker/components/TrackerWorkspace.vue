@@ -153,8 +153,8 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleKeyboardShortc
 </script>
 
 <template>
-  <div class="space-y-4 text-base-content">
-    <div class="mx-auto max-w-360 space-y-4 p-3 sm:p-5">
+  <div class="text-base-content">
+    <div class="app-page-stack">
       <TrackerProgressHeader
         :autosave-status="pattern.autosaveStatus.value"
         :completed-count="state.completedCount.value"

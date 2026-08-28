@@ -58,7 +58,7 @@ async function pickFromScreen() {
 
 <template>
   <section class="card border border-base-300 bg-base-100">
-    <div class="card-body gap-3 p-4">
+    <div class="card-body app-settings-panel">
       <h2 class="card-title text-base">
         {{ t('controls.color.title') }}
       </h2>
@@ -87,8 +87,8 @@ async function pickFromScreen() {
         :model-value="color"
         @update:model-value="selectColor"
       />
-      <label class="form-control">
-        <span class="label-text mb-1">{{ t('controls.color.hex') }}</span>
+      <label class="app-field">
+        <span class="app-field-label">{{ t('controls.color.hex') }}</span>
         <input
           v-model="hexValue"
           class="input input-bordered input-sm w-full font-mono"
@@ -99,20 +99,20 @@ async function pickFromScreen() {
         >
         <span
           v-if="hexError"
-          class="mt-1 text-xs text-error"
+          class="text-xs text-error"
         >{{ t('controls.color.invalid') }}</span>
       </label>
-      <fieldset>
-        <legend class="mb-1 text-sm">
+      <fieldset class="app-field">
+        <legend class="text-sm">
           {{ t('controls.color.rgb') }}
         </legend>
         <div class="grid grid-cols-3 gap-2">
           <label
             v-for="channel in (['red', 'green', 'blue'] as const)"
             :key="channel"
-            class="form-control"
+            class="app-field"
           >
-            <span class="label-text mb-1">{{ t(`controls.color.${channel}`) }}</span>
+            <span class="app-field-label">{{ t(`controls.color.${channel}`) }}</span>
             <input
               v-model="rgbValues[channel]"
               class="input input-bordered input-sm min-w-0 w-full font-mono"
@@ -128,11 +128,11 @@ async function pickFromScreen() {
         </div>
         <span
           v-if="rgbError"
-          class="mt-1 block text-xs text-error"
+          class="block text-xs text-error"
         >{{ t('controls.color.rgbInvalid') }}</span>
       </fieldset>
-      <div class="border-t border-base-300 pt-3">
-        <div class="mb-2 flex items-center justify-between gap-3">
+      <div class="app-settings-section">
+        <div class="flex items-center justify-between gap-3">
           <div>
             <p class="text-sm font-medium">
               {{ t('controls.color.swatches') }}
@@ -195,8 +195,11 @@ async function pickFromScreen() {
           {{ t('controls.color.noSwatches') }}
         </p>
       </div>
-      <div v-if="recentColors.length">
-        <p class="mb-2 text-sm font-medium">
+      <div
+        v-if="recentColors.length"
+        class="app-field"
+      >
+        <p class="text-sm font-medium">
           {{ t('controls.color.recent') }}
         </p>
         <div class="flex flex-wrap gap-2">

@@ -137,7 +137,7 @@ function scrollToSection(id: string) {
             </h2>
           </div>
           <div class="grid gap-3 md:grid-cols-2">
-            <article class="rounded-box border border-base-300 p-4">
+            <article class="app-card-body rounded-box border border-base-300">
               <h3 class="font-bold">
                 {{ t('guide.tools.colorTitle') }}
               </h3>
@@ -145,7 +145,7 @@ function scrollToSection(id: string) {
                 {{ t('guide.tools.colorText') }}
               </p>
             </article>
-            <article class="rounded-box border border-base-300 p-4">
+            <article class="app-card-body rounded-box border border-base-300">
               <h3 class="font-bold">
                 {{ t('guide.tools.pencilTitle') }}
               </h3>
@@ -153,7 +153,7 @@ function scrollToSection(id: string) {
                 <span class="font-semibold">{{ t('guide.tools.pencilName') }}</span> {{ t('guide.tools.pencilBeforeEraser') }} <span class="font-semibold">{{ t('guide.tools.eraserName') }}</span> {{ t('guide.tools.pencilAfterEraser') }}
               </p>
             </article>
-            <article class="rounded-box border border-base-300 p-4">
+            <article class="app-card-body rounded-box border border-base-300">
               <h3 class="font-bold">
                 {{ t('guide.tools.fillTitle') }}
               </h3>
@@ -161,7 +161,7 @@ function scrollToSection(id: string) {
                 {{ t('guide.tools.fillText') }}
               </p>
             </article>
-            <article class="rounded-box border border-base-300 p-4">
+            <article class="app-card-body rounded-box border border-base-300">
               <h3 class="font-bold">
                 {{ t('guide.tools.otherTitle') }}
               </h3>
@@ -191,27 +191,27 @@ function scrollToSection(id: string) {
               {{ t('guide.selection.title') }}
             </h2>
           </div>
-          <div class="rounded-box border border-base-300 p-4">
+          <div class="app-card-body rounded-box border border-base-300">
             <p class="text-sm text-base-content/70">
               {{ t('guide.selection.intro') }}
             </p>
             <div class="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              <div class="rounded-box bg-base-200 p-3 text-sm">
+              <div class="app-inset-panel text-sm">
                 <strong class="block">{{ t('guide.selection.copyTitle') }}</strong>{{ t('guide.selection.copyText') }}
               </div>
-              <div class="rounded-box bg-base-200 p-3 text-sm">
+              <div class="app-inset-panel text-sm">
                 <strong class="block">{{ t('guide.selection.pasteTitle') }}</strong>{{ t('guide.selection.pasteText') }}
               </div>
-              <div class="rounded-box bg-base-200 p-3 text-sm">
+              <div class="app-inset-panel text-sm">
                 <strong class="block">{{ t('guide.selection.flipHorizontalTitle') }}</strong>{{ t('guide.selection.flipHorizontalText') }}
               </div>
-              <div class="rounded-box bg-base-200 p-3 text-sm">
+              <div class="app-inset-panel text-sm">
                 <strong class="block">{{ t('guide.selection.flipVerticalTitle') }}</strong>{{ t('guide.selection.flipVerticalText') }}
               </div>
-              <div class="rounded-box bg-base-200 p-3 text-sm">
+              <div class="app-inset-panel text-sm">
                 <strong class="block">{{ t('guide.selection.rotateClockwiseTitle') }}</strong>{{ t('guide.selection.rotateClockwiseText') }}
               </div>
-              <div class="rounded-box bg-base-200 p-3 text-sm">
+              <div class="app-inset-panel text-sm">
                 <strong class="block">{{ t('guide.selection.rotateCounterclockwiseTitle') }}</strong>{{ t('guide.selection.rotateCounterclockwiseText') }}
               </div>
             </div>
@@ -235,7 +235,7 @@ function scrollToSection(id: string) {
             </h2>
           </div>
           <div class="grid gap-3 md:grid-cols-2">
-            <article class="rounded-box border border-base-300 p-4">
+            <article class="app-card-body rounded-box border border-base-300">
               <h3 class="font-bold">
                 {{ t('guide.mirrors.verticalTitle') }}
               </h3>
@@ -243,7 +243,7 @@ function scrollToSection(id: string) {
                 {{ t('guide.mirrors.verticalText') }}
               </p>
             </article>
-            <article class="rounded-box border border-base-300 p-4">
+            <article class="app-card-body rounded-box border border-base-300">
               <h3 class="font-bold">
                 {{ t('guide.mirrors.horizontalTitle') }}
               </h3>
@@ -267,15 +267,15 @@ function scrollToSection(id: string) {
               {{ t('guide.repeats.title') }}
             </h2>
           </div>
-          <div class="rounded-box border border-base-300 p-4">
+          <div class="app-card-body rounded-box border border-base-300">
             <p class="text-sm text-base-content/70">
               {{ t('guide.repeats.introBeforeAcross') }} <strong>{{ t('guide.repeats.across') }}</strong> {{ t('guide.repeats.introBetween') }} <strong>{{ t('guide.repeats.down') }}</strong> {{ t('guide.repeats.introAfterDown') }}
             </p>
             <div class="mt-4 grid gap-3 md:grid-cols-2">
-              <div class="rounded-box bg-base-200 p-3 text-sm">
+              <div class="app-inset-panel text-sm">
                 <strong class="block">{{ t('guide.repeats.countTitle') }}</strong>{{ t('guide.repeats.countText') }}
               </div>
-              <div class="rounded-box bg-base-200 p-3 text-sm">
+              <div class="app-inset-panel text-sm">
                 <strong class="block">{{ t('guide.repeats.boundaryTitle') }}</strong>{{ t('guide.repeats.boundaryText') }}
               </div>
             </div>
@@ -306,7 +306,7 @@ function scrollToSection(id: string) {
             </h2>
           </div>
           <div class="grid gap-3 md:grid-cols-2">
-            <article class="rounded-box border border-base-300 p-4">
+            <article class="app-card-body rounded-box border border-base-300">
               <h3 class="font-bold">
                 {{ t('guide.canvas.rowsTitle') }}
               </h3>
@@ -314,7 +314,7 @@ function scrollToSection(id: string) {
                 {{ t('guide.canvas.rowsTextBefore') }} <strong>{{ t('guide.canvas.rowsExampleOne') }}</strong> {{ t('guide.canvas.rowsTextBetween') }} <strong>{{ t('guide.canvas.rowsExampleTwo') }}</strong>{{ t('guide.canvas.rowsTextAfter') }}
               </p>
             </article>
-            <article class="rounded-box border border-base-300 p-4">
+            <article class="app-card-body rounded-box border border-base-300">
               <h3 class="font-bold">
                 {{ t('guide.canvas.displayTitle') }}
               </h3>
@@ -322,7 +322,7 @@ function scrollToSection(id: string) {
                 {{ t('guide.canvas.displayText') }}
               </p>
             </article>
-            <article class="rounded-box border border-base-300 p-4 md:col-span-2">
+            <article class="app-card-body rounded-box border border-base-300 md:col-span-2">
               <h3 class="font-bold">
                 {{ t('guide.canvas.referenceTitle') }}
               </h3>
@@ -346,7 +346,7 @@ function scrollToSection(id: string) {
               {{ t('guide.tracker.title') }}
             </h2>
           </div>
-          <div class="rounded-box border border-base-300 p-4">
+          <div class="app-card-body rounded-box border border-base-300">
             <p class="text-sm text-base-content/70">
               {{ t('guide.tracker.intro') }}
             </p>
@@ -370,21 +370,21 @@ function scrollToSection(id: string) {
             </h2>
           </div>
           <div class="grid gap-3 md:grid-cols-3">
-            <article class="rounded-box border border-base-300 p-4">
+            <article class="app-card-body rounded-box border border-base-300">
               <h3 class="font-bold">
                 {{ t('guide.saving.autosaveTitle') }}
               </h3><p class="mt-1 text-sm text-base-content/70">
                 {{ t('guide.saving.autosaveText') }}
               </p>
             </article>
-            <article class="rounded-box border border-base-300 p-4">
+            <article class="app-card-body rounded-box border border-base-300">
               <h3 class="font-bold">
                 {{ t('guide.saving.saveTitle') }}
               </h3><p class="mt-1 text-sm text-base-content/70">
                 {{ t('guide.saving.saveBefore') }} <code>.stitch-project</code> {{ t('guide.saving.saveAfter') }}
               </p>
             </article>
-            <article class="rounded-box border border-base-300 p-4">
+            <article class="app-card-body rounded-box border border-base-300">
               <h3 class="font-bold">
                 {{ t('guide.saving.openTitle') }}
               </h3><p class="mt-1 text-sm text-base-content/70">
@@ -407,7 +407,7 @@ function scrollToSection(id: string) {
               {{ t('guide.output.title') }}
             </h2>
           </div>
-          <div class="rounded-box border border-base-300 p-4">
+          <div class="app-card-body rounded-box border border-base-300">
             <p class="text-sm text-base-content/70">
               {{ t('guide.output.intro') }}
             </p>

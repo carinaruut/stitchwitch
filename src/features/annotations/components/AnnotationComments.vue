@@ -110,7 +110,7 @@ watch([() => props.selectedId, () => props.renderedAnnotations], async ([id]) =>
     ref="dropdown"
     class="contents"
     :label="t('tracker.comments.title')"
-    panel-class="annotation-comment-panel w-[min(20rem,calc(100vw-1.5rem))] p-4 shadow-2xl"
+    panel-class="annotation-comment-panel app-settings-panel w-[min(20rem,calc(100vw-1.5rem))] shadow-2xl"
     panel-role="dialog"
     @update:open="handleDropdown"
   >
@@ -141,7 +141,7 @@ watch([() => props.selectedId, () => props.renderedAnnotations], async ([id]) =>
       </button>
     </template>
     <template v-if="selectedComment">
-      <header class="mb-3 flex items-start justify-between gap-3">
+      <header class="flex items-start justify-between gap-3">
         <div>
           <h2 class="font-semibold">
             {{ t(openComments.length === 1 ? 'tracker.comments.title' : 'tracker.comments.multiple', { count: openComments.length }) }}
@@ -162,11 +162,11 @@ watch([() => props.selectedId, () => props.renderedAnnotations], async ([id]) =>
           />
         </button>
       </header>
-      <div class="space-y-3">
+      <div class="grid gap-3">
         <div
           v-for="comment in openComments"
           :key="comment.id"
-          class="rounded-lg bg-base-200/70 p-2"
+          class="app-inset-panel grid gap-2"
         >
           <textarea
             class="textarea textarea-bordered textarea-sm min-h-20 w-full resize-y text-sm leading-relaxed"
@@ -177,7 +177,7 @@ watch([() => props.selectedId, () => props.renderedAnnotations], async ([id]) =>
           />
           <div class="flex justify-end">
             <button
-              class="btn btn-ghost btn-xs text-error mt-4"
+              class="btn btn-ghost btn-xs text-error"
               type="button"
               @click="$emit('remove', comment.id)"
             >

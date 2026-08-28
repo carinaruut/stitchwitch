@@ -296,7 +296,7 @@ watch(activeRow, (row) => {
   >
     <div
       ref="viewport"
-      class="tracker-viewport w-full min-w-0 overflow-x-auto rounded-box border border-base-300/70 bg-base-100 p-3"
+      class="tracker-viewport app-inset-panel w-full min-w-0 overflow-x-auto bg-base-100"
       :aria-label="t('tracker.grid.label')"
     >
       <div

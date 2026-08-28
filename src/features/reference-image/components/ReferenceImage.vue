@@ -130,7 +130,7 @@ onBeforeUnmount(clearImage)
 
 <template>
   <aside class="card min-w-0 border border-base-300 bg-base-100">
-    <div class="card-body min-w-0 gap-3 p-3">
+    <div class="card-body app-card-body min-w-0">
       <div class="flex items-center justify-between gap-2">
         <h2 class="card-title min-w-0 text-sm">
           <span
@@ -193,7 +193,11 @@ onBeforeUnmount(clearImage)
       </button>
 
       <template v-else>
-        <div class="flex items-center gap-1">
+        <div
+          class="app-toolbar"
+          role="toolbar"
+          :aria-label="t('controls.reference.title')"
+        >
           <button
             class="btn btn-sm"
             :class="picking || pickingFromScreen ? 'btn-primary' : 'btn-ghost'"

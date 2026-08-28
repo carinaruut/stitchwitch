@@ -51,7 +51,7 @@ function removeArchive(archiveId: string) {
 </script>
 
 <template>
-  <div class="space-y-5">
+  <div class="app-page-stack">
     <TrackerDailyGoalCard
       :goal="activeTracker.dailyGoal"
       :today-duration="analytics.todayDuration"

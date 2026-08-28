@@ -72,7 +72,7 @@ function requestPrint(mode: PrintMode) {
       </button>
     </template>
     <ul
-      class="menu p-2"
+      class="menu app-menu"
       :class="variant === 'navbar' ? 'w-48' : 'w-52'"
     >
       <ProjectExportMenuItems

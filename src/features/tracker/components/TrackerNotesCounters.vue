@@ -40,9 +40,9 @@ function renameCounter(id: string, event: Event) {
 </script>
 
 <template>
-  <div class="w-full space-y-5">
-    <label class="flex flex-col gap-2">
-      <span class="text-sm font-semibold">{{ t('tracker.notes.project') }}</span>
+  <div class="app-page-stack w-full">
+    <label class="app-field">
+      <span class="app-field-label">{{ t('tracker.notes.project') }}</span>
       <textarea
         class="textarea textarea-bordered min-h-20 w-full resize-y text-sm leading-relaxed"
         :value="activeTracker.projectNote"
@@ -52,8 +52,7 @@ function renameCounter(id: string, event: Event) {
       />
     </label>
 
-    <hr class="border-base-300">
-    <div class="space-y-3">
+    <section class="app-settings-section">
       <div class="flex items-center justify-between gap-2">
         <h3 class="text-sm font-semibold">
           {{ t('tracker.notes.rows') }}
@@ -66,7 +65,7 @@ function renameCounter(id: string, event: Event) {
 
       <form
         v-if="availableRows.length"
-        class="space-y-2 rounded-box border border-base-300 bg-base-200/40 p-3"
+        class="app-inset-panel app-field"
         @submit.prevent="addRowNote"
       >
         <select
@@ -120,7 +119,7 @@ function renameCounter(id: string, event: Event) {
         <li
           v-for="item in notedRows"
           :key="item.id"
-          class="rounded-box border border-base-300 bg-base-200/40 p-3"
+          class="app-inset-panel"
         >
           <div class="mb-2 flex items-center justify-between gap-2">
             <span class="text-xs font-semibold">{{ t('tracker.notes.row', { row: item.row }) }}</span>
@@ -146,10 +145,9 @@ function renameCounter(id: string, event: Event) {
           />
         </li>
       </ul>
-    </div>
+    </section>
 
-    <hr class="border-base-300">
-    <div class="space-y-3">
+    <section class="app-settings-section">
       <div>
         <h3 class="text-sm font-semibold">
           {{ t('tracker.counters.title') }}
@@ -197,7 +195,7 @@ function renameCounter(id: string, event: Event) {
         <li
           v-for="counter in activeTracker.counters"
           :key="counter.id"
-          class="flex flex-wrap items-center gap-2 rounded-box border border-base-300 bg-base-200/40 p-2"
+          class="app-inset-panel flex flex-wrap items-center gap-2"
         >
           <input
             class="input input-ghost input-sm min-w-32 flex-1 font-semibold"
@@ -262,6 +260,6 @@ function renameCounter(id: string, event: Event) {
           </button>
         </li>
       </ul>
-    </div>
+    </section>
   </div>
 </template>

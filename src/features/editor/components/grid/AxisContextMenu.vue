@@ -45,7 +45,7 @@ function runAction(action: RowAction | ColumnAction) {
 
 <template>
   <div
-    class="fixed z-80 w-56 rounded-box border border-base-300 bg-base-100 p-2"
+    class="app-menu fixed z-80 w-56 rounded-box border border-base-300 bg-base-100"
     :style="{ left: `${x}px`, top: `${y}px` }"
     role="menu"
     :aria-label="selectedCount === 1 ? t(config.singularActions, { number: index + 1 }) : t(config.selectedActions, selectedCount)"

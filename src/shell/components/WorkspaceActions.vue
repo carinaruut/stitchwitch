@@ -23,6 +23,7 @@ const switchIcon = computed(() => props.context === 'editor' ? 'mdi-progress-che
 <template>
   <div
     class="flex w-full shrink-0 items-center justify-start gap-1 border-t border-base-300 pt-1 lg:ml-auto lg:w-auto lg:border-l lg:border-t-0 lg:pl-2 lg:pt-0"
+    role="toolbar"
     :aria-label="t('controls.drawing.patternSettings')"
   >
     <div

@@ -14,7 +14,7 @@ const { t } = useI18n({ useScope: 'global' })
 </script>
 
 <template>
-  <div class="flex flex-wrap items-center justify-between gap-3 rounded-box border border-base-300 bg-base-200/70 px-3 py-2">
+  <div class="app-toolbar justify-between rounded-box border border-base-300 bg-base-200/70">
     <div class="flex items-center gap-2">
       <span
         class="mdi mdi-timer-outline text-xl text-primary"

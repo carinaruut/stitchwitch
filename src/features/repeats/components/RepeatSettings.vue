@@ -212,18 +212,18 @@ function updateFallback(event: Event, eventName: 'horizontal' | 'vertical') {
 
 <template>
   <section class="card border border-base-300 bg-base-100">
-    <div class="card-body gap-3 p-3">
-      <div>
+    <div class="card-body app-settings-panel">
+      <div class="app-field">
         <h2 class="card-title text-base">
           {{ t('controls.repeat.title') }}
         </h2>
-        <p class="mt-1 text-xs leading-relaxed text-base-content/60">
+        <p class="text-xs leading-relaxed text-base-content/60">
           {{ t('controls.repeat.description') }}
         </p>
       </div>
 
       <form
-        class="space-y-2.5"
+        class="grid gap-3"
         novalidate
         @submit.prevent="submit"
       >
@@ -274,7 +274,7 @@ function updateFallback(event: Event, eventName: 'horizontal' | 'vertical') {
         </fieldset>
 
         <div class="grid grid-cols-2 gap-2">
-          <label class="grid gap-1">
+          <label class="app-field">
             <span class="text-xs font-medium">{{ t(direction === 'across' ? 'controls.repeat.topRow' : 'controls.repeat.leftColumn') }}</span>
             <input
               v-model.number="firstCross"
@@ -284,7 +284,7 @@ function updateFallback(event: Event, eventName: 'horizontal' | 'vertical') {
               max="500"
             >
           </label>
-          <label class="grid gap-1">
+          <label class="app-field">
             <span class="text-xs font-medium">{{ t(direction === 'across' ? 'controls.repeat.bottomRow' : 'controls.repeat.rightColumn') }}</span>
             <input
               v-model.number="lastCross"
@@ -294,7 +294,7 @@ function updateFallback(event: Event, eventName: 'horizontal' | 'vertical') {
               max="500"
             >
           </label>
-          <label class="grid gap-1">
+          <label class="app-field">
             <span class="text-xs font-medium">{{ t(direction === 'across' ? 'controls.repeat.startColumn' : 'controls.repeat.startRow') }}</span>
             <input
               v-model.number="start"
@@ -304,7 +304,7 @@ function updateFallback(event: Event, eventName: 'horizontal' | 'vertical') {
               max="500"
             >
           </label>
-          <label class="grid gap-1">
+          <label class="app-field">
             <template v-if="sizingMode === 'boundary'">
               <span class="text-xs font-medium">{{ t(direction === 'across' ? 'controls.repeat.endBeforeColumn' : 'controls.repeat.endBeforeRow') }}</span>
               <input
@@ -326,7 +326,7 @@ function updateFallback(event: Event, eventName: 'horizontal' | 'vertical') {
               >
             </template>
           </label>
-          <label class="col-span-2 grid gap-1">
+          <label class="app-field col-span-2">
             <span class="text-xs font-medium">{{ t(direction === 'across' ? 'controls.repeat.sectionWidth' : 'controls.repeat.sectionHeight') }}</span>
             <input
               v-model.number="sectionSize"
@@ -392,23 +392,23 @@ function updateFallback(event: Event, eventName: 'horizontal' | 'vertical') {
 
       <div
         v-if="boxes.length"
-        class="space-y-2 border-t border-base-300 pt-3"
+        class="app-settings-section"
       >
         <article
           v-for="box in boxes"
           :key="box.id"
-          class="rounded-box border border-base-300 p-3"
+          class="grid gap-2 rounded-box border border-base-300 p-3"
           :class="box.enabled ? 'bg-primary/5' : 'opacity-60'"
         >
           <div class="flex items-start justify-between gap-2">
-            <div class="min-w-0">
+            <div class="grid min-w-0 gap-1">
               <p class="text-xs font-medium leading-relaxed">
                 {{ summaryRange(box) }}
               </p>
-              <p class="mt-0.5 text-[11px] text-base-content/60">
+              <p class="text-[11px] text-base-content/60">
                 {{ summarySections(box) }}
               </p>
-              <p class="mt-1 text-[11px] text-base-content/60">
+              <p class="text-[11px] text-base-content/60">
                 {{ t('controls.repeat.source', { size: sourceSize(box) }) }}
               </p>
             </div>
@@ -422,7 +422,7 @@ function updateFallback(event: Event, eventName: 'horizontal' | 'vertical') {
               >
             </label>
           </div>
-          <div class="mt-2 flex justify-end gap-1">
+          <div class="flex justify-end gap-1">
             <button
               class="btn btn-ghost btn-xs"
               type="button"
@@ -448,7 +448,7 @@ function updateFallback(event: Event, eventName: 'horizontal' | 'vertical') {
       </div>
       <p
         v-else
-        class="border-t border-base-300 pt-3 text-xs text-base-content/55"
+        class="app-settings-section text-xs text-base-content/55"
       >
         {{ t('controls.repeat.none') }}
       </p>
@@ -457,13 +457,13 @@ function updateFallback(event: Event, eventName: 'horizontal' | 'vertical') {
         <summary class="collapse-title min-h-0 py-3 text-sm font-medium">
           {{ t('controls.repeat.fallbackTitle') }}
         </summary>
-        <div class="collapse-content">
-          <p class="mb-2 text-xs text-base-content/60">
+        <div class="collapse-content grid gap-2">
+          <p class="text-xs text-base-content/60">
             {{ t('controls.repeat.fallbackHelp') }}
           </p>
           <div class="grid grid-cols-2 gap-2">
-            <label class="form-control">
-              <span class="label-text mb-1 text-xs">{{ t('controls.repeat.across') }}</span>
+            <label class="app-field">
+              <span class="app-field-label">{{ t('controls.repeat.across') }}</span>
               <input
                 class="input input-bordered input-sm min-w-0 w-full"
                 type="number"
@@ -473,8 +473,8 @@ function updateFallback(event: Event, eventName: 'horizontal' | 'vertical') {
                 @change="updateFallback($event, 'horizontal')"
               >
             </label>
-            <label class="form-control">
-              <span class="label-text mb-1 text-xs">{{ t('controls.repeat.down') }}</span>
+            <label class="app-field">
+              <span class="app-field-label">{{ t('controls.repeat.down') }}</span>
               <input
                 class="input input-bordered input-sm min-w-0 w-full"
                 type="number"

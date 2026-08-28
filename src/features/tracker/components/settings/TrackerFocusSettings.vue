@@ -17,14 +17,14 @@ const { t } = useI18n({ useScope: 'global' })
 </script>
 
 <template>
-  <fieldset class="space-y-6 border-t border-base-300 pt-4">
+  <fieldset class="app-settings-section">
     <legend class="sr-only">
       {{ t('tracker.focus.title') }}
     </legend>
-    <label class="flex items-center justify-between gap-3 text-sm">
-      <span>
-        <span class="block font-semibold">{{ t('tracker.focus.title') }}</span>
-        <span class="block text-xs text-base-content/60">{{ t('tracker.focus.description') }}</span>
+    <label class="app-toggle-row">
+      <span class="app-toggle-copy">
+        <span class="app-toggle-title">{{ t('tracker.focus.title') }}</span>
+        <span class="app-toggle-description">{{ t('tracker.focus.description') }}</span>
       </span>
       <input
         class="toggle toggle-primary toggle-sm"
@@ -35,9 +35,9 @@ const { t } = useI18n({ useScope: 'global' })
     </label>
     <label
       v-if="enabled"
-      class="form-control gap-1"
+      class="app-field"
     >
-      <span class="text-xs font-semibold">{{ t('tracker.focus.outsideRows') }}</span>
+      <span class="app-field-label">{{ t('tracker.focus.outsideRows') }}</span>
       <select
         class="select select-bordered select-sm w-full"
         :value="style"
@@ -49,9 +49,9 @@ const { t } = useI18n({ useScope: 'global' })
     </label>
     <label
       v-if="enabled"
-      class="form-control gap-2"
+      class="app-field"
     >
-      <span class="flex items-center justify-between gap-3 text-xs font-semibold mt-4">
+      <span class="app-field-label flex items-center justify-between gap-3">
         <span>{{ t('tracker.focus.neighborRows') }}</span>
         <span class="font-mono font-normal tabular-nums">{{ neighborRows }}</span>
       </span>

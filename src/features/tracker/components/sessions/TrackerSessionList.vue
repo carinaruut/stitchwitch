@@ -29,12 +29,12 @@ const formatSigned = (value: number) => formatSignedTrackerNumber(value, (number
 
   <ol
     v-else
-    class="space-y-3"
+    class="grid gap-3"
   >
     <li
       v-for="session in sessions"
       :key="session.id"
-      class="rounded-box border border-base-300 bg-base-200/40 p-4"
+      class="app-inset-panel grid gap-3"
     >
       <div class="flex items-start justify-between gap-3">
         <div>
@@ -60,7 +60,7 @@ const formatSigned = (value: number) => formatSignedTrackerNumber(value, (number
           />
         </button>
       </div>
-      <dl class="mt-3 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
+      <dl class="grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
         <div>
           <dt class="text-xs text-base-content/55">
             {{ t('tracker.sessions.duration') }}

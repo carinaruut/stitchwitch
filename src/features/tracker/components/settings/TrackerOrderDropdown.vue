@@ -24,6 +24,7 @@ const { t } = useI18n({ useScope: 'global' })
   <AppDropdown
     :label="t('tracker.controls.trackingOptions')"
     align="left"
+    width="sm"
   >
     <template #trigger="{ open, panelId }">
       <button
@@ -41,55 +42,53 @@ const { t } = useI18n({ useScope: 'global' })
         />
       </button>
     </template>
-    <div class="w-72 p-4">
-      <div class="flex flex-col gap-4">
-        <label class="form-control gap-2">
-          <span class="text-xs font-semibold">{{ t('tracker.mode.label') }}</span>
-          <select
-            class="select select-bordered select-sm w-full"
-            :value="completionMode"
-            :disabled="disabled"
-            @change="emit('update:completionMode', ($event.target as HTMLSelectElement).value as TrackerCompletionMode)"
-          >
-            <option value="sequential">{{ t('tracker.mode.sequential') }}</option>
-            <option value="individual">{{ t('tracker.mode.individual') }}</option>
-          </select>
-        </label>
-        <label class="form-control gap-2">
-          <span class="text-xs font-semibold">{{ t('tracker.order.startRow') }}</span>
-          <select
-            class="select select-bordered select-sm w-full"
-            :value="startRow"
-            :disabled="disabled"
-            @change="emit('update:startRow', ($event.target as HTMLSelectElement).value as TrackerStartRow)"
-          >
-            <option value="top">{{ t('tracker.order.top') }}</option>
-            <option value="bottom">{{ t('tracker.order.bottom') }}</option>
-          </select>
-        </label>
-        <label class="form-control gap-2">
-          <span class="text-xs font-semibold">{{ t('tracker.order.firstRowDirection') }}</span>
-          <select
-            class="select select-bordered select-sm w-full"
-            :value="firstRowDirection"
-            :disabled="disabled"
-            @change="emit('update:firstRowDirection', ($event.target as HTMLSelectElement).value as TrackerDirection)"
-          >
-            <option value="left-to-right">{{ t('tracker.order.leftToRight') }}</option>
-            <option value="right-to-left">{{ t('tracker.order.rightToLeft') }}</option>
-          </select>
-        </label>
-        <label class="flex items-center justify-between gap-3 text-sm">
-          <span>{{ t('tracker.order.alternate') }}</span>
-          <input
-            class="toggle toggle-primary toggle-sm"
-            type="checkbox"
-            :checked="alternateRows"
-            :disabled="disabled"
-            @change="emit('update:alternateRows', ($event.target as HTMLInputElement).checked)"
-          >
-        </label>
-      </div>
+    <div class="app-settings-panel">
+      <label class="app-field">
+        <span class="app-field-label">{{ t('tracker.mode.label') }}</span>
+        <select
+          class="select select-bordered select-sm w-full"
+          :value="completionMode"
+          :disabled="disabled"
+          @change="emit('update:completionMode', ($event.target as HTMLSelectElement).value as TrackerCompletionMode)"
+        >
+          <option value="sequential">{{ t('tracker.mode.sequential') }}</option>
+          <option value="individual">{{ t('tracker.mode.individual') }}</option>
+        </select>
+      </label>
+      <label class="app-field">
+        <span class="app-field-label">{{ t('tracker.order.startRow') }}</span>
+        <select
+          class="select select-bordered select-sm w-full"
+          :value="startRow"
+          :disabled="disabled"
+          @change="emit('update:startRow', ($event.target as HTMLSelectElement).value as TrackerStartRow)"
+        >
+          <option value="top">{{ t('tracker.order.top') }}</option>
+          <option value="bottom">{{ t('tracker.order.bottom') }}</option>
+        </select>
+      </label>
+      <label class="app-field">
+        <span class="app-field-label">{{ t('tracker.order.firstRowDirection') }}</span>
+        <select
+          class="select select-bordered select-sm w-full"
+          :value="firstRowDirection"
+          :disabled="disabled"
+          @change="emit('update:firstRowDirection', ($event.target as HTMLSelectElement).value as TrackerDirection)"
+        >
+          <option value="left-to-right">{{ t('tracker.order.leftToRight') }}</option>
+          <option value="right-to-left">{{ t('tracker.order.rightToLeft') }}</option>
+        </select>
+      </label>
+      <label class="app-toggle-row">
+        <span class="app-toggle-title">{{ t('tracker.order.alternate') }}</span>
+        <input
+          class="toggle toggle-primary toggle-sm"
+          type="checkbox"
+          :checked="alternateRows"
+          :disabled="disabled"
+          @change="emit('update:alternateRows', ($event.target as HTMLInputElement).checked)"
+        >
+      </label>
     </div>
   </AppDropdown>
 </template>

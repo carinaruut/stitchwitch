@@ -55,7 +55,7 @@ onBeforeUnmount(() => resizeObserver?.disconnect())
 
 <template>
   <section class="card isolate min-w-0 border border-base-300 bg-base-100">
-    <div class="card-body min-w-0 gap-3 p-4">
+    <div class="card-body app-card-body min-w-0">
       <div class="flex flex-wrap items-center justify-between gap-2">
         <h2 class="card-title text-base">
           {{ t('controls.preview.title') }}
@@ -97,7 +97,7 @@ onBeforeUnmount(() => resizeObserver?.disconnect())
           <span class="badge badge-secondary">{{ t('controls.preview.rows', cells.length) }}</span>
         </div>
       </div>
-      <div class="w-full min-w-0 overflow-x-auto overflow-y-hidden rounded-xl bg-base-200/30 p-4">
+      <div class="app-inset-panel w-full min-w-0 overflow-x-auto overflow-y-hidden">
         <div
           ref="previewArea"
           class="min-w-0"

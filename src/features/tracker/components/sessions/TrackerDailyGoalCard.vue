@@ -40,7 +40,7 @@ function saveGoal() {
 </script>
 
 <template>
-  <section class="rounded-box border border-primary/25 bg-primary/10 p-4">
+  <section class="app-settings-panel rounded-box border border-primary/25 bg-primary/10">
     <div class="flex items-start gap-3">
       <span
         class="mdi mdi-target text-2xl text-primary"
@@ -57,11 +57,11 @@ function saveGoal() {
     </div>
 
     <form
-      class="mt-4 grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end"
+      class="grid gap-3 sm:grid-cols-[1fr_1fr_auto] sm:items-end"
       @submit.prevent="saveGoal"
     >
-      <label class="form-control gap-1">
-        <span class="text-xs font-semibold">{{ t('tracker.goals.metric') }}</span>
+      <label class="app-field">
+        <span class="app-field-label">{{ t('tracker.goals.metric') }}</span>
         <select
           v-model="goalType"
           class="select select-bordered select-sm w-full"
@@ -70,8 +70,8 @@ function saveGoal() {
           <option value="time">{{ t('tracker.goals.time') }}</option>
         </select>
       </label>
-      <label class="form-control gap-1">
-        <span class="text-xs font-semibold">{{ t(goalType === 'time' ? 'tracker.goals.minutesPerDay' : 'tracker.goals.stitchesPerDay') }}</span>
+      <label class="app-field">
+        <span class="app-field-label">{{ t(goalType === 'time' ? 'tracker.goals.minutesPerDay' : 'tracker.goals.stitchesPerDay') }}</span>
         <input
           v-model.number="goalTarget"
           class="input input-bordered input-sm w-full"
@@ -92,7 +92,7 @@ function saveGoal() {
     </form>
 
     <template v-if="goal">
-      <div class="mt-4 flex items-end justify-between gap-3 text-sm">
+      <div class="flex items-end justify-between gap-3 text-sm">
         <div>
           <p class="font-semibold">
             {{ t('tracker.goals.today') }}
@@ -106,11 +106,11 @@ function saveGoal() {
         <span class="font-bold tabular-nums">{{ n(goalPercentage, 'percent') }}</span>
       </div>
       <progress
-        class="progress progress-primary mt-2 w-full"
+        class="progress progress-primary w-full"
         :value="goalProgress"
         :max="goalTargetValue"
       />
-      <div class="mt-4 flex justify-end border-t border-primary/20 pt-4">
+      <div class="app-settings-section flex justify-end border-primary/20">
         <button
           class="btn btn-ghost btn-sm text-error"
           type="button"

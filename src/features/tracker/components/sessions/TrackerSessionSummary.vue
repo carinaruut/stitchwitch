@@ -17,7 +17,7 @@ const formatSigned = (value: number) => formatSignedTrackerNumber(value, (number
 
 <template>
   <dl class="grid gap-3 sm:grid-cols-3">
-    <div class="rounded-box border border-base-300 bg-base-200/40 p-4">
+    <div class="app-inset-panel">
       <dt class="text-xs font-semibold uppercase tracking-wide text-base-content/55">
         {{ t('tracker.sessions.totalTime') }}
       </dt>
@@ -25,7 +25,7 @@ const formatSigned = (value: number) => formatSignedTrackerNumber(value, (number
         {{ formatTrackerDuration(totalDuration) }}
       </dd>
     </div>
-    <div class="rounded-box border border-base-300 bg-base-200/40 p-4">
+    <div class="app-inset-panel">
       <dt class="text-xs font-semibold uppercase tracking-wide text-base-content/55">
         {{ t('tracker.sessions.totalSessions') }}
       </dt>
@@ -33,7 +33,7 @@ const formatSigned = (value: number) => formatSignedTrackerNumber(value, (number
         {{ n(totalSessions, 'integer') }}
       </dd>
     </div>
-    <div class="rounded-box border border-base-300 bg-base-200/40 p-4">
+    <div class="app-inset-panel">
       <dt class="text-xs font-semibold uppercase tracking-wide text-base-content/55">
         {{ t('tracker.sessions.totalStitches') }}
       </dt>
@@ -45,7 +45,7 @@ const formatSigned = (value: number) => formatSignedTrackerNumber(value, (number
 
   <div
     v-if="startedAt"
-    class="flex flex-wrap items-center justify-between gap-3 rounded-box border border-primary/30 bg-primary/10 p-4"
+    class="app-settings-panel flex flex-wrap items-center justify-between rounded-box border border-primary/30 bg-primary/10"
   >
     <div>
       <p class="font-semibold text-primary-content">

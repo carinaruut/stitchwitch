@@ -93,9 +93,9 @@ function endDrag() {
     class="card relative z-30 border border-base-300 bg-base-100"
     aria-labelledby="color-legend-title"
   >
-    <div class="card-body gap-4 p-4 sm:p-5">
+    <div class="card-body app-card-body">
       <div class="flex flex-wrap items-center justify-between gap-2">
-        <div>
+        <div class="app-field">
           <h2
             id="color-legend-title"
             class="card-title text-lg"
@@ -104,7 +104,7 @@ function endDrag() {
           </h2>
           <p
             v-if="editable"
-            class="mt-1 text-sm text-base-content/65"
+            class="text-sm text-base-content/65"
           >
             {{ t(allowColorSwitch ? 'controls.palette.description' : 'controls.palette.metadataDescription') }}
           </p>

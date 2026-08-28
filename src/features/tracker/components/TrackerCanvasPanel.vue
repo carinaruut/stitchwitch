@@ -66,7 +66,7 @@ defineExpose({ enterFullscreen, exitFullscreen })
 
 <template>
   <section class="card border border-base-300 bg-base-100">
-    <div class="card-body gap-4 p-3 sm:p-5">
+    <div class="card-body app-card-body">
       <slot name="toolbar" />
       <p
         v-if="completedCount > 0"

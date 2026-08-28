@@ -16,7 +16,7 @@ const { d, n, t } = useI18n({ useScope: 'global' })
 </script>
 
 <template>
-  <section class="rounded-box border border-base-300 bg-base-200/40 p-4">
+  <section class="app-inset-panel">
     <div class="flex items-start gap-3">
       <span
         class="mdi mdi-calendar-clock-outline text-2xl text-secondary"

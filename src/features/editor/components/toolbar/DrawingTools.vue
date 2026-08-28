@@ -37,11 +37,13 @@ const tools = computed<Array<{ value: DrawingTool; icon: string; label: string; 
 
 <template>
   <section
-    class="flex flex-wrap items-center gap-2 rounded-box border border-base-300 bg-base-200/70 p-1.5"
+    class="app-toolbar rounded-box border border-base-300 bg-base-200/70"
+    role="toolbar"
     :aria-label="t('controls.drawing.regionLabel')"
   >
     <div
       class="flex flex-wrap gap-1"
+      role="group"
       :aria-label="t('controls.drawing.selectionLabel')"
     >
       <slot name="color" />
@@ -87,6 +89,7 @@ const tools = computed<Array<{ value: DrawingTool; icon: string; label: string; 
     </div>
     <div
       class="flex gap-1"
+      role="group"
       :aria-label="t('controls.drawing.mirrorLines')"
     >
       <div

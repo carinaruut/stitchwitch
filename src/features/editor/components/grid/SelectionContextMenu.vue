@@ -21,7 +21,7 @@ const actions: Array<{ action: SelectionAction; icon: string; label: string }> =
 
 <template>
   <div
-    class="fixed z-80 w-52 rounded-box border border-base-300 bg-base-100 p-2 shadow-lg"
+    class="app-menu fixed z-80 w-52 rounded-box border border-base-300 bg-base-100 shadow-lg"
     :style="{ left: `${x}px`, top: `${y}px` }"
     role="menu"
     :aria-label="t('controls.patternGrid.selectionActions')"

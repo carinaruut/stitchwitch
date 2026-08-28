@@ -18,14 +18,14 @@ const { t } = useI18n({ useScope: 'global' })
     :show-close-button="false"
     @close="$emit('cancel')"
   >
-    <div class="grid gap-3 sm:grid-cols-2">
+    <div class="app-page-stack sm:grid-cols-2">
       <button
         class="card border border-base-300 bg-base-100 text-left transition hover:border-primary hover:bg-primary/5 focus-visible:outline-2 focus-visible:outline-primary"
         type="button"
         autofocus
         @click="$emit('create')"
       >
-        <span class="card-body gap-3 p-5">
+        <span class="card-body app-card-body">
           <span class="grid size-11 place-items-center rounded-box bg-primary/10 text-primary">
             <span
               class="mdi mdi-file-plus-outline text-2xl"
@@ -43,7 +43,7 @@ const { t } = useI18n({ useScope: 'global' })
         type="button"
         @click="$emit('load')"
       >
-        <span class="card-body gap-3 p-5">
+        <span class="card-body app-card-body">
           <span class="grid size-11 place-items-center rounded-box bg-secondary/10 text-secondary">
             <span
               class="mdi mdi-folder-open-outline text-2xl"
