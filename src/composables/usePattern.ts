@@ -561,7 +561,9 @@ export function createPattern(initialDocument: StitchProject, options: PatternOp
       if (index < box[start]) return [{ ...box, [start]: box[start] - 1, [end]: box[end] - 1 }]
       if (index >= box[end]) return [box]
       if (box[end] - box[start] === 1) return []
-      return [{ ...box, [end]: box[end] - 1 }]
+      const adjusted = { ...box, [end]: box[end] - 1 }
+      const repeatLength = adjusted.direction === 'across' ? adjusted.right - adjusted.left : adjusted.bottom - adjusted.top
+      return repeatLength % adjusted.sections === 0 ? [adjusted] : []
     })
   }
 
@@ -847,7 +849,7 @@ export function createPattern(initialDocument: StitchProject, options: PatternOp
   }
 
   function deleteRowAt(index: number) {
-    const target = project.value.repeatBoxes.find((box) => box.direction === 'down' && index >= box.top && index < box.bottom)
+    const target = project.value.repeatBoxes.find((box) => box.enabled && box.direction === 'down' && index >= box.top && index < box.bottom)
 
     if (target && project.value.cells.length > target.sections) {
       const sectionHeight = (target.bottom - target.top) / target.sections
@@ -878,7 +880,7 @@ export function createPattern(initialDocument: StitchProject, options: PatternOp
     selection.value = null
     const operations = new Map<string, number>()
     for (const index of selectedRows.value) {
-      const target = project.value.repeatBoxes.find((box) => box.direction === 'down' && index >= box.top && index < box.bottom)
+      const target = project.value.repeatBoxes.find((box) => box.enabled && box.direction === 'down' && index >= box.top && index < box.bottom)
       if (!target) operations.set(`row:${index}`, index)
       else {
         const sectionHeight = (target.bottom - target.top) / target.sections
@@ -974,7 +976,7 @@ export function createPattern(initialDocument: StitchProject, options: PatternOp
   }
 
   function deleteColumnAt(index: number) {
-    const target = project.value.repeatBoxes.find((box) => box.direction === 'across' && index >= box.left && index < box.right)
+    const target = project.value.repeatBoxes.find((box) => box.enabled && box.direction === 'across' && index >= box.left && index < box.right)
 
     if (target && project.value.cells[0].length > target.sections) {
       const sectionWidth = (target.right - target.left) / target.sections
@@ -1005,7 +1007,7 @@ export function createPattern(initialDocument: StitchProject, options: PatternOp
     selection.value = null
     const operations = new Map<string, number>()
     for (const index of selectedColumns.value) {
-      const target = project.value.repeatBoxes.find((box) => box.direction === 'across' && index >= box.left && index < box.right)
+      const target = project.value.repeatBoxes.find((box) => box.enabled && box.direction === 'across' && index >= box.left && index < box.right)
       if (!target) operations.set(`column:${index}`, index)
       else {
         const sectionWidth = (target.right - target.left) / target.sections
