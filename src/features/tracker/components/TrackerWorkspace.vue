@@ -52,6 +52,9 @@ const {
   autoScroll,
   cellSize,
   display,
+  focusMode,
+  focusNeighborRows,
+  focusStyle,
   keepAwake,
   preferences,
   showAnnotations,
@@ -170,6 +173,9 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleKeyboardShortc
         :completed-count="state.completedCount.value"
         :display="display"
         :focused-color="focusedColor"
+        :focus-mode="focusMode"
+        :focus-style="focusStyle"
+        :focus-neighbor-rows="focusNeighborRows"
         :progress="activeTracker.progress"
         :rendered-pattern="renderedPattern"
         :selected-comment-id="selectedCommentId"
@@ -191,6 +197,9 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleKeyboardShortc
             v-model:auto-scroll="autoScroll"
             v-model:cell-size="cellSize"
             v-model:display="display"
+            v-model:focus-mode="focusMode"
+            v-model:focus-style="focusStyle"
+            v-model:focus-neighbor-rows="focusNeighborRows"
             v-model:show-annotations="showAnnotations"
             v-model:show-symbols="showSymbols"
             v-model:timer-open="timerOpen"

@@ -2,6 +2,8 @@
 import { useI18n } from 'vue-i18n'
 import AppDropdown from '../../../../shared/ui/AppDropdown.vue'
 import type { PatternDisplay } from '../../../../types/pattern'
+import type { TrackerFocusStyle } from '../../../../types/tracker'
+import TrackerFocusSettings from './TrackerFocusSettings.vue'
 
 defineProps<{
   display: PatternDisplay
@@ -11,6 +13,9 @@ defineProps<{
   showAnnotations: boolean
   keepAwake: boolean
   wakeLockSupported: boolean
+  focusMode: boolean
+  focusStyle: TrackerFocusStyle
+  focusNeighborRows: number
 }>()
 
 const emit = defineEmits<{
@@ -20,6 +25,9 @@ const emit = defineEmits<{
   'update:showSymbols': [value: boolean]
   'update:showAnnotations': [value: boolean]
   'update:keepAwake': [value: boolean]
+  'update:focusMode': [value: boolean]
+  'update:focusStyle': [value: TrackerFocusStyle]
+  'update:focusNeighborRows': [value: number]
 }>()
 const { t } = useI18n({ useScope: 'global' })
 </script>
@@ -100,6 +108,14 @@ const { t } = useI18n({ useScope: 'global' })
           :checked="keepAwake"
           @change="emit('update:keepAwake', ($event.target as HTMLInputElement).checked)"
         ></label>
+        <TrackerFocusSettings
+          :enabled="focusMode"
+          :style="focusStyle"
+          :neighbor-rows="focusNeighborRows"
+          @update:enabled="emit('update:focusMode', $event)"
+          @update:style="emit('update:focusStyle', $event)"
+          @update:neighbor-rows="emit('update:focusNeighborRows', $event)"
+        />
       </div>
     </div>
   </AppDropdown>

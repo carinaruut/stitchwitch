@@ -152,6 +152,13 @@ tracker:
     label: Märkimisviis
     sequential: Märgi valitud pisteni tehtuks
     individual: Lülita üksikuid pisteid
+  focus:
+    title: Fookusrežiim
+    description: Hoia töötamise ajal aktiivne rida esile tõstetud.
+    outsideRows: Fookusaknast väljaspool olevad read
+    dim: Tuhmista read
+    hide: Peida read
+    neighborRows: Naaberread
   controls:
     trackingOptions: Jälgimise valikud
     settings: Seaded

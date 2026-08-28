@@ -3,7 +3,7 @@ import { useI18n } from 'vue-i18n'
 import WorkspaceActions from '../../../../shell/components/WorkspaceActions.vue'
 import type { TrackerController } from '../../composables/useTracker'
 import type { PatternDisplay, PrintMode } from '../../../../types/pattern'
-import type { TrackerCompletionMode, TrackerDirection, TrackerStartRow } from '../../../../types/tracker'
+import type { TrackerCompletionMode, TrackerDirection, TrackerFocusStyle, TrackerStartRow } from '../../../../types/tracker'
 import TrackerDisplayDropdown from '../settings/TrackerDisplayDropdown.vue'
 import TrackerOrderDropdown from '../settings/TrackerOrderDropdown.vue'
 import TrackerTimerControls from './TrackerTimerControls.vue'
@@ -25,6 +25,9 @@ const props = defineProps<{
   timerOpen: boolean
   timerRunning: boolean
   wakeLockSupported: boolean
+  focusMode: boolean
+  focusStyle: TrackerFocusStyle
+  focusNeighborRows: number
 }>()
 const emit = defineEmits<{
   close: []
@@ -44,6 +47,9 @@ const emit = defineEmits<{
   'update:showAnnotations': [value: boolean]
   'update:showSymbols': [value: boolean]
   'update:timerOpen': [value: boolean]
+  'update:focusMode': [value: boolean]
+  'update:focusStyle': [value: TrackerFocusStyle]
+  'update:focusNeighborRows': [value: number]
 }>()
 const { t } = useI18n({ useScope: 'global' })
 
@@ -251,12 +257,18 @@ function toggleAddingComment() {
             :show-annotations="showAnnotations"
             :keep-awake="keepAwake"
             :wake-lock-supported="wakeLockSupported"
+            :focus-mode="focusMode"
+            :focus-style="focusStyle"
+            :focus-neighbor-rows="focusNeighborRows"
             @update:display="emit('update:display', $event)"
             @update:cell-size="emit('update:cellSize', $event)"
             @update:auto-scroll="emit('update:autoScroll', $event)"
             @update:show-symbols="emit('update:showSymbols', $event)"
             @update:show-annotations="emit('update:showAnnotations', $event)"
             @update:keep-awake="emit('update:keepAwake', $event)"
+            @update:focus-mode="emit('update:focusMode', $event)"
+            @update:focus-style="emit('update:focusStyle', $event)"
+            @update:focus-neighbor-rows="emit('update:focusNeighborRows', $event)"
           />
         </template>
       </WorkspaceActions>

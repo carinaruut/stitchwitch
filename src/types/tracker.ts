@@ -3,6 +3,7 @@ import type { PatternDisplay, PatternProject } from './pattern'
 export type TrackerStartRow = 'top' | 'bottom'
 export type TrackerDirection = 'left-to-right' | 'right-to-left'
 export type TrackerCompletionMode = 'sequential' | 'individual'
+export type TrackerFocusStyle = 'dim' | 'hide'
 
 export const MAX_TRACKER_PROJECT_NOTE_LENGTH = 5000
 export const MAX_TRACKER_ROW_NOTE_LENGTH = 1000
@@ -56,6 +57,9 @@ export interface TrackerPreferences {
   keepAwake: boolean
   showSymbols: boolean
   showAnnotations: boolean
+  focusMode: boolean
+  focusStyle: TrackerFocusStyle
+  focusNeighborRows: number
 }
 
 export interface TrackerCounter {

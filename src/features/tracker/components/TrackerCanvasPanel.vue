@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { PatternAnnotation, PatternDisplay } from '../../../types/pattern'
-import type { TrackerProgress } from '../../../types/tracker'
+import type { TrackerFocusStyle, TrackerProgress } from '../../../types/tracker'
 import type { RenderedGrid } from '../../../utils/grid'
 import TrackerGrid from './TrackerGrid.vue'
 
@@ -21,6 +21,9 @@ defineProps<{
   symbols?: Record<string, string>
   tooLarge: boolean
   totalCount: number
+  focusMode: boolean
+  focusStyle: TrackerFocusStyle
+  focusNeighborRows: number
 }>()
 const emit = defineEmits<{
   'add-comment': [row: number, column: number]
@@ -106,6 +109,9 @@ defineExpose({ enterFullscreen, exitFullscreen })
         :show-annotations="showAnnotations"
         :adding-comment="addingComment"
         :selected-comment-id="selectedCommentId"
+        :focus-mode="focusMode"
+        :focus-style="focusStyle"
+        :focus-neighbor-rows="focusNeighborRows"
         @stitch="handleStitch"
         @stitches="handleStitches"
         @add-comment="handleAddComment"

@@ -17,6 +17,9 @@ function validPreferences(value: unknown): TrackerPreferences | undefined {
     keepAwake: typeof preferences.keepAwake === 'boolean' ? preferences.keepAwake : false,
     showSymbols: typeof preferences.showSymbols === 'boolean' ? preferences.showSymbols : false,
     showAnnotations: typeof preferences.showAnnotations === 'boolean' ? preferences.showAnnotations : true,
+    focusMode: typeof preferences.focusMode === 'boolean' ? preferences.focusMode : false,
+    focusStyle: preferences.focusStyle === 'hide' ? 'hide' : 'dim',
+    focusNeighborRows: Number.isInteger(preferences.focusNeighborRows) && preferences.focusNeighborRows! >= 0 && preferences.focusNeighborRows! <= 5 ? preferences.focusNeighborRows! : 1,
   }
 }
 

@@ -152,6 +152,13 @@ tracker:
     label: Marking mode
     sequential: Complete through selected cell
     individual: Toggle individual cells
+  focus:
+    title: Focus mode
+    description: Keep the active row prominent while you work.
+    outsideRows: Rows outside the focus window
+    dim: Dim rows
+    hide: Hide rows
+    neighborRows: Neighboring rows
   controls:
     trackingOptions: Tracking options
     settings: Settings

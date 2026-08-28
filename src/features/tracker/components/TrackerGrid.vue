@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { PatternAnnotation, PatternDisplay, PatternGrid } from '../../../types/pattern'
-import type { TrackerProgress } from '../../../types/tracker'
+import type { TrackerFocusStyle, TrackerProgress } from '../../../types/tracker'
 import { contrastColor } from '../../../utils/colors'
 import { followsCenterBoundary, isCenterHeader, repeatOutlineColor, REPEAT_COPY } from '../../../utils/grid'
-import { isStitchCompleted, nextStitchId } from '../../../utils/tracker'
+import { activeTrackerRow, isStitchCompleted, nextStitchId } from '../../../utils/tracker'
 import { renderAnnotations } from '../../../utils/annotations'
 import AnnotationLayer from '../../annotations/components/AnnotationLayer.vue'
 import AnnotationComments from '../../annotations/components/AnnotationComments.vue'
@@ -29,6 +29,9 @@ const props = defineProps<{
   showAnnotations: boolean
   addingComment: boolean
   selectedCommentId?: string | null
+  focusMode: boolean
+  focusStyle: TrackerFocusStyle
+  focusNeighborRows: number
 }>()
 
 const { t } = useI18n({ useScope: 'global' })
@@ -51,9 +54,39 @@ const isFullscreen = ref(false)
 const marking = ref(false)
 const markedCells = ref(new Map<string, [row: number, column: number]>())
 const markingComplete = ref<boolean | null>(null)
-const allRenderedAnnotations = computed(() => props.showAnnotations ? renderAnnotations(props.annotations, props.cellSourceRows, props.cellSourceColumns) : [])
+const activeRow = computed(() => activeTrackerRow(props.cellIds, props.progress))
+const visibleRowIndices = computed(() => props.cells.map((_, row) => row).filter((row) => !rowHidden(row)))
+const visibleSourceRows = computed(() => visibleRowIndices.value.map((row) => props.cellSourceRows[row]))
+const visibleSourceColumns = computed(() => visibleRowIndices.value.map((row) => props.cellSourceColumns[row]))
+const visibleRowHeaders = computed(() => visibleRowIndices.value.map((row) => props.rowHeaders[row]))
+const visibleSourceCells = computed(() => new Set(visibleSourceRows.value.flatMap((row, rowIndex) => row.map((sourceRow, column) => `${sourceRow}:${visibleSourceColumns.value[rowIndex][column]}`))))
+const visibleAnnotations = computed(() => props.focusMode && props.focusStyle === 'hide'
+  ? props.annotations.filter((annotation) => annotation.type !== 'arrow' || visibleSourceCells.value.has(`${annotation.endRow}:${annotation.endColumn}`))
+  : props.annotations)
+const allRenderedAnnotations = computed(() => props.showAnnotations ? renderAnnotations(visibleAnnotations.value, visibleSourceRows.value, visibleSourceColumns.value) : [])
 const renderedAnnotations = computed(() => allRenderedAnnotations.value.filter((annotation) => annotation.type !== 'text'))
-const nextId = computed(() => props.progress.completionMode === 'sequential' ? nextStitchId(props.cellIds, props.progress) : null)
+const nextId = computed(() => nextStitchId(props.cellIds, props.progress))
+const keyboardCell = computed(() => visibleRowIndices.value.includes(activeCell.value.row)
+  ? activeCell.value
+  : { row: activeRow.value ?? visibleRowIndices.value[0] ?? 0, column: activeCell.value.column })
+
+function rowOutsideFocus(row: number) {
+  return props.focusMode && activeRow.value !== null && Math.abs(row - activeRow.value) > props.focusNeighborRows
+}
+
+function rowHidden(row: number) {
+  return props.focusStyle === 'hide' && rowOutsideFocus(row)
+}
+
+function rowDimmed(row: number) {
+  return props.focusStyle === 'dim' && rowOutsideFocus(row)
+}
+
+function adjacentVisibleRow(row: number, offset: number) {
+  const rows = visibleRowIndices.value
+  const index = rows.indexOf(row)
+  return rows[Math.max(0, Math.min(rows.length - 1, index + offset))] ?? row
+}
 function handleFullscreenChange() {
   isFullscreen.value = document.fullscreenElement === fullscreenTarget.value
   emit('fullscreen-change', isFullscreen.value)
@@ -160,7 +193,12 @@ function scrollAfterStitch(row: number, column: number) {
 function selectStitch(row: number, column: number) {
   const movesProgressForward = props.progress.completionMode === 'sequential' && !isStitchCompleted(props.cellIds[row][column], props.progress)
   emit('stitch', row, column)
-  if (props.autoScroll && movesProgressForward) void nextTick(() => scrollAfterStitch(row, column))
+  if (props.autoScroll && movesProgressForward) void nextTick(() => {
+    const next = nextId.value
+    const nextRow = next ? props.cellIds.findIndex((ids) => ids.includes(next)) : row
+    const nextColumn = next && nextRow >= 0 ? props.cellIds[nextRow].indexOf(next) : column
+    scrollAfterStitch(nextRow >= 0 ? nextRow : row, nextColumn >= 0 ? nextColumn : column)
+  })
 }
 
 function markStitch(row: number, column: number) {
@@ -214,8 +252,8 @@ function focusCell(row: number, column: number) {
 
 function moveCell(row: number, column: number, event: KeyboardEvent) {
   const moves: Record<string, [number, number]> = {
-    ArrowUp: [row - 1, column],
-    ArrowDown: [row + 1, column],
+    ArrowUp: [adjacentVisibleRow(row, -1), column],
+    ArrowDown: [adjacentVisibleRow(row, 1), column],
     ArrowLeft: [row, column - 1],
     ArrowRight: [row, column + 1],
     Home: [row, 0],
@@ -236,8 +274,19 @@ function focusRowHeader(row: number) {
 function moveRowHeader(row: number, event: KeyboardEvent) {
   if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return
   event.preventDefault()
-  focusRowHeader(row + (event.key === 'ArrowUp' ? -1 : 1))
+  focusRowHeader(adjacentVisibleRow(row, event.key === 'ArrowUp' ? -1 : 1))
 }
+
+watch(activeRow, (row) => {
+  if (!props.focusMode || props.focusStyle !== 'hide' || row === null) return
+  const focused = document.activeElement as HTMLElement | null
+  const focusedCell = focused?.dataset.trackerCell !== undefined && fullscreenTarget.value?.contains(focused)
+  const focusedHeader = focused?.dataset.trackerRow !== undefined && fullscreenTarget.value?.contains(focused)
+  activeCell.value = { row, column: Math.min(activeCell.value.column, props.cells[0].length - 1) }
+  activeRowHeader.value = row
+  if (focusedCell) void nextTick(() => focusCell(row, activeCell.value.column))
+  if (focusedHeader) void nextTick(() => focusRowHeader(row))
+})
 </script>
 
 <template>
@@ -253,9 +302,9 @@ function moveRowHeader(row: number, event: KeyboardEvent) {
       <div
         class="relative grid w-max border border-base-300/70 bg-base-100"
         :class="{ 'cursor-crosshair': addingComment }"
-        :style="{ gridTemplateColumns: `32px repeat(${cells[0].length}, ${cellSize}px)`, gridTemplateRows: `32px repeat(${cells.length}, ${cellSize}px)` }"
+        :style="{ gridTemplateColumns: `32px repeat(${cells[0].length}, ${cellSize}px)`, gridTemplateRows: '32px', gridAutoRows: `${cellSize}px` }"
         role="grid"
-        :aria-rowcount="cells.length + 1"
+        :aria-rowcount="visibleRowIndices.length + 1"
         :aria-colcount="cells[0].length + 1"
       >
         <div
@@ -278,11 +327,11 @@ function moveRowHeader(row: number, event: KeyboardEvent) {
         </div>
 
         <div
-          v-for="(row, rowIndex) in cells"
+          v-for="(rowIndex, visibleRowIndex) in visibleRowIndices"
           :key="rowIndex"
           class="contents"
           role="row"
-          :aria-rowindex="rowIndex + 2"
+          :aria-rowindex="visibleRowIndex + 2"
         >
           <button
             :data-tracker-row="rowIndex"
@@ -292,11 +341,14 @@ function moveRowHeader(row: number, event: KeyboardEvent) {
               'bg-success/15! font-bold text-success!': rowComplete(rowIndex),
               'center-axis-label': isCenterHeader(rowIndex, cells.length),
               'center-row-marker': followsCenterBoundary(rowIndex, cells.length),
+              'tracker-row-active': activeRow === rowIndex,
+              'tracker-row-dimmed': rowDimmed(rowIndex),
             }"
             type="button"
             role="rowheader"
             aria-colindex="1"
-            :tabindex="activeRowHeader === rowIndex ? 0 : -1"
+            :tabindex="(visibleRowIndices.includes(activeRowHeader) ? activeRowHeader : activeRow) === rowIndex ? 0 : -1"
+            :aria-current="activeRow === rowIndex ? 'step' : undefined"
             :aria-label="rowComplete(rowIndex) ? t('tracker.grid.reopenRow', { row: rowHeaders[rowIndex] + 1 }) : t(progress.completionMode === 'individual' ? 'tracker.grid.completeRow' : 'tracker.grid.completeThroughRow', { row: rowHeaders[rowIndex] + 1 })"
             @focus="activeRowHeader = rowIndex"
             @click="$emit('row', rowIndex)"
@@ -306,7 +358,7 @@ function moveRowHeader(row: number, event: KeyboardEvent) {
           </button>
 
           <button
-            v-for="(color, columnIndex) in row"
+            v-for="(color, columnIndex) in cells[rowIndex]"
             :key="columnIndex"
             :data-tracker-cell="`${rowIndex}-${columnIndex}`"
             class="pattern-cell tracker-cell relative"
@@ -319,16 +371,18 @@ function moveRowHeader(row: number, event: KeyboardEvent) {
               'tracker-color-focus-bottom': colorFocused(rowIndex, columnIndex) && !colorFocused(rowIndex + 1, columnIndex),
               'tracker-color-focus-left': colorFocused(rowIndex, columnIndex) && !colorFocused(rowIndex, columnIndex - 1),
               'tracker-color-focus-right': colorFocused(rowIndex, columnIndex) && !colorFocused(rowIndex, columnIndex + 1),
-              'section-column-end': (columnHeaders[columnIndex] + 1) % 5 === 0 && columnIndex < row.length - 1,
+              'section-column-end': (columnHeaders[columnIndex] + 1) % 5 === 0 && columnIndex < cells[rowIndex].length - 1,
               'section-row-end': (rowHeaders[rowIndex] + 1) % 5 === 0 && rowIndex < cells.length - 1,
               'repeat-copy-cell': (repeatFlags[rowIndex][columnIndex] & REPEAT_COPY) !== 0,
+              'tracker-row-active': activeRow === rowIndex,
+              'tracker-row-dimmed': rowDimmed(rowIndex),
             }"
             :style="{ backgroundColor: display === 'canvas' ? color : undefined, '--repeat-color': repeatOutlineColor(repeatColorIndices[rowIndex][columnIndex]) }"
             type="button"
             role="gridcell"
-            :aria-rowindex="rowIndex + 2"
+            :aria-rowindex="visibleRowIndex + 2"
             :aria-colindex="columnIndex + 2"
-            :tabindex="activeCell.row === rowIndex && activeCell.column === columnIndex ? 0 : -1"
+            :tabindex="keyboardCell.row === rowIndex && keyboardCell.column === columnIndex ? 0 : -1"
             :aria-selected="cellComplete(rowIndex, columnIndex)"
             :aria-label="t('tracker.grid.cell', { row: rowHeaders[rowIndex] + 1, column: columnHeaders[columnIndex] + 1, status: cellComplete(rowIndex, columnIndex) ? t('tracker.grid.completed') : nextStitch(rowIndex, columnIndex) ? t('tracker.grid.nextStitch') : t('tracker.grid.notCompleted') })"
             @focus="activeCell = { row: rowIndex, column: columnIndex }"
@@ -358,7 +412,7 @@ function moveRowHeader(row: number, event: KeyboardEvent) {
         <AnnotationLayer
           v-if="showAnnotations"
           :annotations="renderedAnnotations"
-          :rows="cells.length"
+          :rows="visibleRowIndices.length"
           :columns="cells[0].length"
           :header-size="32"
         />
@@ -366,7 +420,7 @@ function moveRowHeader(row: number, event: KeyboardEvent) {
           v-if="showAnnotations"
           :annotations="annotations"
           :rendered-annotations="allRenderedAnnotations"
-          :row-headers="rowHeaders"
+          :row-headers="visibleRowHeaders"
           :column-headers="columnHeaders"
           :cell-size="cellSize"
           :selected-id="selectedCommentId"
@@ -407,6 +461,20 @@ function moveRowHeader(row: number, event: KeyboardEvent) {
   height: 100dvh;
   min-height: 0;
   overflow-y: auto;
+}
+
+.tracker-row-active {
+  box-shadow: inset 0 3px 0 color-mix(in oklab, var(--color-primary) 80%, transparent), inset 0 -3px 0 color-mix(in oklab, var(--color-primary) 80%, transparent);
+}
+
+.tracker-row-dimmed {
+  filter: saturate(0.35);
+  opacity: 0.24;
+}
+
+.tracker-row-dimmed:hover,
+.tracker-row-dimmed:focus-visible {
+  opacity: 0.6;
 }
 
 .tracker-stitch-knit {

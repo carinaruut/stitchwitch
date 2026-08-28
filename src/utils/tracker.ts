@@ -89,6 +89,13 @@ export function nextStitchId(cellIds: string[][], progress: TrackerProgress) {
   return orderedCellIds(cellIds, progress).find((id) => !completed.has(id)) ?? null
 }
 
+export function activeTrackerRow(cellIds: string[][], progress: TrackerProgress) {
+  const nextId = nextStitchId(cellIds, progress)
+  if (nextId) return cellIds.findIndex((row) => row.includes(nextId))
+  if (cellIds.length === 0) return null
+  return progress.startRow === 'top' ? cellIds.length - 1 : 0
+}
+
 export function rowCellIds(row: number, cellIds: string[][]) {
   return cellIds[row] ?? []
 }

@@ -1,6 +1,6 @@
 import { computed, ref, watch } from 'vue'
 import type { PatternDisplay } from '../../../types/pattern'
-import type { TrackerPreferences } from '../../../types/tracker'
+import type { TrackerFocusStyle, TrackerPreferences } from '../../../types/tracker'
 
 const TRACKER_PREFERENCES_KEY = 'stitch-tracker-preferences'
 
@@ -15,6 +15,9 @@ function readTrackerPreferences(): Partial<TrackerPreferences> {
       keepAwake: typeof value.keepAwake === 'boolean' ? value.keepAwake : undefined,
       showSymbols: typeof value.showSymbols === 'boolean' ? value.showSymbols : undefined,
       showAnnotations: typeof value.showAnnotations === 'boolean' ? value.showAnnotations : undefined,
+      focusMode: typeof value.focusMode === 'boolean' ? value.focusMode : undefined,
+      focusStyle: value.focusStyle === 'dim' || value.focusStyle === 'hide' ? value.focusStyle : undefined,
+      focusNeighborRows: Number.isInteger(value.focusNeighborRows) && value.focusNeighborRows! >= 0 && value.focusNeighborRows! <= 5 ? value.focusNeighborRows : undefined,
     }
   } catch {
     return {}
@@ -29,6 +32,9 @@ export function useTrackerPreferences(savedPreferences: TrackerPreferences | und
   const keepAwake = ref(initial.keepAwake ?? false)
   const showSymbols = ref(initial.showSymbols ?? false)
   const showAnnotations = ref(initial.showAnnotations ?? true)
+  const focusMode = ref(initial.focusMode ?? false)
+  const focusStyle = ref<TrackerFocusStyle>(initial.focusStyle ?? 'dim')
+  const focusNeighborRows = ref(initial.focusNeighborRows ?? 1)
   const preferences = computed<TrackerPreferences>(() => ({
     display: display.value,
     cellSize: cellSize.value,
@@ -36,6 +42,9 @@ export function useTrackerPreferences(savedPreferences: TrackerPreferences | und
     keepAwake: keepAwake.value,
     showSymbols: showSymbols.value,
     showAnnotations: showAnnotations.value,
+    focusMode: focusMode.value,
+    focusStyle: focusStyle.value,
+    focusNeighborRows: focusNeighborRows.value,
   }))
 
   watch(preferences, (value) => {
@@ -46,5 +55,5 @@ export function useTrackerPreferences(savedPreferences: TrackerPreferences | und
     }
   })
 
-  return { autoScroll, cellSize, display, keepAwake, preferences, showAnnotations, showSymbols }
+  return { autoScroll, cellSize, display, focusMode, focusNeighborRows, focusStyle, keepAwake, preferences, showAnnotations, showSymbols }
 }
