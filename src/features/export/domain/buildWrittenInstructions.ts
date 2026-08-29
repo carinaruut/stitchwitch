@@ -1,6 +1,6 @@
 import type { PaletteEntry, PatternProject } from '../../../types/pattern'
 import type { TrackerDirection, TrackerStartRow } from '../../../types/tracker'
-import { colorSymbolMap, describeColor } from '../../../utils/colors'
+import { colorSymbolMap, describeColor, hexToRgb } from '../../../utils/colors'
 import type { RenderedGrid } from '../../../utils/grid'
 import { orderedColorCounts, paletteDetails, paletteMap } from '../../../utils/palette'
 
@@ -51,13 +51,68 @@ export const defaultWrittenInstructionOrder: WrittenInstructionOrder = {
 }
 
 export type InstructionTranslate = (key: string, values?: Record<string, unknown>) => string
+type ColorNameEntry = Pick<WrittenInstructionLegendEntry, 'color' | 'customName' | 'description'>
 
-export function writtenInstructionColorName(entry: WrittenInstructionLegendEntry, t: InstructionTranslate) {
+export function writtenInstructionColorName(entry: ColorNameEntry, t: InstructionTranslate) {
   if (entry.customName) return entry.customName
   const color = t(`print.colors.${entry.description.name}`)
   return entry.description.tone
     ? t('print.colorWithTone', { tone: t(`print.tones.${entry.description.tone}`), color })
     : color
+}
+
+export function writtenInstructionColorNames(
+  entries: ReadonlyArray<ColorNameEntry>,
+  t: InstructionTranslate,
+) {
+  const names = new Map<string, string>()
+  const automaticEntries = entries.filter(entry => {
+    if (entry.customName) names.set(entry.color, entry.customName)
+    return !entry.customName
+  })
+  const groups = new Map<string, ColorNameEntry[]>()
+  for (const entry of automaticEntries) {
+    const group = groups.get(entry.description.name) ?? []
+    group.push(entry)
+    groups.set(entry.description.name, group)
+  }
+
+  for (const group of groups.values()) {
+    if (group.length === 1) {
+      names.set(group[0]!.color, writtenInstructionColorName(group[0]!, t))
+      continue
+    }
+
+    const sorted = [...group].sort((first, second) => colorLightness(first.color) - colorLightness(second.color)
+      || first.color.localeCompare(second.color))
+    sorted.forEach((entry, index) => {
+      const color = t(`print.colors.${entry.description.name}`)
+      const tone = index === 0
+        ? 'dark'
+        : index === sorted.length - 1
+          ? 'light'
+          : entry.description.tone === 'muted' || entry.description.tone === 'vivid'
+            ? entry.description.tone
+            : null
+      names.set(entry.color, tone ? t('print.colorWithTone', { tone: t(`print.tones.${tone}`), color }) : color)
+    })
+  }
+
+  const nameCounts = new Map<string, number>()
+  for (const entry of automaticEntries) {
+    const name = names.get(entry.color)!
+    nameCounts.set(name, (nameCounts.get(name) ?? 0) + 1)
+  }
+  for (const entry of automaticEntries) {
+    const name = names.get(entry.color)!
+    if (nameCounts.get(name)! > 1) names.set(entry.color, `${name} (${entry.color.toUpperCase()})`)
+  }
+  return names
+}
+
+function colorLightness(color: string) {
+  const rgb = hexToRgb(color)
+  return rgb ? (Math.max(rgb.red, rgb.green, rgb.blue) + Math.min(rgb.red, rgb.green, rgb.blue)) / 510 : 0
 }
 
 function rowDirection(order: WrittenInstructionOrder, logicalRow: number): TrackerDirection {
@@ -126,6 +181,7 @@ export function formatWrittenInstructionsText(
   formatNumber: (value: number) => string,
 ) {
   const legend = new Map(document.legend.map(entry => [entry.color, entry]))
+  const colorNames = writtenInstructionColorNames(document.legend, t)
   const stitchCount = (count: number) => t(count === 1 ? 'print.oneStitch' : 'print.stitches', { count: formatNumber(count) })
   const lines = [
     t('print.instructions.title', { name: document.projectName }),
@@ -150,7 +206,7 @@ export function formatWrittenInstructionsText(
       const details = [entry.color.toUpperCase(), entry.details].filter(Boolean).join(' · ')
       return t('print.instructions.legendEntry', {
         symbol,
-        name: writtenInstructionColorName(entry, t),
+        name: colorNames.get(entry.color)!,
         details,
         count: stitchCount(entry.count),
       })
@@ -164,7 +220,7 @@ export function formatWrittenInstructionsText(
         const entry = legend.get(run.color)
         return t('print.instructions.run', {
           count: formatNumber(run.count),
-          name: entry ? writtenInstructionColorName(entry, t) : run.color.toUpperCase(),
+          name: entry ? colorNames.get(entry.color)! : run.color.toUpperCase(),
           symbol: entry?.symbol ? t('print.instructions.runSymbol', { symbol: entry.symbol }) : '',
         }).trim()
       }).join(t('print.instructions.runSeparator')),

@@ -147,23 +147,45 @@ print:
     vivid: Vivid
   colors:
     black: Black
+    charcoal: Charcoal
     gray: Gray
+    silver: Silver
     white: White
     red: Red
+    maroon: Maroon
+    burgundy: Burgundy
+    coral: Coral
+    salmon: Salmon
     orange: Orange
+    peach: Peach
     yellow: Yellow
+    gold: Gold
+    cream: Cream
     lime: Lime green
+    olive: Olive
     green: Green
+    forestGreen: Forest green
+    sage: Sage green
+    mint: Mint green
+    emerald: Emerald green
     teal: Teal
     turquoise: Turquoise
     cyan: Cyan
+    aqua: Aqua
+    skyBlue: Sky blue
     blue: Blue
+    navy: Navy blue
     indigo: Indigo
+    violet: Violet
     purple: Purple
+    lavender: Lavender
+    plum: Plum
     magenta: Magenta
     mauve: Mauve
     pink: Pink
+    rose: Rose
     brown: Brown
+    tan: Tan
     beige: Beige
   colorLegendTitle: "Color legend · Page {page} of {total}"
   colorLegendDescription: Stitch counts include the complete rendered pattern and all repeats.

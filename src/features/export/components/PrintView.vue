@@ -5,6 +5,7 @@ import type { PatternGrid, PatternProject, PrintMode } from '../../../types/patt
 import { renderGrid } from '../../../utils/grid'
 import { colorSymbolMap, describeColor } from '../../../utils/colors'
 import { orderedColorCounts, paletteDetails, paletteMap } from '../../../utils/palette'
+import { writtenInstructionColorNames } from '../domain/buildWrittenInstructions'
 import PrintChart from './PrintChart.vue'
 
 const CHART_WIDTH_MM = 238
@@ -56,6 +57,11 @@ const chartStyle = computed(() => ({
 }))
 const printPalette = computed(() => paletteMap(props.project.palette))
 const legendEntries = computed(() => orderedColorCounts(pattern.value, props.project.palette))
+const printColorNames = computed(() => writtenInstructionColorNames(legendEntries.value.map(({ color }) => ({
+  color,
+  customName: printPalette.value.get(color)?.name.trim() ?? '',
+  description: describeColor(color),
+})), t))
 const legendPages = computed(() => props.mode === 'color'
   ? Array.from(
       { length: Math.ceil(legendEntries.value.length / KEY_ENTRIES_PER_PAGE) },
@@ -93,13 +99,7 @@ function stitchCount(count: number) {
 }
 
 function colorName(color: string) {
-  const customName = printPalette.value.get(color)?.name.trim()
-  if (customName) return customName
-  const description = describeColor(color)
-  const name = t(`print.colors.${description.name}`)
-  return description.tone
-    ? t('print.colorWithTone', { tone: t(`print.tones.${description.tone}`), color: name })
-    : name
+  return printColorNames.value.get(color) ?? color.toUpperCase()
 }
 
 function colorDetails(color: string) {

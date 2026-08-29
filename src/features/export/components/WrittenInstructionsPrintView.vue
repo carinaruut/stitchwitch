@@ -2,11 +2,12 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { WrittenInstructionDocument } from '../domain/buildWrittenInstructions'
-import { writtenInstructionColorName } from '../domain/buildWrittenInstructions'
+import { writtenInstructionColorNames } from '../domain/buildWrittenInstructions'
 
 const props = defineProps<{ document: WrittenInstructionDocument }>()
 const { n, t } = useI18n({ useScope: 'global' })
 const legend = computed(() => new Map(props.document.legend.map(entry => [entry.color, entry])))
+const colorNames = computed(() => writtenInstructionColorNames(props.document.legend, t))
 
 function stitchCount(count: number) {
   return t(count === 1 ? 'print.oneStitch' : 'print.stitches', { count: n(count, 'integer') })
@@ -16,7 +17,7 @@ function runLabel(color: string, count: number) {
   const entry = legend.value.get(color)
   return t('print.instructions.run', {
     count: n(count, 'integer'),
-    name: entry ? writtenInstructionColorName(entry, t) : color.toUpperCase(),
+    name: entry ? colorNames.value.get(entry.color)! : color.toUpperCase(),
     symbol: entry?.symbol ? t('print.instructions.runSymbol', { symbol: entry.symbol }) : '',
   }).trim()
 }
@@ -54,7 +55,7 @@ function runLabel(color: string, count: number) {
           class="print-instructions-legend-entry"
         >
           <strong class="print-instructions-symbol">{{ entry.symbol || t('print.instructions.noSymbol') }}</strong>
-          <span><strong>{{ writtenInstructionColorName(entry, t) }}</strong><br>{{ [entry.color.toUpperCase(), entry.details].filter(Boolean).join(' · ') }}</span>
+          <span><strong>{{ colorNames.get(entry.color) }}</strong><br>{{ [entry.color.toUpperCase(), entry.details].filter(Boolean).join(' · ') }}</span>
           <span class="print-instructions-count">{{ stitchCount(entry.count) }}</span>
         </div>
       </div>

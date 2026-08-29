@@ -14,7 +14,16 @@ const PREFIXED_LETTERS = Array.from({ length: 9 }, (_, index) => {
 }).flat()
 const COLOR_SYMBOLS = [...GRAPHIC_SYMBOLS, ...UPPERCASE_LETTERS, ...LOWERCASE_LETTERS, ...NUMBER_SYMBOLS, ...PREFIXED_LETTERS]
 
-export type DescriptiveColorName = 'black' | 'gray' | 'white' | 'red' | 'orange' | 'yellow' | 'lime' | 'green' | 'teal' | 'turquoise' | 'cyan' | 'blue' | 'indigo' | 'purple' | 'magenta' | 'mauve' | 'pink' | 'brown' | 'beige'
+export type DescriptiveColorName =
+  | 'black' | 'charcoal' | 'gray' | 'silver' | 'white'
+  | 'red' | 'maroon' | 'burgundy' | 'coral' | 'salmon'
+  | 'orange' | 'peach' | 'yellow' | 'gold' | 'cream'
+  | 'lime' | 'olive' | 'green' | 'forestGreen' | 'sage' | 'mint' | 'emerald'
+  | 'teal' | 'turquoise' | 'cyan' | 'aqua'
+  | 'skyBlue' | 'blue' | 'navy' | 'indigo'
+  | 'violet' | 'purple' | 'lavender' | 'plum'
+  | 'magenta' | 'mauve' | 'pink' | 'rose'
+  | 'brown' | 'tan' | 'beige'
 export type DescriptiveColorTone = 'dark' | 'light' | 'muted' | 'vivid'
 
 export interface ColorDescription {
@@ -153,10 +162,10 @@ export function describeColor(hex: string): ColorDescription {
   const saturation = difference === 0 ? 0 : difference / (1 - Math.abs(2 * lightness - 1))
 
   if (saturation < 0.12) {
-    if (lightness < 0.12) return { name: 'black', tone: null }
-    if (lightness > 0.93) return { name: 'white', tone: null }
-    if (lightness < 0.35) return { name: 'gray', tone: 'dark' }
-    if (lightness > 0.75) return { name: 'gray', tone: 'light' }
+    if (lightness < 0.1) return { name: 'black', tone: null }
+    if (lightness < 0.28) return { name: 'charcoal', tone: null }
+    if (lightness > 0.94) return { name: 'white', tone: null }
+    if (lightness > 0.75) return { name: 'silver', tone: null }
     return { name: 'gray', tone: null }
   }
 
@@ -167,26 +176,55 @@ export function describeColor(hex: string): ColorDescription {
   if (hue < 0) hue += 360
 
   let name: DescriptiveColorName
-  if (hue < 15 || hue >= 345) name = 'red'
-  else if (hue < 45) name = lightness < 0.4 ? 'brown' : saturation < 0.45 && lightness > 0.65 ? 'beige' : 'orange'
-  else if (hue < 70) name = 'yellow'
-  else if (hue < 100) name = 'lime'
-  else if (hue < 150) name = 'green'
-  else if (hue < 180) name = lightness < 0.4 ? 'teal' : 'turquoise'
-  else if (hue < 200) name = 'cyan'
-  else if (hue < 245) name = 'blue'
-  else if (hue < 260) name = 'indigo'
-  else if (hue < 300) name = 'purple'
-  else if (hue < 330) name = saturation < 0.5 ? 'mauve' : 'magenta'
-  else name = 'pink'
+  if (hue < 15 || hue >= 345) {
+    if (lightness < 0.25) name = 'maroon'
+    else if (lightness < 0.4 && saturation < 0.75) name = 'burgundy'
+    else if (lightness > 0.72) name = saturation < 0.65 ? 'rose' : 'pink'
+    else if (saturation < 0.65) name = 'coral'
+    else name = 'red'
+  }
+  else if (hue < 42) {
+    if (lightness < 0.3) name = 'brown'
+    else if (lightness > 0.78) name = saturation < 0.45 ? 'beige' : 'peach'
+    else if (saturation < 0.38) name = lightness > 0.58 ? 'tan' : 'brown'
+    else if (lightness > 0.64) name = hue < 25 ? 'salmon' : 'peach'
+    else if (hue < 22 && lightness > 0.48) name = 'coral'
+    else name = 'orange'
+  }
+  else if (hue < 68) {
+    if (lightness > 0.86) name = 'cream'
+    else if (lightness < 0.42 && saturation < 0.75) name = 'olive'
+    else if (saturation < 0.55 || lightness < 0.52) name = 'gold'
+    else name = 'yellow'
+  }
+  else if (hue < 100) name = lightness < 0.43 || saturation < 0.5 ? 'olive' : 'lime'
+  else if (hue < 150) {
+    if (lightness < 0.28) name = 'forestGreen'
+    else if (saturation < 0.4) name = 'sage'
+    else if (lightness > 0.75) name = 'mint'
+    else if (saturation > 0.65) name = 'emerald'
+    else name = 'green'
+  }
+  else if (hue < 180) {
+    if (lightness < 0.32) name = 'teal'
+    else if (lightness > 0.74) name = 'mint'
+    else name = saturation > 0.55 ? 'turquoise' : 'teal'
+  }
+  else if (hue < 200) name = lightness > 0.72 ? 'aqua' : saturation > 0.55 ? 'cyan' : 'turquoise'
+  else if (hue < 225) name = lightness > 0.68 || saturation < 0.45 ? 'skyBlue' : 'blue'
+  else if (hue < 250) name = lightness < 0.28 ? 'navy' : hue > 240 ? 'indigo' : 'blue'
+  else if (hue < 275) name = lightness > 0.72 ? 'lavender' : hue < 260 ? 'indigo' : 'violet'
+  else if (hue < 300) name = lightness < 0.3 ? 'plum' : lightness > 0.72 ? 'lavender' : hue < 285 ? 'violet' : 'purple'
+  else if (hue < 330) name = saturation < 0.5 ? 'mauve' : lightness > 0.7 ? 'rose' : 'magenta'
+  else name = lightness < 0.3 ? 'burgundy' : saturation < 0.52 ? 'mauve' : lightness > 0.68 ? 'pink' : 'rose'
 
-  const tone: DescriptiveColorTone | null = lightness < 0.3
+  const tone: DescriptiveColorTone | null = lightness < 0.24
     ? 'dark'
-    : lightness > 0.72
+    : lightness > 0.8
       ? 'light'
-      : saturation < 0.35
+      : saturation < 0.3
         ? 'muted'
-        : saturation > 0.8
+        : saturation > 0.86
           ? 'vivid'
           : null
   return { name, tone }

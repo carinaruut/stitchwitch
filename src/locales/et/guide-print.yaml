@@ -147,23 +147,45 @@ print:
     vivid: Erk
   colors:
     black: Must
+    charcoal: Süsimust
     gray: Hall
+    silver: Hõbedane
     white: Valge
     red: Punane
+    maroon: Kastanpruun
+    burgundy: Burgundiapunane
+    coral: Korallpunane
+    salmon: Lõheroosa
     orange: Oranž
+    peach: Virsikuvärv
     yellow: Kollane
+    gold: Kuldne
+    cream: Kreemjas
     lime: Laimiroheline
+    olive: Oliivroheline
     green: Roheline
+    forestGreen: Metsaroheline
+    sage: Salveiroheline
+    mint: Mündiroheline
+    emerald: Smaragdroheline
     teal: Sinakasroheline
     turquoise: Türkiissinine
     cyan: Tsüaansinine
+    aqua: Akvamariin
+    skyBlue: Taevasinine
     blue: Sinine
+    navy: Tumesinine
     indigo: Indigo
+    violet: Violetne
     purple: Lilla
+    lavender: Lavendel
+    plum: Ploomililla
     magenta: Magenta
     mauve: Lillakasroosa
     pink: Roosa
+    rose: Roosipunane
     brown: Pruun
+    tan: Helepruun
     beige: Beež
   colorLegendTitle: "Värvilegend · Lehekülg {page}/{total}"
   colorLegendDescription: Pistete arv sisaldab tervet kuvatavat mustrit ja kõiki kordusi.
