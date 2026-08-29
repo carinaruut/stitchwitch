@@ -12,6 +12,8 @@ import NewProjectModal from '../features/projects/components/NewProjectModal.vue
 import NewTabModal from '../features/projects/components/NewTabModal.vue'
 import PrintView from '../features/export/components/PrintView.vue'
 import WrittenInstructionsPrintView from '../features/export/components/WrittenInstructionsPrintView.vue'
+import ShareProjectModal from '../features/share/components/ShareProjectModal.vue'
+import { takePendingSharedProject } from '../features/share/domain/shareEditorHandoff'
 import { usePatternExport } from '../features/export/composables/usePatternExport'
 import { buildWrittenInstructions, defaultWrittenInstructionOrder } from '../features/export/domain/buildWrittenInstructions'
 import UserGuideModal from '../features/help/components/UserGuideModal.vue'
@@ -27,6 +29,8 @@ import { renderGrid } from '../utils/grid'
 import { completeTrackerSession, reconcileTracker } from '../utils/tracker'
 
 const projects = useProjects()
+const pendingSharedProject = takePendingSharedProject()
+if (pendingSharedProject) projects.openProject(pendingSharedProject, { backupNeeded: true })
 const pattern = activePatternProxy(projects)
 const { t } = useI18n({ useScope: 'global' })
 const { theme, toggleTheme } = useTheme()
@@ -36,6 +40,8 @@ const newModalOpen = ref(false)
 const newTabModalOpen = ref(false)
 const clearModalOpen = ref(false)
 const guideOpen = ref(false)
+const shareOpen = ref(false)
+const shareProject = ref<import('../types/tracker').StitchProject | null>(null)
 const fileInput = ref<HTMLInputElement | null>(null)
 const pendingCloseId = ref<string | null>(null)
 const printMode = ref<PrintMode>('color')
@@ -119,6 +125,24 @@ function saveProject() {
   }
 }
 
+function projectSnapshot() {
+  const tracker = pattern.tracker.value
+  const sharedTracker = tracker ? structuredClone(toRaw(tracker)) : undefined
+  if (sharedTracker) completeTrackerSession(sharedTracker, sharedTracker.progress.completedCells)
+  return {
+    format: 'stitch-project' as const,
+    version: 1 as const,
+    pattern: structuredClone(toRaw(pattern.project.value)),
+    ...(sharedTracker ? { tracker: sharedTracker } : {}),
+  }
+}
+
+function openShare() {
+  editorWorkspace.value?.prepareSave()
+  shareProject.value = projectSnapshot()
+  shareOpen.value = true
+}
+
 async function selectFile(event: Event) {
   const input = event.target as HTMLInputElement
   const file = input.files?.[0]
@@ -179,7 +203,7 @@ const { downloadCanvasPng, downloadWrittenInstructions } = usePatternExport({
   onInstructionsError: () => notify(t('editor.errors.instructionsFailed'), 'error'),
 })
 
-const modalOpen = computed(() => newModalOpen.value || newTabModalOpen.value || clearModalOpen.value || pendingCloseId.value !== null || guideOpen.value)
+const modalOpen = computed(() => newModalOpen.value || newTabModalOpen.value || clearModalOpen.value || pendingCloseId.value !== null || guideOpen.value || shareOpen.value)
 useEditorShortcuts({
   blocked: modalOpen,
   editorActive: () => workspace.value === 'editor',
@@ -247,6 +271,7 @@ onBeforeUnmount(() => {
       @new="newTabModalOpen = true"
       @open="fileInput?.click()"
       @save="saveProject"
+      @share="openShare"
       @png="downloadCanvasPng"
       @print="printPattern"
       @instructions="exportWrittenInstructions"
@@ -351,6 +376,15 @@ onBeforeUnmount(() => {
   <NotificationToast
     :notifications="notifications"
     @dismiss="dismiss"
+  />
+  <ShareProjectModal
+    :open="shareOpen"
+    :project="shareProject"
+    @close="shareOpen = false"
+    @copied="notify(t('share.notifications.copied'), 'success')"
+    @shared="notify(t('share.notifications.shared'), 'success')"
+    @downloaded="notify(t('share.notifications.fileDownloaded'), 'success')"
+    @error="notify($event, 'error')"
   />
   <PrintView
     v-if="printTarget === 'chart'"

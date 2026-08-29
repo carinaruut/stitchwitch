@@ -7,17 +7,24 @@ export function safeFilename(name: string): string {
   return `${safe || 'my-pattern'}.stitch-project`
 }
 
-export function downloadProject(project: StitchProject) {
+export function createProjectFile(project: StitchProject) {
   const validated = asStitchProject(project)
-  const blob = new Blob([JSON.stringify(validated, null, 2)], { type: 'application/json' })
-  const url = URL.createObjectURL(blob)
+  return new File([JSON.stringify(validated, null, 2)], safeFilename(project.pattern.name), { type: 'application/json' })
+}
+
+export function downloadFile(file: File) {
+  const url = URL.createObjectURL(file)
   const link = document.createElement('a')
   link.href = url
-  link.download = safeFilename(project.pattern.name)
+  link.download = file.name
   document.body.appendChild(link)
   link.click()
   link.remove()
   window.setTimeout(() => URL.revokeObjectURL(url), 0)
+}
+
+export function downloadProject(project: StitchProject) {
+  downloadFile(createProjectFile(project))
 }
 
 export async function readProjectFile(file: File): Promise<StitchProject> {

@@ -2,7 +2,7 @@ import { ref, watch } from 'vue'
 import type { PatternCommandContext } from '../domain/patternCommandContext'
 import type { StitchProject } from '../../../types/tracker'
 
-export function usePatternAutosave(context: PatternCommandContext, autosaveKey: string, recovered: boolean) {
+export function usePatternAutosave(context: PatternCommandContext, autosaveKey: string, recovered: boolean, storage: Storage = localStorage) {
   const restoredAutosave = ref(recovered)
   const autosaveStatus = ref<'saving' | 'saved' | 'error'>('saving')
   const lastSavedAt = ref<number | null>(recovered ? Date.now() : null)
@@ -22,7 +22,7 @@ export function usePatternAutosave(context: PatternCommandContext, autosaveKey: 
         },
         ...(context.tracker.value ? { tracker: context.tracker.value } : {}),
       }
-      localStorage.setItem(autosaveKey, JSON.stringify(snapshot))
+      storage.setItem(autosaveKey, JSON.stringify(snapshot))
       autosaveStatus.value = 'saved'
       lastSavedAt.value = Date.now()
     } catch {

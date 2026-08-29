@@ -51,6 +51,7 @@ editor:
     new: New
     open: Open
     save: Save
+    share: Share
     download: Download
     tracker: Tracker
     undo: Undo
@@ -61,6 +62,7 @@ editor:
     newProject: New project
     openProject: Open project
     saveProject: Save project
+    shareProject: Share project
     openTracker: Open tracker
   modal:
     cancel: Cancel
@@ -131,3 +133,42 @@ editor:
     repeatLengthUneven: The repeat length must divide evenly into its sections.
     repeatBoxesCannotOverlap: Repeat boxes cannot overlap.
     selectionLimit: The selection cannot extend beyond 500 rows or columns.
+share:
+  title: Share project
+  description: Create a private link containing this project, or share a project file when the link would be too large.
+  preparing: Preparing your local share…
+  localNotice: The project is compressed into this link. It is not uploaded to a server.
+  trackerNotice: Anyone with the link or file can view and edit the included pattern and Tracker data.
+  linkLabel: Share link
+  copyLink: Copy link
+  shareLink: Share link
+  shareFile: Share file
+  downloadFile: Download project file
+  shareText: Open and edit this Stitch Witch project.
+  fileShareText: Open this Stitch Witch project file.
+  fileFallback: This project is too large for a reliable link. Share or download the .stitch-project file instead.
+  loading: Opening shared project…
+  invalidTitle: This share link cannot be opened
+  returnEditor: Return to Editor
+  editingCopy: You are editing a shared copy
+  openChoiceTitle: Open shared project?
+  openChoiceMessage: 'Would you like to add “{name}” as a new project tab beside your existing projects, or edit a temporary copy from this link?'
+  openInEditor: Open in Editor
+  editTemporary: Edit temporary copy
+  temporaryAutosave: Changes are backed up only in this browser tab until you download, reshare, or add the copy to your Editor.
+  editNewTab: Edit copy in new tab
+  addToEditor: Add copy to Editor
+  confirmLeave: Leave this temporary shared copy without downloading or adding your changes to the Editor?
+  notifications:
+    copied: Share link copied.
+    shared: Project shared.
+    fileDownloaded: Project file downloaded.
+    newTabFileFallback: This project is too large for a share link. Use the project-file option instead.
+  errors:
+    prepare: The project could not be prepared for sharing.
+    invalid: This share link is invalid.
+    copy: The link could not be copied. Select and copy it manually.
+    webShare: The browser could not share this project.
+    openEditor: The shared copy could not be added to the Editor.
+    openNewTab: The editable copy could not be opened in a new tab.
+    popupBlocked: Allow pop-ups to edit this copy in a new tab.

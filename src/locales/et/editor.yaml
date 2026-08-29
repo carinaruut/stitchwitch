@@ -51,6 +51,7 @@ editor:
     new: Uus
     open: Ava
     save: Salvesta
+    share: Jaga
     download: Laadi alla
     tracker: Jälgija
     undo: Võta tagasi
@@ -61,6 +62,7 @@ editor:
     newProject: Uus projekt
     openProject: Ava projekt
     saveProject: Salvesta projekt
+    shareProject: Jaga projekti
     openTracker: Ava jälgija
   modal:
     cancel: Loobu
@@ -131,3 +133,42 @@ editor:
     repeatLengthUneven: Korduse pikkus peab jagunema osade vahel võrdselt.
     repeatBoxesCannotOverlap: Kordusalad ei tohi kattuda.
     selectionLimit: Valik ei tohi ulatuda üle 500 rea ega veeru.
+share:
+  title: Jaga projekti
+  description: Loo projekti sisaldav privaatne link või jaga projektifaili, kui link oleks liiga pikk.
+  preparing: Kohaliku jagamislingi ettevalmistamine…
+  localNotice: Projekt pakitakse sellesse linki. Seda ei laadita serverisse.
+  trackerNotice: Kõik lingi või faili saajad saavad vaadata ja muuta kaasatud mustrit ning jälgija andmeid.
+  linkLabel: Jagamislink
+  copyLink: Kopeeri link
+  shareLink: Jaga linki
+  shareFile: Jaga faili
+  downloadFile: Laadi projektifail alla
+  shareText: Ava ja muuda seda Stitch Witchi projekti.
+  fileShareText: Ava see Stitch Witchi projektifail.
+  fileFallback: Projekt on töökindla lingi jaoks liiga suur. Jaga või laadi selle asemel alla .stitch-project-fail.
+  loading: Jagatud projekti avamine…
+  invalidTitle: Seda jagamislinki ei saa avada
+  returnEditor: Tagasi redaktorisse
+  editingCopy: Muudad jagatud koopiat
+  openChoiceTitle: Kas avada jagatud projekt?
+  openChoiceMessage: 'Kas soovid lisada projekti „{name}” uue projektikaardina olemasolevate projektide kõrvale või muuta selle lingi ajutist koopiat?'
+  openInEditor: Ava redaktoris
+  editTemporary: Muuda ajutist koopiat
+  temporaryAutosave: Muudatused varundatakse ainult sellel brauserikaardil, kuni laadid projekti alla, jagad seda uuesti või lisad koopia redaktorisse.
+  editNewTab: Muuda koopiat uuel kaardil
+  addToEditor: Lisa koopia redaktorisse
+  confirmLeave: Kas lahkuda ajutisest jagatud koopiast muudatusi alla laadimata või redaktorisse lisamata?
+  notifications:
+    copied: Jagamislink on kopeeritud.
+    shared: Projekt on jagatud.
+    fileDownloaded: Projektifail on alla laaditud.
+    newTabFileFallback: Projekt on jagamislingi jaoks liiga suur. Kasuta projektifaili valikut.
+  errors:
+    prepare: Projekti ei õnnestunud jagamiseks ette valmistada.
+    invalid: Jagamislink ei ole kehtiv.
+    copy: Linki ei õnnestunud kopeerida. Vali ja kopeeri see käsitsi.
+    webShare: Brauser ei saanud projekti jagada.
+    openEditor: Jagatud koopiat ei õnnestunud redaktorisse lisada.
+    openNewTab: Muudetavat koopiat ei õnnestunud uuel kaardil avada.
+    popupBlocked: Koopia muutmiseks uuel kaardil luba hüpikaknad.

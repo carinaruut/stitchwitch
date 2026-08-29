@@ -51,3 +51,16 @@ repeatSave:
   bounds: Kordusala ei saa ulatuda üle 500 rea ega veeru.
   sections: Korduse pikkus peab jagunema osadeks täpselt.
   overlap: Kordusalad ei tohi kattuda.
+share:
+  missing: Jagamislink ei sisalda projekti.
+  malformed: Jagamislink on vigane või kahjustatud.
+  truncated: Jagamislink on poolik või kärbitud.
+  unsupportedVersion: Seda jagamislingi versiooni ei toetata.
+  unsupportedCompression: Brauser või jagamislink kasutab toetamata pakkimisvormingut.
+  unsupportedProject: Link ei sisalda toetatud praeguse vorminguga Stitch Witchi projekti.
+  invalidProject: Jagatud projekt ei ole kehtiv.
+  compressedTooLarge: Pakitud jagamisandmed on liiga suured.
+  decompressedTooLarge: Jagatud projekt ületab lingi turvalise suuruse.
+  renderedTooLarge: Jagatud muster on lingist ohutuks kuvamiseks liiga suur.
+  linkTooLong: Jagamislink ületab turvalise URL-i pikkuse.
+  compressionFailed: Projekti pakkimine nurjus.

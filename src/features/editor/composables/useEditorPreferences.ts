@@ -4,30 +4,30 @@ const CANVAS_FULL_HEIGHT_KEY = 'stitch-canvas-full-height'
 const CANVAS_SYMBOLS_KEY = 'stitch-canvas-symbols'
 const EXPORT_ANNOTATIONS_KEY = 'stitch-export-annotations'
 
-function readPreference(key: string, fallback: boolean, storedValue: string) {
+function readPreference(storage: Storage, key: string, fallback: boolean, storedValue: string) {
   try {
-    return localStorage.getItem(key) === storedValue
+    return storage.getItem(key) === storedValue
   } catch {
     return fallback
   }
 }
 
-function readUnlessFalse(key: string) {
+function readUnlessFalse(storage: Storage, key: string) {
   try {
-    return localStorage.getItem(key) !== 'false'
+    return storage.getItem(key) !== 'false'
   } catch {
     return true
   }
 }
 
-export function useEditorPreferences() {
-  const canvasFullHeight = ref(readUnlessFalse(CANVAS_FULL_HEIGHT_KEY))
-  const canvasSymbols = ref(readPreference(CANVAS_SYMBOLS_KEY, false, 'true'))
-  const includeAnnotations = ref(readUnlessFalse(EXPORT_ANNOTATIONS_KEY))
+export function useEditorPreferences(storage: Storage = localStorage) {
+  const canvasFullHeight = ref(readUnlessFalse(storage, CANVAS_FULL_HEIGHT_KEY))
+  const canvasSymbols = ref(readPreference(storage, CANVAS_SYMBOLS_KEY, false, 'true'))
+  const includeAnnotations = ref(readUnlessFalse(storage, EXPORT_ANNOTATIONS_KEY))
 
   const persist = (key: string, value: boolean) => {
     try {
-      localStorage.setItem(key, String(value))
+      storage.setItem(key, String(value))
     } catch {
       // Preferences remain usable for the current session when storage is unavailable.
     }

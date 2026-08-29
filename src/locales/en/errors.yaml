@@ -51,3 +51,16 @@ repeatSave:
   bounds: Repeat boxes cannot extend beyond 500 rows or columns.
   sections: The repeat length must divide evenly into its sections.
   overlap: Repeat boxes cannot overlap.
+share:
+  missing: The share link does not contain a project.
+  malformed: The share link is malformed or damaged.
+  truncated: The share link is incomplete or truncated.
+  unsupportedVersion: This share-link version is not supported.
+  unsupportedCompression: This browser or share link uses an unsupported compression format.
+  unsupportedProject: This link does not contain a supported current Stitch Witch project.
+  invalidProject: The shared project is invalid.
+  compressedTooLarge: The compressed share payload is too large.
+  decompressedTooLarge: The shared project exceeds the safe link size.
+  renderedTooLarge: The shared pattern is too large to render safely from a link.
+  linkTooLong: The share link exceeds the safe URL length.
+  compressionFailed: The project could not be compressed.

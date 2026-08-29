@@ -39,6 +39,15 @@ jobs:
       - name: Check TypeScript
         run: pnpm typecheck
 
+      - name: Test share codec
+        run: pnpm test
+
+      - name: Install browser test dependencies
+        run: pnpm exec playwright install --with-deps chromium firefox webkit
+
+      - name: Test sharing in Chromium, Firefox, and WebKit
+        run: pnpm test:e2e
+
       - name: Build site
         run: pnpm build
 

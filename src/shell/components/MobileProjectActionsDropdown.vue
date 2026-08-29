@@ -5,11 +5,12 @@ import ProjectExportMenuItems from '../../features/export/components/ProjectExpo
 import AppDropdown from '../../shared/ui/AppDropdown.vue'
 import type { PrintMode, WrittenInstructionFormat } from '../../types/pattern'
 
-defineProps<{ includeAnnotations: boolean }>()
+withDefaults(defineProps<{ includeAnnotations: boolean; shared?: boolean }>(), { shared: false })
 const emit = defineEmits<{
   new: []
   open: []
   save: []
+  share: []
   png: []
   print: [mode: PrintMode]
   instructions: [format: WrittenInstructionFormat]
@@ -48,7 +49,7 @@ function request(action: () => void) {
       </button>
     </template>
     <ul class="menu app-menu w-64">
-      <li>
+      <li v-if="!shared">
         <button
           type="button"
           @click="request(() => emit('new'))"
@@ -60,6 +61,17 @@ function request(action: () => void) {
         </button>
       </li>
       <li>
+        <button
+          type="button"
+          @click="request(() => emit('share'))"
+        >
+          <span
+            class="mdi mdi-share-variant-outline"
+            aria-hidden="true"
+          />{{ t('editor.nav.shareProject') }}
+        </button>
+      </li>
+      <li v-if="!shared">
         <button
           type="button"
           @click="request(() => emit('open'))"

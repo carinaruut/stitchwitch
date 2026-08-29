@@ -4,9 +4,9 @@ import type { TrackerFocusStyle, TrackerPreferences } from '../../../types/track
 
 const TRACKER_PREFERENCES_KEY = 'stitch-tracker-preferences'
 
-function readTrackerPreferences(): Partial<TrackerPreferences> {
+function readTrackerPreferences(storage: Storage): Partial<TrackerPreferences> {
   try {
-    const value = JSON.parse(localStorage.getItem(TRACKER_PREFERENCES_KEY) ?? 'null') as Partial<TrackerPreferences> | null
+    const value = JSON.parse(storage.getItem(TRACKER_PREFERENCES_KEY) ?? 'null') as Partial<TrackerPreferences> | null
     if (!value || typeof value !== 'object') return {}
     return {
       display: value.display === 'canvas' || value.display === 'knit' || value.display === 'cross-stitch' || value.display === 'single-crochet' ? value.display : undefined,
@@ -24,8 +24,8 @@ function readTrackerPreferences(): Partial<TrackerPreferences> {
   }
 }
 
-export function useTrackerPreferences(savedPreferences: TrackerPreferences | undefined, defaultCellSize: number) {
-  const initial = savedPreferences ?? readTrackerPreferences()
+export function useTrackerPreferences(savedPreferences: TrackerPreferences | undefined, defaultCellSize: number, storage: Storage = localStorage) {
+  const initial = savedPreferences ?? readTrackerPreferences(storage)
   const cellSize = ref(initial.cellSize ?? defaultCellSize)
   const display = ref<PatternDisplay>(initial.display ?? 'canvas')
   const autoScroll = ref(initial.autoScroll ?? true)
@@ -49,7 +49,7 @@ export function useTrackerPreferences(savedPreferences: TrackerPreferences | und
 
   watch(preferences, (value) => {
     try {
-      localStorage.setItem(TRACKER_PREFERENCES_KEY, JSON.stringify(value))
+      storage.setItem(TRACKER_PREFERENCES_KEY, JSON.stringify(value))
     } catch {
       // Display preferences are optional when browser storage is unavailable.
     }

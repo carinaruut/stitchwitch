@@ -22,7 +22,7 @@ import TrackerSessionsModal from './modals/TrackerSessionsModal.vue'
 import TrackerToolsModal from './modals/TrackerToolsModal.vue'
 import TrackerToolbar from './toolbar/TrackerToolbar.vue'
 
-const props = defineProps<{ includeAnnotations: boolean; pattern: PatternState; state: TrackerController }>()
+const props = defineProps<{ includeAnnotations: boolean; pattern: PatternState; state: TrackerController; preferenceStorage?: Storage }>()
 const emit = defineEmits<{
   close: []
   save: []
@@ -63,6 +63,7 @@ const {
 } = useTrackerPreferences(
   state.tracker.value?.preferences,
   Math.min(40, Math.max(18, pattern.project.value.cellSize)),
+  props.preferenceStorage,
 )
 const { elapsedMilliseconds, formattedTime, now: timerNow, running: timerRunning } = useTrackerClock(() => state.tracker.value?.timer)
 const { setKeepAwake, supported: wakeLockSupported } = useScreenWakeLock(keepAwake, () => {

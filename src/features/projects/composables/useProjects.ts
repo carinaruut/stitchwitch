@@ -161,8 +161,8 @@ function createProjectManager() {
     return addSession(documentFromInput(input), { backupNeeded: true })
   }
 
-  function openProject(document: StitchProject) {
-    return addSession(document)
+  function openProject(document: StitchProject, options: { backupNeeded?: boolean } = {}) {
+    return addSession(document, options)
   }
 
   function closeProject(id: string) {

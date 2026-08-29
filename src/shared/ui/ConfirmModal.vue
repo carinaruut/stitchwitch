@@ -2,7 +2,20 @@
 import { useI18n } from 'vue-i18n'
 import AppModal from './AppModal.vue'
 
-defineProps<{ open: boolean; title: string; message: string; confirmLabel?: string; destructive?: boolean }>()
+withDefaults(defineProps<{
+  open: boolean
+  title: string
+  message: string
+  confirmLabel?: string
+  cancelLabel?: string
+  destructive?: boolean
+  closeOnBackdrop?: boolean
+}>(), {
+  confirmLabel: undefined,
+  cancelLabel: undefined,
+  destructive: false,
+  closeOnBackdrop: true,
+})
 defineEmits<{ confirm: []; cancel: [] }>()
 const { t } = useI18n({ useScope: 'global' })
 </script>
@@ -15,6 +28,7 @@ const { t } = useI18n({ useScope: 'global' })
     :backdrop-label="t('editor.modal.close')"
     size="base"
     :show-close-button="false"
+    :close-on-backdrop="closeOnBackdrop"
     @close="$emit('cancel')"
   >
     <p>{{ message }}</p>
@@ -24,7 +38,7 @@ const { t } = useI18n({ useScope: 'global' })
         type="button"
         @click="$emit('cancel')"
       >
-        {{ t('editor.modal.cancel') }}
+        {{ cancelLabel ?? t('editor.modal.cancel') }}
       </button>
       <button
         class="btn"

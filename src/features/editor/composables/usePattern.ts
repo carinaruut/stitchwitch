@@ -22,6 +22,8 @@ export { createDefaultProject }
 
 interface PatternOptions {
   autosaveKey: string
+  autosaveStorage?: Storage
+  preferenceStorage?: Storage
   recovered?: boolean
 }
 
@@ -49,9 +51,17 @@ export function createPattern(initialDocument: StitchProject, options: PatternOp
   const clipboard = ref<SelectionClipboard | null>(null)
   const mirrorHorizontal = ref(false)
   const mirrorVertical = ref(false)
-  const savedColor = normalizeColor(localStorage.getItem('stitch-selected-color') ?? '')
+  const preferenceStorage = options.preferenceStorage ?? localStorage
+  let savedColorValue = ''
+  let savedRecent: string | null = null
+  try {
+    savedColorValue = preferenceStorage.getItem('stitch-selected-color') ?? ''
+    savedRecent = preferenceStorage.getItem('stitch-recent-colors')
+  } catch {
+    // Keep project colors available when optional preference storage is unavailable.
+  }
+  const savedColor = normalizeColor(savedColorValue)
   const selectedColor = ref(savedColor ?? '#7c3aed')
-  const savedRecent = localStorage.getItem('stitch-recent-colors')
   let parsedRecent: unknown
   try {
     parsedRecent = savedRecent ? JSON.parse(savedRecent) : []
@@ -110,8 +120,12 @@ export function createPattern(initialDocument: StitchProject, options: PatternOp
 
   function persistColors() {
     project.value.recentColors = [...recentColors.value]
-    localStorage.setItem('stitch-selected-color', selectedColor.value)
-    localStorage.setItem('stitch-recent-colors', JSON.stringify(recentColors.value))
+    try {
+      preferenceStorage.setItem('stitch-selected-color', selectedColor.value)
+      preferenceStorage.setItem('stitch-recent-colors', JSON.stringify(recentColors.value))
+    } catch {
+      // Project state remains editable when optional preference storage is unavailable.
+    }
   }
 
   function beginGridChange() {
@@ -173,7 +187,7 @@ export function createPattern(initialDocument: StitchProject, options: PatternOp
     { immediate: true, flush: 'sync' },
   )
 
-  const autosave = usePatternAutosave(context, options.autosaveKey, recovered)
+  const autosave = usePatternAutosave(context, options.autosaveKey, recovered, options.autosaveStorage)
   const factoryCommands = usePatternFactoryCommands(context)
   const paletteCommands = usePatternPaletteCommands(context)
   const selectionCommands = usePatternSelectionCommands(context)
