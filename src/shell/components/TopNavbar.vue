@@ -5,10 +5,10 @@ import LanguageSwitcher from './LanguageSwitcher.vue'
 import MobileProjectActionsDropdown from './MobileProjectActionsDropdown.vue'
 import ProjectExportDropdown from '../../features/export/components/ProjectExportDropdown.vue'
 import type { Theme } from '../../shared/composables/useTheme'
-import type { PrintMode } from '../../types/pattern'
+import type { PrintMode, WrittenInstructionFormat } from '../../types/pattern'
 
 defineProps<{ theme: Theme; includeAnnotations: boolean }>()
-const emit = defineEmits<{ new: []; open: []; save: []; png: []; print: [mode: PrintMode]; theme: []; guide: []; 'update:includeAnnotations': [value: boolean] }>()
+const emit = defineEmits<{ new: []; open: []; save: []; png: []; print: [mode: PrintMode]; instructions: [format: WrittenInstructionFormat]; theme: []; guide: []; 'update:includeAnnotations': [value: boolean] }>()
 const { t } = useI18n({ useScope: 'global' })
 </script>
 
@@ -57,6 +57,7 @@ const { t } = useI18n({ useScope: 'global' })
         @update:include-annotations="emit('update:includeAnnotations', $event)"
         @png="emit('png')"
         @print="emit('print', $event)"
+        @instructions="emit('instructions', $event)"
       />
     </nav>
     <div class="navbar-end gap-1">
@@ -80,6 +81,7 @@ const { t } = useI18n({ useScope: 'global' })
         @save="emit('save')"
         @png="emit('png')"
         @print="emit('print', $event)"
+        @instructions="emit('instructions', $event)"
       />
       <LanguageSwitcher />
       <ThemeToggle

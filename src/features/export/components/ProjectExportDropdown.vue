@@ -2,7 +2,7 @@
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import AppDropdown from '../../../shared/ui/AppDropdown.vue'
-import type { PrintMode } from '../../../types/pattern'
+import type { PrintMode, WrittenInstructionFormat } from '../../../types/pattern'
 import ProjectExportMenuItems from './ProjectExportMenuItems.vue'
 
 withDefaults(defineProps<{
@@ -15,6 +15,7 @@ withDefaults(defineProps<{
 const emit = defineEmits<{
   png: []
   print: [mode: PrintMode]
+  instructions: [format: WrittenInstructionFormat]
   'update:includeAnnotations': [value: boolean]
 }>()
 const { t } = useI18n({ useScope: 'global' })
@@ -28,6 +29,11 @@ function requestPng() {
 function requestPrint(mode: PrintMode) {
   dropdown.value?.close(true)
   emit('print', mode)
+}
+
+function requestInstructions(format: WrittenInstructionFormat) {
+  dropdown.value?.close(true)
+  emit('instructions', format)
 }
 </script>
 
@@ -71,16 +77,14 @@ function requestPrint(mode: PrintMode) {
         />
       </button>
     </template>
-    <ul
-      class="menu app-menu"
-      :class="variant === 'navbar' ? 'w-48' : 'w-52'"
-    >
+    <ul class="menu app-menu w-64">
       <ProjectExportMenuItems
         :include-annotations="includeAnnotations"
         divider
         @update:include-annotations="emit('update:includeAnnotations', $event)"
         @png="requestPng"
         @print="requestPrint"
+        @instructions="requestInstructions"
       />
     </ul>
   </AppDropdown>

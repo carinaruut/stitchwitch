@@ -43,6 +43,9 @@ editor:
     symbolChart: B&W symbols
     symbolDescription: Print or save a B&W PDF with a symbol key
     includeAnnotations: Include annotations
+    instructionsTitle: Written row instructions
+    instructionsPdf: Instructions PDF
+    instructionsText: Instructions plain text
   nav:
     projectActions: Project actions
     new: New
@@ -73,6 +76,7 @@ editor:
     gridCleared: Grid cleared.
     projectSaved: Project saved locally and downloaded.
     pngDownloaded: Canvas PNG downloaded.
+    instructionsDownloaded: Written row instructions downloaded.
     importCancelled: Import cancelled.
     projectImported: Project imported successfully.
     repeatBoxUpdated: Repeat box updated.
@@ -103,6 +107,7 @@ editor:
   errors:
     saveFailed: The project could not be saved.
     pngFailed: The canvas PNG could not be created.
+    instructionsFailed: The written row instructions could not be created.
     invalidProjectFile: The project file is invalid.
     fileTooLarge: The project file is too large.
     invalidJson: The selected file is not valid JSON.

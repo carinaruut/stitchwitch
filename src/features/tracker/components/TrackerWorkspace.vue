@@ -6,7 +6,7 @@ import ColorLegend from '../../palette/components/ColorLegend.vue'
 import { useNotifications } from '../../../shared/composables/useNotifications'
 import type { PatternState } from '../../editor/composables/usePattern'
 import type { TrackerController } from '../composables/useTracker'
-import type { PrintMode } from '../../../types/pattern'
+import type { PrintMode, WrittenInstructionFormat } from '../../../types/pattern'
 import { colorSymbolMap } from '../../../utils/colors'
 import { renderGrid } from '../../../utils/grid'
 import { orderedColorCounts } from '../../../utils/palette'
@@ -28,6 +28,7 @@ const emit = defineEmits<{
   save: []
   png: []
   print: [mode: PrintMode]
+  instructions: [format: WrittenInstructionFormat]
   'update:includeAnnotations': [value: boolean]
 }>()
 
@@ -218,6 +219,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', handleKeyboardShortc
             @save="emit('save')"
             @png="emit('png')"
             @print="emit('print', $event)"
+            @instructions="emit('instructions', $event)"
             @sessions="sessionsModalOpen = true"
             @tools="toolsModalOpen = true"
             @reset="resetModalOpen = true"

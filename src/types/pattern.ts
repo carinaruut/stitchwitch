@@ -4,6 +4,7 @@ export type DrawingTool = 'pencil' | 'eraser' | 'fill' | 'eyedropper' | 'select'
 export type PreviewStitch = 'knit' | 'cross-stitch' | 'single-crochet'
 export type PatternDisplay = 'canvas' | PreviewStitch
 export type PrintMode = 'color' | 'symbols'
+export type WrittenInstructionFormat = 'pdf' | 'text'
 
 export const MAX_REPEAT_COUNT = 100
 export const MAX_PROJECT_SWATCHES = 32

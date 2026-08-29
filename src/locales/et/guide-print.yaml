@@ -111,7 +111,7 @@ guide:
     openText: Kontrollib allalaaditud projekti, küsib enne aktiivse töö asendamist kinnitust ning taastab nii kavandi kui ka jälgija edenemise. Toetatud on ka varasemad mustri- ja jälgijafailid.
   output:
     title: Eelvaade, printimine ja PDF
-    intro: Terve mustri eelvaates kuvatakse valmis skeem koos kogu mustri korduste või aktiivsete kordusaladega. Ava printimine või PDF-failina salvestamine ja vali värviline skeem või mustvalged sümbolid. Värviline PDF sisaldab värvinäidiste legendit koos pistete arvuga. Sümbolitega PDF sisaldab mustvalget legendit kirjeldavate värvinimede ja pistete arvuga. Mõlemad valikud loovad nummerdatud ülevaate, suurte skeemide detaillehed ja lubatud kordusalade lähteosade skeemid.
+    intro: Terve mustri eelvaates kuvatakse valmis skeem koos kogu mustri korduste või aktiivsete kordusaladega. Ava allalaadimine ja vali värviline skeem, mustvalged sümbolid või kirjalikud reajuhised. Kirjalikud juhised on saadaval PDF- ja tekstifailina ning järgivad jälgija ridade järjekorda. Värvi- ja sümboliskeemid säilitavad nummerdatud ülevaate, detaillehed, legendid ja korduste lähteosade skeemid.
     themeNote: Hele või tume kujundus muudab ainult redaktorit ega mõjuta prinditavat väljundit.
   accessibility:
     title: Klaviatuur ja hõlbustus
@@ -170,3 +170,27 @@ print:
   oneStitch: '{count} piste'
   stitches: '{count} pistet'
   repeatChartsTitle: "Korduste lähteosade skeemid · Lehekülg {page}/{total}"
+  instructions:
+    title: "{name} · Kirjalikud reajuhised"
+    total: "Kokku: {count}"
+    order: "Tööta {start}; esimene töörida {direction}; vahelduvad read: {alternating}."
+    start:
+      top: ülevalt alla
+      bottom: alt üles
+    direction:
+      left-to-right: vasakult paremale
+      right-to-left: paremalt vasakule
+    alternating:
+      yes: jah
+      no: ei
+    wholeRepeats: "Kogu mustri kordused: {horizontal} risti × {vertical} alla. Juhised on täielikult laiendatud."
+    repeatBoxes: "Kordusalade režiim: {count} aktiivset kordusala. Kuvatavad read on täielikult laiendatud."
+    legendTitle: Värvide ja sümbolite legend
+    noSymbol: '—'
+    legendEntry: "[{symbol}] {name} — {details} — {count}"
+    rowsTitle: Reajuhised
+    row: "Rida {row} ({direction}): {runs}"
+    rowTitle: "Rida {row} · {direction}"
+    run: "{count} {name}{symbol}"
+    runSymbol: " [{symbol}]"
+    runSeparator: ', '

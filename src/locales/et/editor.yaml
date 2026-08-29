@@ -43,6 +43,9 @@ editor:
     symbolChart: Mustvalged sümbolid
     symbolDescription: Prindi või salvesta sümbolite legendiga mustvalge PDF
     includeAnnotations: Lisa märkused
+    instructionsTitle: Kirjalikud reajuhised
+    instructionsPdf: Juhised PDF-failina
+    instructionsText: Juhised tekstifailina
   nav:
     projectActions: Projekti toimingud
     new: Uus
@@ -73,6 +76,7 @@ editor:
     gridCleared: Ruudustik on tühjendatud.
     projectSaved: Projekt salvestati brauserisse ja laaditi alla.
     pngDownloaded: Lõuendi PNG-fail on alla laaditud.
+    instructionsDownloaded: Kirjalikud reajuhised on alla laaditud.
     importCancelled: Importimine katkestati.
     projectImported: Projekt imporditi edukalt.
     repeatBoxUpdated: Kordusala on uuendatud.
@@ -103,6 +107,7 @@ editor:
   errors:
     saveFailed: Projekti ei õnnestunud salvestada.
     pngFailed: Lõuendi PNG-faili loomine nurjus.
+    instructionsFailed: Kirjalike reajuhiste loomine nurjus.
     invalidProjectFile: Projekti fail ei ole kehtiv.
     fileTooLarge: Projekti fail on liiga suur.
     invalidJson: Valitud fail ei ole korrektne JSON.

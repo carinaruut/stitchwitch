@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
-import type { PrintMode } from '../../../types/pattern'
+import type { PrintMode, WrittenInstructionFormat } from '../../../types/pattern'
 
 defineProps<{
   includeAnnotations: boolean
@@ -11,6 +11,7 @@ defineProps<{
 const emit = defineEmits<{
   png: []
   print: [mode: PrintMode]
+  instructions: [format: WrittenInstructionFormat]
   'update:includeAnnotations': [value: boolean]
 }>()
 const { t } = useI18n({ useScope: 'global' })
@@ -69,6 +70,31 @@ const { t } = useI18n({ useScope: 'global' })
         class="mdi mdi-shape-outline"
         aria-hidden="true"
       />{{ t('editor.print.symbolChart') }}
+    </button>
+  </li>
+  <li class="menu-title mt-1">
+    {{ t('editor.print.instructionsTitle') }}
+  </li>
+  <li>
+    <button
+      type="button"
+      @click="emit('instructions', 'pdf')"
+    >
+      <span
+        class="mdi mdi-file-pdf-box"
+        aria-hidden="true"
+      />{{ t('editor.print.instructionsPdf') }}
+    </button>
+  </li>
+  <li>
+    <button
+      type="button"
+      @click="emit('instructions', 'text')"
+    >
+      <span
+        class="mdi mdi-text-box-outline"
+        aria-hidden="true"
+      />{{ t('editor.print.instructionsText') }}
     </button>
   </li>
 </template>

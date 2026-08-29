@@ -3,7 +3,7 @@ import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import ProjectExportMenuItems from '../../features/export/components/ProjectExportMenuItems.vue'
 import AppDropdown from '../../shared/ui/AppDropdown.vue'
-import type { PrintMode } from '../../types/pattern'
+import type { PrintMode, WrittenInstructionFormat } from '../../types/pattern'
 
 defineProps<{ includeAnnotations: boolean }>()
 const emit = defineEmits<{
@@ -12,6 +12,7 @@ const emit = defineEmits<{
   save: []
   png: []
   print: [mode: PrintMode]
+  instructions: [format: WrittenInstructionFormat]
   'update:includeAnnotations': [value: boolean]
 }>()
 const { t } = useI18n({ useScope: 'global' })
@@ -46,7 +47,7 @@ function request(action: () => void) {
         />
       </button>
     </template>
-    <ul class="menu app-menu w-44">
+    <ul class="menu app-menu w-64">
       <li>
         <button
           type="button"
@@ -87,6 +88,7 @@ function request(action: () => void) {
         @update:include-annotations="emit('update:includeAnnotations', $event)"
         @png="request(() => emit('png'))"
         @print="request(() => emit('print', $event))"
+        @instructions="request(() => emit('instructions', $event))"
       />
     </ul>
   </AppDropdown>

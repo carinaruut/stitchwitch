@@ -111,7 +111,7 @@ guide:
     openText: Validates a downloaded project, asks before replacing current work, and restores both its design and Tracker progress. Legacy pattern and tracker files are also supported.
   output:
     title: Preview, printing, and PDF
-    intro: Complete pattern preview shows the rendered chart, including whole-pattern repeats or active repeat boxes. Open Print or Save as PDF and choose a Color chart or B&W symbols. Color PDFs include a swatch legend with stitch counts. Symbol PDFs include a black-and-white key with descriptive color names and stitch counts. Either option creates a numbered overview, detail pages for large charts, and source charts for enabled repeat boxes.
+    intro: Complete pattern preview shows the rendered chart, including whole-pattern repeats or active repeat boxes. Open Download and choose a Color chart, B&W symbols, or written row instructions. Written instructions are available as PDF or plain text and follow the Tracker row order. Color and symbol charts keep their numbered overview, detail pages, legends, and repeat-source charts.
     themeNote: The light/dark theme changes the editor only and does not affect printed output.
   accessibility:
     title: Keyboard and accessibility
@@ -170,3 +170,27 @@ print:
   oneStitch: '{count} stitch'
   stitches: '{count} stitches'
   repeatChartsTitle: "Repeat source charts · Page {page} of {total}"
+  instructions:
+    title: "{name} · Written row instructions"
+    total: "Total: {count}"
+    order: "Work {start}; first worked row {direction}; alternating rows: {alternating}."
+    start:
+      top: from top to bottom
+      bottom: from bottom to top
+    direction:
+      left-to-right: left to right
+      right-to-left: right to left
+    alternating:
+      yes: 'yes'
+      no: 'no'
+    wholeRepeats: "Whole-pattern repeats: {horizontal} across × {vertical} down. Instructions are fully expanded."
+    repeatBoxes: "Repeat-box mode: {count} active repeat area(s). The rendered rows are fully expanded."
+    legendTitle: Color and symbol legend
+    noSymbol: '—'
+    legendEntry: "[{symbol}] {name} — {details} — {count}"
+    rowsTitle: Row instructions
+    row: "Row {row} ({direction}): {runs}"
+    rowTitle: "Row {row} · {direction}"
+    run: "{count} {name}{symbol}"
+    runSymbol: " [{symbol}]"
+    runSeparator: ', '

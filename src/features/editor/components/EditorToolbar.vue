@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import type { PatternState } from '../composables/usePattern'
-import type { DrawingTool, PrintMode, RepeatBoxInput } from '../../../types/pattern'
+import type { DrawingTool, PrintMode, RepeatBoxInput, WrittenInstructionFormat } from '../../../types/pattern'
 import ColorMenu from '../../palette/components/ColorMenu.vue'
 import RepeatMenu from '../../repeats/components/RepeatMenu.vue'
 import WorkspaceActions from '../../../shell/components/WorkspaceActions.vue'
@@ -27,6 +27,7 @@ const emit = defineEmits<{
   save: []
   png: []
   print: [mode?: PrintMode]
+  instructions: [format: WrittenInstructionFormat]
   repeatSaved: [updated: boolean]
   'update:canvasFullHeight': [value: boolean]
   'update:canvasSymbols': [value: boolean]
@@ -153,6 +154,7 @@ function saveRepeatBox(input: RepeatBoxInput, id: string | null, complete: (erro
         @save="$emit('save')"
         @png="$emit('png')"
         @print="$emit('print', $event)"
+        @instructions="$emit('instructions', $event)"
       >
         <template #settings>
           <GridMenu

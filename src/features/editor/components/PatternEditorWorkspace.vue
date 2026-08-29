@@ -3,7 +3,7 @@ import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { PatternState } from '../composables/usePattern'
 import type { NotificationKind } from '../../../shared/composables/useNotifications'
-import type { DrawingTool, PrintMode } from '../../../types/pattern'
+import type { DrawingTool, PrintMode, WrittenInstructionFormat } from '../../../types/pattern'
 import { colorSymbolMap } from '../../../utils/colors'
 import type { RenderedGrid } from '../../../utils/grid'
 import { orderedColorCounts } from '../../../utils/palette'
@@ -28,6 +28,7 @@ const emit = defineEmits<{
   save: []
   png: []
   print: [mode?: PrintMode]
+  instructions: [format: WrittenInstructionFormat]
   notify: [message: string, kind?: NotificationKind]
   'update:canvasFullHeight': [value: boolean]
   'update:canvasSymbols': [value: boolean]
@@ -160,6 +161,7 @@ defineExpose({
         @save="$emit('save')"
         @png="$emit('png')"
         @print="$emit('print', $event)"
+        @instructions="$emit('instructions', $event)"
         @repeat-saved="$emit('notify', t($event ? 'editor.notifications.repeatBoxUpdated' : 'editor.notifications.repeatBoxAdded'), 'success')"
         @update:canvas-full-height="$emit('update:canvasFullHeight', $event)"
         @update:canvas-symbols="$emit('update:canvasSymbols', $event)"

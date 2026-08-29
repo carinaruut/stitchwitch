@@ -2,7 +2,7 @@
 import { useI18n } from 'vue-i18n'
 import WorkspaceActions from '../../../../shell/components/WorkspaceActions.vue'
 import type { TrackerController } from '../../composables/useTracker'
-import type { PatternDisplay, PrintMode } from '../../../../types/pattern'
+import type { PatternDisplay, PrintMode, WrittenInstructionFormat } from '../../../../types/pattern'
 import type { TrackerCompletionMode, TrackerDirection, TrackerFocusStyle, TrackerStartRow } from '../../../../types/tracker'
 import TrackerDisplayDropdown from '../settings/TrackerDisplayDropdown.vue'
 import TrackerOrderDropdown from '../settings/TrackerOrderDropdown.vue'
@@ -33,6 +33,7 @@ const emit = defineEmits<{
   close: []
   png: []
   print: [mode: PrintMode]
+  instructions: [format: WrittenInstructionFormat]
   reset: []
   save: []
   sessions: []
@@ -248,6 +249,7 @@ function toggleAddingComment() {
         @save="emit('save')"
         @png="emit('png')"
         @print="emit('print', $event)"
+        @instructions="emit('instructions', $event)"
       >
         <template #settings>
           <TrackerDisplayDropdown

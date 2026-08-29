@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import type { PrintMode } from '../../types/pattern'
+import type { PrintMode, WrittenInstructionFormat } from '../../types/pattern'
 import ProjectExportDropdown from '../../features/export/components/ProjectExportDropdown.vue'
 
 const props = defineProps<{
@@ -13,6 +13,7 @@ const emit = defineEmits<{
   save: []
   png: []
   print: [mode: PrintMode]
+  instructions: [format: WrittenInstructionFormat]
   'update:includeAnnotations': [value: boolean]
 }>()
 const { t } = useI18n({ useScope: 'global' })
@@ -67,6 +68,7 @@ const switchIcon = computed(() => props.context === 'editor' ? 'mdi-progress-che
       @update:include-annotations="emit('update:includeAnnotations', $event)"
       @png="emit('png')"
       @print="emit('print', $event)"
+      @instructions="emit('instructions', $event)"
     />
   </div>
 </template>
